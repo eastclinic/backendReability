@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Reviews\Http\Controllers\Admin\ReviewResourceController;
 use Modules\Reviews\Http\Controllers\Admin\TargetTypeController;
 use Modules\Reviews\Http\Controllers\DoctorReviewController;
+use Modules\Reviews\Http\Controllers\Admin\MessageResourceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,5 +25,8 @@ Route::group([
 
     Route::apiResources([
         'reviews'=>ReviewResourceController::class
+    ]);
+    Route::apiResources([
+        'reviews/messages'=>MessageResourceController::class
     ]);
 });

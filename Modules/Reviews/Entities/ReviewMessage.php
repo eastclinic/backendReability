@@ -9,7 +9,13 @@ class ReviewMessage extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['review_id', 'parent_id', 'message', 'author_id', 'author'];
+    protected $fillable = [
+        'review_id',
+        'parent_id',
+        'message',
+        'author_id',
+        'author'
+    ];
 
     protected static function newFactory()
     {
