@@ -3,6 +3,8 @@
 namespace Modules\Reviews\Database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Reviews\Entities\Review;
+use Modules\Reviews\Entities\ReviewMessage;
 
 class ReviewMessageFactory extends Factory
 {
@@ -20,10 +22,16 @@ class ReviewMessageFactory extends Factory
      */
     public function definition()
     {
+
+        $authorId = $this->faker->numberBetween(0,5);
+        $authorName = (!$authorId) ? $this->faker->firstName() : null;
+        $parentId = (ReviewMessage::all()->count() > 0 ) ? ReviewMessage::all()->random()->id : null;
+
         return [
-            'author' => $this->faker->firstName(),
-            'review_id' => 'doctor',
-            'parent_id' =>  $this->faker->randomElement([0, 0, 0, 0, 0, 0, 0, 0, 1]),
+            'author' => $authorName,
+            'author_id' => ($authorId) ? $authorId : null,
+            'review_id' => Review::all()->random()->id,
+            'parent_id' =>  $parentId,
             'message' => $this->faker->realText(),
             'published' => $this->faker->numberBetween(0,1),
         ];

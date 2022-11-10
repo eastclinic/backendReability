@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('reviews_messages', function (Blueprint $table) {
+        Schema::create('review_messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('review_id');
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->text('message')->nullable();
+            $table->text('published')->nullable();
             $table->text('author_id')->nullable();
             $table->text('author')->nullable();
             $table->timestamps();
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('reviews_messages');
+        Schema::dropIfExists('review_messages');
     }
 };

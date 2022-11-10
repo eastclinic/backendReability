@@ -3,6 +3,7 @@
 namespace Modules\Reviews\Database\factories;
 
 use Modules\Reviews\Entities\Review;
+use Modules\Reviews\Entities\ReviewMessage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ReviewContentFactory extends Factory
@@ -21,11 +22,15 @@ class ReviewContentFactory extends Factory
      */
     public function definition()
     {
-        error_log( $this->faker->image('storage', 360, 360, 'animals', true, true, 'cats'));
+        $targetPassible = ['review' => Review::all()->random()->id, 'message' => ReviewMessage::all()->random()->id];
+                $target = $this->faker->randomKey($targetPassible);
 
         return [
             'url' => $this->faker->imageUrl(),
-//            'type' => 'jpg',
+            'upload_name' => $this->faker->file('storage/img', 'storage/img/upload', false),
+            'path' => 'storage/img/upload',
+            'contentable_type' => $target,
+            'contentable_id' =>$targetPassible[$target],
 //            'review_id' => $this->faker->numberBetween(1, $reviews->count()),
         ];
     }

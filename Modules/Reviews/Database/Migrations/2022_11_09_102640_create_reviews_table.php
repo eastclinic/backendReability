@@ -15,18 +15,16 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->char('author')->nullable();
-            $table->unsignedInteger('author_id')->nullable();
-            $table->text('author_info')->nullable();
-            $table->float('rating')->nullable();
-            $table->text('text')->nullable();
+            $table->char('author')->default('');
+            $table->unsignedInteger('author_id')->default(0);
+            $table->text('author_info')->default('');
+            $table->float('rating')->default(0);
+            $table->text('text')->default('');
 
 
             $table->char('confirm')->nullable(); //можно использовать номер договора или к примеру фото
             $table->unsignedTinyInteger('confirm_type')->nullable();
-            $table->char('contact')->nullable();
-
-            $table->unsignedInteger('parent_review_id')->nullable();
+            $table->char('contact')->default('');
 
             $table->timestamp('published_at')->nullable();;
             $table->unsignedTinyInteger('published')->default(0);

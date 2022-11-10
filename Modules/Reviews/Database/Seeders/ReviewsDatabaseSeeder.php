@@ -22,14 +22,15 @@ class ReviewsDatabaseSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
 
         DB::table('reviews')->truncate();
+        DB::table('review_messages')->truncate();
         DB::table('reviews_content')->truncate();
-        DB::table('reviews_messages')->truncate();
+
 
         Schema::enableForeignKeyConstraints();
 
 
         Review::factory(20)->create();
-        ReviewContent::factory(1)->create();
-
+        ReviewMessage::factory(10)->create();
+        ReviewContent::factory(6)->create();
     }
 }

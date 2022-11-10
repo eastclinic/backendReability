@@ -9,8 +9,8 @@ class ReviewMessage extends Model
 {
     use HasFactory;
 
-    protected $fillable = [];
-    
+    protected $fillable = ['review_id', 'parent_id', 'message', 'author_id', 'author'];
+
     protected static function newFactory()
     {
         return \Modules\Reviews\Database\factories\ReviewMessageFactory::new();
