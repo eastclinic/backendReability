@@ -15,4 +15,8 @@ class ReviewMessage extends Model
     {
         return \Modules\Reviews\Database\factories\ReviewMessageFactory::new();
     }
+
+    public function content(){
+        return $this->morphMany(ReviewContent::class, 'contentable');
+    }
 }

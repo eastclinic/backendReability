@@ -8,7 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
-use App\Http\Requests\Admin\ApiDataTableRequest;
+use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Http\Resources\ReviewResource;

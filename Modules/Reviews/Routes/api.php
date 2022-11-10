@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Modules\Reviews\Http\Controllers\Admin\ReviewResourceController;
+use Modules\Reviews\Http\Controllers\Admin\TargetTypeController;
+use Modules\Reviews\Http\Controllers\DoctorReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,7 +16,13 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::group([
+    'middleware' => 'api',
+], function ($router) {
+    Route::get('reviews/reviewable-type', [TargetTypeController::class, 'index']);
+    Route::get('doctor/reviews', [DoctorReviewController::class, 'getReviews']);
 
-Route::middleware('auth:api')->get('/reviews', function (Request $request) {
-    return $request->user();
+    Route::apiResources([
+        'reviews'=>ReviewResourceController::class
+    ]);
 });
