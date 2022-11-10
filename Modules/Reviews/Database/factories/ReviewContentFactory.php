@@ -22,7 +22,7 @@ class ReviewContentFactory extends Factory
      */
     public function definition()
     {
-        $targetPassible = ['review' => Review::all()->random()->id, 'message' => ReviewMessage::all()->random()->id];
+        $targetPassible = ['review' => Review::all()->random()->id, 'reviewMessage' => ReviewMessage::all()->random()->id];
                 $target = $this->faker->randomKey($targetPassible);
 
         return [

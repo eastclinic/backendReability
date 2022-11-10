@@ -29,5 +29,10 @@ class Review extends Model
         return $this->morphMany(ReviewContent::class, 'contentable');
     }
 
+    public function getMorphClass()
+    {
+        return 'review';
+    }
+
 
 }

@@ -19,4 +19,9 @@ class ReviewMessage extends Model
     public function content(){
         return $this->morphMany(ReviewContent::class, 'contentable');
     }
+
+    public function getMorphClass()
+    {
+        return 'reviewMessage';
+    }
 }
