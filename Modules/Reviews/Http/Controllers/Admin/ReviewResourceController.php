@@ -105,6 +105,8 @@ class ReviewResourceController extends Controller
             return  response()->error('not found review', 404);
         }
     }
+
+
     public function reviewableType() {
         $accessList = ['doctorReview' => ['id' => 'doctorReview', 'text' => 'Доктор']];
         //return array_values(array_intersect_key( $accessList, Relation::$morphMap ));

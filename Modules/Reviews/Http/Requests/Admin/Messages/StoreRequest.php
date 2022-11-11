@@ -15,9 +15,9 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'review_id' =>['required', 'numeric'],
+            //'review_id' =>['required', 'numeric'],
             'parent_id' =>'nullable',
-
+            'message' => 'nullable',
             'author_id' =>['required', 'numeric'],
             'author' => 'nullable',
         ];
@@ -44,7 +44,7 @@ class StoreRequest extends FormRequest
             'review_id.required' => 'review_id is required info',
             'review_id.numeric' => 'review_id must be integer',
             'author_id.numeric' => 'author_id must be integer',
-            'author_id.required' => 'review_id is required info',
+            'author_id.required' => 'author_id is required info',
 //            'rating.required' => 'Be sure to specify id of review target',
         ];
     }

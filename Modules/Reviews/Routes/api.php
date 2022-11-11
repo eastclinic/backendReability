@@ -27,6 +27,6 @@ Route::group([
         'reviews'=>ReviewResourceController::class
     ]);
     Route::apiResources([
-        'reviews/messages'=>MessageResourceController::class
+        'reviews.messages'=>MessageResourceController::class
     ]);
 });

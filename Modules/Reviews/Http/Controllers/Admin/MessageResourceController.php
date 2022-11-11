@@ -26,14 +26,16 @@ class MessageResourceController extends Controller
 
     /**
      * Display a listing of the resource.
+     * @param int $review_id
      * @param ApiDataTableRequest $request
      */
-    public function index(ApiDataTableRequest $request)
+    public function index(int $review_id, ApiDataTableRequest $request)
     {
+//        return $review_id;
         $messages = ReviewMessage::query();
 
         $messages = $this->QueryBuilderByRequest->build( $messages, $request );
-        $messages->with('content');
+        $messages->with('content')->where('review_id', $review_id);
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
@@ -42,18 +44,15 @@ class MessageResourceController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
+     * @param int $review_id
      * @param  StoreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreRequest $request)
+    public function store(int $review_id, StoreRequest $request)
     {
         $requestData = $request->validated();
-        $message = new ReviewMessage($requestData);
-        if(!$requestData['review_id'] ){
-            return response()->error('Not set review_id.', 400);
-        }
-        if(!Review::where('id', $requestData['review_id'])->first()){
+        $message = new ReviewMessage($requestData + ['review_id' => $review_id]);
+        if(!Review::where('id', $review_id)->first()){
             return response()->error('Not found target review', 400);
         }
 
