@@ -3,8 +3,8 @@
 namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ApiCollectionResource;
 use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
+use App\Services\Response\ResponseService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -13,6 +13,7 @@ use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Http\Services\Target;
+use Illuminate\Support\Facades\Response;
 
 class ReviewResourceController extends Controller
 {
@@ -42,7 +43,8 @@ class ReviewResourceController extends Controller
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
-        return response()->apiCollection( $reviews );
+//        return response()->apiCollection( $reviews );
+        return ResponseService::apiCollection( $reviews );
     }
 
     /**
