@@ -38,11 +38,11 @@ class ReviewResourceController extends Controller
         $reviews = Review::query();
 
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
-        $reviews->with('content');
+        $reviews->with('content')->with('message');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
-        return response()->apiCollection( ApiCollectionResource::collection($reviews->paginate()) );
+        return response()->apiCollection( $reviews );
     }
 
     /**

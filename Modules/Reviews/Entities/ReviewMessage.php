@@ -26,6 +26,18 @@ class ReviewMessage extends Model
         return $this->morphMany(ReviewContent::class, 'contentable');
     }
 
+    /**
+     * Get the review that owns the message.
+     */
+    public function review()
+    {
+        return $this->belongsTo(Review::class);
+    }
+
+    /**
+     * set alias where required. For example ReviewContent morph
+     * @return string
+     */
     public function getMorphClass()
     {
         return 'reviewMessage';

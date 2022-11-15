@@ -39,7 +39,7 @@ class MessageResourceController extends Controller
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
-        return response()->apiCollection( ApiCollectionResource::collection($messages->paginate()) );
+        return response()->apiCollection( $messages );
     }
 
     /**
