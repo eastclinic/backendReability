@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('review_messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('review_id');
-            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->unsignedBigInteger('parent_id')->default(0);
             $table->text('message')->nullable();
             $table->text('published')->nullable();
             $table->text('author_id')->nullable();
