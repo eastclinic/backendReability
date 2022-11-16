@@ -101,10 +101,15 @@ class ReviewResourceController extends Controller
      */
     public function destroy($id) {
         $review = Review::find($id);
-        if($review && $review->delete()){
-            return response()->okMessage('Removed review');
+        if(!$review){
+            return  ResponseService::error('not found review', 404);
+        }
+        $review->content()->delete();
+        $review->message()->delete();
+        if($review->delete()){
+            return ResponseService::okMessage('Removed review');
         }else{
-            return  response()->error('not found review', 404);
+            return  ResponseService::error('Failed to remove review');
         }
     }
 

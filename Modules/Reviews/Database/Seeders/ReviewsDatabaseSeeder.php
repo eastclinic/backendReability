@@ -21,9 +21,9 @@ class ReviewsDatabaseSeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
 
-        //DB::table('reviews')->truncate();
+        DB::table('reviews')->truncate();
         DB::table('review_messages')->truncate();
-        //DB::table('reviews_content')->truncate();
+        DB::table('reviews_content')->truncate();
 
 
         Schema::enableForeignKeyConstraints();
