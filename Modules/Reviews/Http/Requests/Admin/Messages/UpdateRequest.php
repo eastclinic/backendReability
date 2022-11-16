@@ -4,8 +4,14 @@ namespace Modules\Reviews\Http\Requests\Admin\Messages;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreRequest extends FormRequest
+use Illuminate\Validation\Rule;
+
+
+class UpdateRequest extends FormRequest
 {
+
+
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -14,11 +20,13 @@ class StoreRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'parent_id' =>'nullable',
+        //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
+        return [ //пока напрямую задаем, потом можно будет брать из объекта Access
+            //'parent_id' =>['nullable', 'numeric'],
             'message' => 'nullable',
-            'author_id' =>['required', 'numeric'],
+            'author_id' =>['nullable', 'numeric'],
             'author' => 'nullable',
+            'published' =>['nullable', Rule::in([0, 1])],
         ];
     }
 
@@ -40,11 +48,8 @@ class StoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'review_id.required' => 'review_id is required info',
-            'review_id.numeric' => 'review_id must be integer',
-            'author_id.numeric' => 'author_id must be integer',
-            'author_id.required' => 'author_id is required info',
-//            'rating.required' => 'Be sure to specify id of review target',
+            'reviewable_id.required' => 'A title is required',
+            'rating.numeric' => 'Рейтинг должен быть числом'
         ];
     }
 }
