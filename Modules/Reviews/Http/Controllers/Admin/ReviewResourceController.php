@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
 use App\Services\Response\ResponseService;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
@@ -37,6 +38,7 @@ class ReviewResourceController extends Controller
 
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
+
 
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
         $reviews->with('content')->with('message');

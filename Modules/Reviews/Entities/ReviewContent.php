@@ -4,6 +4,8 @@ namespace Modules\Reviews\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewContent extends Model
 {
@@ -11,6 +13,7 @@ class ReviewContent extends Model
 
     protected $table = 'reviews_content';
     protected $fillable = ['path', 'upload_name', 'url', 'converted_content_info'];
+    public const STORAGE_DISK = 'reviewContent';
 
     protected static function newFactory()
     {
@@ -23,6 +26,20 @@ class ReviewContent extends Model
     public function contentable()
     {
         return $this->morphTo();
+    }
+
+    /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
+    protected static function booted()
+    {
+
+        static::deleting(function ($content) {
+            Log::info(1111111111111);
+            Storage::disk(self::STORAGE_DISK)->delete($content->file);
+        });
     }
 
 }

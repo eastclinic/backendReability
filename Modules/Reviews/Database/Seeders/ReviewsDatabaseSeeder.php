@@ -32,6 +32,6 @@ class ReviewsDatabaseSeeder extends Seeder
         Review::factory(20)->create();
         ReviewMessage::factory(10)->create();
         ReviewMessage::factory(10)->create();
-        ReviewContent::factory(6)->create();
+        ReviewContent::factory(20)->create();
     }
 }

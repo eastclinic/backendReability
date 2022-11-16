@@ -2,6 +2,8 @@
 
 namespace Modules\Reviews\Database\factories;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewMessage;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,7 +15,7 @@ class ReviewContentFactory extends Factory
      *
      * @var string
      */
-    protected $model = \Modules\Reviews\Entities\ReviewContent::class;
+    protected  $model = \Modules\Reviews\Entities\ReviewContent::class;
 
     /**
      * Define the model's default state.
@@ -27,8 +29,7 @@ class ReviewContentFactory extends Factory
 
         return [
             'url' => $this->faker->imageUrl(),
-            'upload_name' => $this->faker->file('storage/img', 'storage/img/upload', false),
-            'path' => 'storage/img/upload',
+            'file' => 'upload/'.$this->faker->file('storage/img', 'storage/img/upload', false),
             'contentable_type' => $target,
             'contentable_id' =>$targetPassible[$target],
 //            'review_id' => $this->faker->numberBetween(1, $reviews->count()),
