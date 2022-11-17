@@ -4,6 +4,7 @@ namespace Modules\Reviews\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Database\factories\ReviewFactory;
 
 class Review extends Model
@@ -36,6 +37,22 @@ class Review extends Model
     public function getMorphClass()
     {
         return 'review';
+    }
+
+
+// this is a recommended way to declare event handlers
+    public static function boot() {
+        parent::boot();
+
+//        static::deleting(function($review) {
+//            $content = $review->content();
+//            $content = ReviewContent::where('')->content();
+//            if($content){
+//                foreach ($content as $item) $item->delete();
+//            }
+//            Log::inreview_messagesfo('review deleting!');
+//            // do the rest of the cleanup...
+//        });
     }
 
 

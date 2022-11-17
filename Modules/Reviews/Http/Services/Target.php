@@ -27,4 +27,10 @@ class Target
     public function getNameList(){
         return array_keys(self::TARGET_MAP);
     }
+
+    public function exist(int $id)
+    {
+
+    }
+
 }

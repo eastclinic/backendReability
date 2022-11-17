@@ -1,27 +1,37 @@
 <?php
 
-namespace App\Providers;
+namespace Modules\Reviews\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Observers\ReviewObserver;
 
 class EventServiceProvider extends ServiceProvider
 {
     /**
-     * The event to listener mappings for the application.
+     * Register the service provider.
      *
-     * @var array<class-string, array<int, class-string>>
+     * @return void
      */
-    protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
-    ];
+    public function register()
+    {
+        Log::info('EventServiceProvider register()!');
+        //
+    }
 
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        Log::info('EventServiceProvider provides()!');
+        return [
+            //Review::class => [ReviewObserver::class],
+        ];
+    }
     /**
      * Register any events for your application.
      *
@@ -42,8 +52,7 @@ class EventServiceProvider extends ServiceProvider
         return false;
     }
 
-
     protected $observers = [
-       // Review::class => [ReviewObserver::class],
+        Review::class => [ReviewObserver::class],
     ];
 }

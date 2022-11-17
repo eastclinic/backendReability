@@ -39,7 +39,7 @@ class ReviewResourceController extends Controller
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
-
+        Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
         $reviews->with('content')->with('message');
 
@@ -106,8 +106,8 @@ class ReviewResourceController extends Controller
         if(!$review){
             return  ResponseService::error('not found review', 404);
         }
-        $review->content()->delete();
-        $review->message()->delete();
+
+        //$review->message()->delete();
         if($review->delete()){
             return ResponseService::okMessage('Removed review');
         }else{

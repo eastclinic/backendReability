@@ -2,6 +2,7 @@
 
 namespace Modules\Reviews\Providers;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -24,6 +25,7 @@ class ReviewsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
@@ -37,7 +39,9 @@ class ReviewsServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->register(RouteServiceProvider::class);
+        //Log::info('ReviewsServiceProvider register!');
+        //$this->app->register(RouteServiceProvider::class);
+        $this->app->register(EventServiceProvider::class);
     }
 
     /**
@@ -98,6 +102,7 @@ class ReviewsServiceProvider extends ServiceProvider
      */
     public function provides()
     {
+
         return [];
     }
 

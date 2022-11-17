@@ -36,9 +36,9 @@ class ReviewContent extends Model
     protected static function booted()
     {
 
-        static::deleting(function ($content) {
-            Log::info(1111111111111);
-            Storage::disk(self::STORAGE_DISK)->delete($content->file);
+        static::deleted(function ($content) {
+            Log::info('review content deleting!');
+            //Storage::disk(self::STORAGE_DISK)->delete($content->file);
         });
     }
 
