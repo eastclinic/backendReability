@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
+use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
 use Illuminate\Support\Facades\Response;
 
@@ -21,10 +22,16 @@ class ReviewResourceController extends Controller
 
     private QueryBuilderHandleApiDataTableService $QueryBuilderByRequest;
     private Target $targetModel;
+    private ReviewService $reviewService;
 
-    public function __construct(QueryBuilderHandleApiDataTableService $apiHandler, Target $targetEntity)    {
+    public function __construct(
+        ReviewService $reviewService,
+        QueryBuilderHandleApiDataTableService $apiHandler,
+                                Target $targetEntity)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
+        $this->reviewService = $reviewService;
+
     }
 
     /**
@@ -102,13 +109,7 @@ class ReviewResourceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $review = Review::find($id);
-        if(!$review){
-            return  ResponseService::error('not found review', 404);
-        }
-
-        //$review->message()->delete();
-        if($review->delete()){
+        if($this->reviewService->delete($id)){
             return ResponseService::okMessage('Removed review');
         }else{
             return  ResponseService::error('Failed to remove review');

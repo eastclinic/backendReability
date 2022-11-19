@@ -43,7 +43,5 @@ class EventServiceProvider extends ServiceProvider
     }
 
 
-    protected $observers = [
-       // Review::class => [ReviewObserver::class],
-    ];
+    protected $observers = [];
 }

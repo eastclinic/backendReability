@@ -13,7 +13,8 @@ class ReviewObserver
     public function deleting(Review $review)
     {
 
-        Log::info('ReviewObserver deleting!');
+       // Log::info(print_r($review->content(), 1));
+
     }
 
     /**
