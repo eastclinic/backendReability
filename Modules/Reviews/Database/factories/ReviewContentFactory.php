@@ -29,7 +29,7 @@ class ReviewContentFactory extends Factory
 
         return [
             'url' => $this->faker->imageUrl(),
-            'file' => 'upload/'.$this->faker->file('storage/img', 'storage/img/upload', false),
+            'file' => 'upload'.DIRECTORY_SEPARATOR .$this->faker->file('storage/img', 'storage/img/upload', false),
             'contentable_type' => $target,
             'contentable_id' =>$targetPassible[$target],
 //            'review_id' => $this->faker->numberBetween(1, $reviews->count()),

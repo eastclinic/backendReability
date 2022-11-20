@@ -57,7 +57,7 @@ return [
         ],
         'reviewContent' => [
             'driver' => 'local',
-            'root' => storage_path('storage/img'),
+            'root' => storage_path('img'),
             'throw' => false,
         ],
 

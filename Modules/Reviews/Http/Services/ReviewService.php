@@ -30,7 +30,6 @@ class ReviewService
         //clear attach files
         if($reviewFiles){
             foreach ($reviewFiles as $fileInfo){
-                Log::info( $fileInfo->file );
                 if( $fileInfo->file ){
                     Storage::disk($this->contentModel::STORAGE_DISK)->delete($fileInfo->file);
                 }
