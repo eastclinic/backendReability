@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewContent;
+use Nwidart\Modules\Facades\Module;
 
 
 class ReviewService
@@ -19,28 +20,20 @@ class ReviewService
     }
 
     public function delete(int $id):bool {
+        Log::info(print_r(config('reviews.storeDisk'), 1));
         $review = $this->reviewModel::find($id);
         if(!$review) return  false;
 
         //remove bind messages
-        $review->message()->delete();
-
-        $reviewFiles = $review->content;
-
-        //clear attach files
-        if($reviewFiles){
-            foreach ($reviewFiles as $fileInfo){
-                if( $fileInfo->file ){
-                    Storage::disk($this->contentModel::STORAGE_DISK)->delete($fileInfo->file);
-                }
-            }
-        }
-        return true;
-        $review->content()->delete();
-
+        //$review->message()->delete();
         if($review->delete()){
             return true;
         }
+
+        return true;
+        $review->content()->delete();
+
+
     }
 
 }
