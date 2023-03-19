@@ -1,12 +1,12 @@
 <?php
 
 
-namespace App\Services\ApiRequestHandlers;
+namespace App\Services\ApiRequestQueryBuilders;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 
-class QueryBuilderHandleApiListService
+class QueryBuilderHandleApiDataTableService
 {
     public function build( $query, FormRequest $request )  {
 

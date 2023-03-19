@@ -21,7 +21,10 @@ Route::group([
     'middleware' => 'api',
 ], function ($router) {
     Route::get('reviews/reviewable-type', [TargetTypeController::class, 'index']);
-    Route::get('doctor/reviews', [DoctorReviewController::class, 'getReviews']);
+//    Route::get('doctor/reviews', [DoctorReviewController::class, 'getReviews']);
+    Route::get('doctor/reviews', function (){
+
+    });
 
     Route::apiResources([
         'reviews'=>ReviewResourceController::class

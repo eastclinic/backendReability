@@ -4,7 +4,7 @@ namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Requests\ApiDataTableRequest;
 use App\Http\Resources\ApiCollectionResource;
-use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\QueryBuilderHandleApiDataTableService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

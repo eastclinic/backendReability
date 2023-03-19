@@ -3,7 +3,7 @@
 namespace Modules\Reviews\Http\Controllers;
 
 use Modules\Reviews\Http\Requests\GetReviewsByDoctorRequest;
-use App\Services\ApiRequestHandlers\QueryBuilderHandleApiListService;
+use App\Services\ApiRequestQueryBuilders\ApiListService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -13,10 +13,10 @@ use Modules\Reviews\Http\Resources\ReviewResource;
 class DoctorReviewController extends Controller
 {
 
-    private QueryBuilderHandleApiListService $queryBuilderByRequest;
+    private ApiListService $queryBuilderByRequest;
     private const TARGET_PSEUDONYM = 'doctorReview';
 
-    public function __construct(QueryBuilderHandleApiListService $apiHandler)    {
+    public function __construct(ApiListService $apiHandler)    {
         $this->queryBuilderByRequest = $apiHandler;
     }
 

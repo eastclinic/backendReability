@@ -3,7 +3,7 @@
 namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\QueryBuilderHandleApiDataTableService;
 use App\Services\Response\ResponseService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;

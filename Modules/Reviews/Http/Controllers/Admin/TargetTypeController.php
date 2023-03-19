@@ -2,7 +2,7 @@
 
 namespace Modules\Reviews\Http\Controllers\Admin;
 
-use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\QueryBuilderHandleApiDataTableService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
