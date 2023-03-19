@@ -40,8 +40,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
-        Response::macro('apiCollection', function (Builder $modelQuery ){
-            $itemsCollection = $modelQuery->paginate();
+        Response::macro('apiCollection', function (\Illuminate\Http\Resources\Json\ResourceCollection $itemsCollection ){
             return response()->json(['ok' => true, 'items' => $itemsCollection->items(),
                 //'total' => $itemsCollection->count(),
                 'count' => $itemsCollection->total(),

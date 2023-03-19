@@ -7,6 +7,7 @@ use \Illuminate\Database\Eloquent\Builder;
 
 abstract class ApiRequestQueryBuilderAbstractService
 {
-    abstract public function build(  Builder $query, FormRequest $request ) ;
+    //todo add type parameter $query
+    abstract public function build(  $query, FormRequest $request ) ;
 
 }

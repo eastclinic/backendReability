@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApiDataTableRequest extends FormRequest
+class ApiDataTableRequest extends ApiAbstractRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -13,17 +13,7 @@ class ApiDataTableRequest extends FormRequest
      */
     public function rules()
     {
-        //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
-        return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'limit' =>'nullable',
-            'offset' =>'nullable',
-            'page' =>'nullable',
-            'itemsPerPage' =>'nullable',
-            'mustSort' =>'nullable',
-            'multiSort' =>'nullable',
-            'sortBy.*' =>'string|nullable',
-            'sortDesc.*' =>'string|nullable',
-        ];
+        return parent::rules() + ['mustSort' => ['nullable'],  'multiSort' => ['nullable'], ];
     }
 
     /**

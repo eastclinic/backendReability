@@ -3,7 +3,7 @@
 namespace Modules\Reviews\Http\Requests;
 use App\Http\Requests\ApiListRequest;
 
-class GetReviewsByDoctorRequest extends ApiListRequest
+class ApiListReviewsByDoctorRequest extends ApiListRequest
 {
     /**
      * Get the validation rules that apply to the request.
