@@ -3,7 +3,9 @@
 namespace Modules\Reviews\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Reviews\Entities\ReviewMessage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
+use Modules\Reviews\Transformers\Admin\ReviewMessageResource;
 
 class ReviewResource extends JsonResource
 {
@@ -23,7 +25,9 @@ class ReviewResource extends JsonResource
             'reviewable_id' => $this->reviewable_id,
             'reviewable_type' => $this->reviewable_type,
             'author' => $this->author,
-            'content' => ReviewContentResource::collection($this->whenLoaded('content'))
+            'content' => ReviewContentResource::collection($this->whenLoaded('content')),
+            'messages' => ReviewMessageResource::collection($this->whenLoaded('messages')),
+
         ];
 
     }

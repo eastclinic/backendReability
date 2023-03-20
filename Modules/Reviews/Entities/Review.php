@@ -4,6 +4,7 @@ namespace Modules\Reviews\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Database\factories\ReviewFactory;
 
@@ -30,7 +31,7 @@ class Review extends Model
         return $this->morphMany(ReviewContent::class, 'contentable');
     }
 
-    public function message(){
+    public function messages():HasMany{
         return $this->hasMany(ReviewMessage::class);
     }
 

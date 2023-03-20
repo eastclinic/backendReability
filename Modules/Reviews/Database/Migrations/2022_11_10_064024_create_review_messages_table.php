@@ -15,7 +15,10 @@ return new class extends Migration
     {
         Schema::create('review_messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('review_id');
+            $table->foreignId('review_id')
+                ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->unsignedBigInteger('parent_id')->default(0);
             $table->text('message')->nullable();
             $table->text('published')->nullable();

@@ -34,12 +34,4 @@ class ReviewMessage extends Model
         return $this->belongsTo(Review::class);
     }
 
-    /**
-     * set alias where required. For example ReviewContent morph
-     * @return string
-     */
-    public function getMorphClass()
-    {
-        return 'reviewMessage';
-    }
 }

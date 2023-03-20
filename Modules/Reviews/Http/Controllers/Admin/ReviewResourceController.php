@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
+use Modules\Reviews\Http\Resources\ReviewResource;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
 use Illuminate\Support\Facades\Response;
@@ -48,12 +49,12 @@ class ReviewResourceController extends Controller
 
         Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
-        $reviews->with('content')->with('message');
+        $reviews->with('content')->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
 //        return response()->apiCollection( $reviews );
-        return ResponseService::apiCollection( $reviews );
+        return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
     /**

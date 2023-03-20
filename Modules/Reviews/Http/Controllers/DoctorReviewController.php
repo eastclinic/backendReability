@@ -26,11 +26,11 @@ class DoctorReviewController extends Controller
 
         //checked doctorId in request class
         $reviews = Review::query();
-
+        $reviews->where('published', 1);
 
         $reviews = $this->queryBuilderByRequest->build( $reviews, $request );
 
-        $reviews->with('content');
+        $reviews->with('content')->with('messages');
 
         $requestData = $request->validated();
 
