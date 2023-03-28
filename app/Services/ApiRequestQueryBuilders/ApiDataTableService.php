@@ -19,9 +19,9 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         }
 
         //пагинация
-        $offset = (isset($requestData['page']) && isset($requestData['itemsPerPage'])) ? ( $requestData['page'] - 1 ) * $requestData['itemsPerPage']: 0;
+        $offset = (isset($requestData['page']) && isset($requestData['per_page'])) ? $requestData['page'] * $requestData['per_page']: 0;
 
-        $limit = (isset($requestData['itemsPerPage'])) ? $requestData['itemsPerPage']: 10;
+        $limit = (isset($requestData['per_page'])) ? $requestData['per_page']: 10;
         error_log($offset);
         error_log($limit);
 
@@ -35,7 +35,7 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         }
 
 
-        $countItemsOnPage = (isset($requestData['itemsPerPage'])) ? $requestData['itemsPerPage']*1 : 3;
+        $countItemsOnPage = (isset($requestData['per_page'])) ? $requestData['per_page']*1 : 3;
         $query->getModel()->setPerPage( $countItemsOnPage );
 
 
