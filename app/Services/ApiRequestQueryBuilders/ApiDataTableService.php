@@ -24,6 +24,8 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         $limit = (isset($requestData['per_page'])) ? $requestData['per_page']: 10;
         error_log($offset);
         error_log($limit);
+        error_log(print_r($requestData, 1));
+
 
 
         $query->offset($offset)->limit($limit);
@@ -35,7 +37,8 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         }
 
 
-        $countItemsOnPage = (isset($requestData['per_page'])) ? $requestData['per_page']*1 : 3;
+        $countItemsOnPage = (isset($requestData['per_page'])) ? $requestData['per_page']*1 : 10;
+                error_log(print_r($countItemsOnPage, 1));
         $query->getModel()->setPerPage( $countItemsOnPage );
 
 
