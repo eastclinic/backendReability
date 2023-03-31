@@ -21,6 +21,8 @@ class ApiAbstractRequest extends FormRequest
             'per_page' =>'nullable',
             'sortBy.*' =>'string|nullable',
             'sortDesc.*' =>'string|nullable',
+            'ids'=>'nullable',
+            'id'=>'nullable',
         ];
     }
 

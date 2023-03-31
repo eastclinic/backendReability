@@ -14,18 +14,16 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         $requestData = $request->validated();
         //$query = $model::query();
         //если нужно выдать только заданные сущности
-        if(isset($requestData['ids']) && is_array($requestData['ids'])){
-            return $query->whereIn('id', $query['ids']);
+        $ids = ( isset($requestData['id']) && $requestData['id'] ) ? [ $requestData['id'] ] : [];
+        if(!$ids && isset($requestData['ids']) && $requestData['ids']) $ids = $requestData['ids'];
+        if($ids){
+            return $query->whereIn('id', $ids);
         }
 
         //пагинация
         $offset = (isset($requestData['page']) && isset($requestData['per_page'])) ? $requestData['page'] * $requestData['per_page']: 0;
 
         $limit = (isset($requestData['per_page'])) ? $requestData['per_page']: 10;
-        error_log($offset);
-        error_log($limit);
-        error_log(print_r($requestData, 1));
-
 
 
         $query->offset($offset)->limit($limit);
@@ -38,7 +36,6 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
 
 
         $countItemsOnPage = (isset($requestData['per_page'])) ? $requestData['per_page']*1 : 10;
-                error_log(print_r($countItemsOnPage, 1));
         $query->getModel()->setPerPage( $countItemsOnPage );
 
 
