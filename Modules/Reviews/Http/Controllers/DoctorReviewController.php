@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Modules\Reviews\Entities\Review;
-use Modules\Reviews\Http\Resources\ReviewResource;
+use Modules\Reviews\Http\Resources\DoctorResource;
 
 class DoctorReviewController extends Controller
 {
@@ -38,7 +38,7 @@ class DoctorReviewController extends Controller
         $reviews->where('reviewable_id', $requestData['doctorId']);
         $reviews->where('reviewable_type', self::TARGET_PSEUDONYM);
 //        dd(ReviewResource::collection($reviews->paginate()));
-        return response()->apiCollection( ReviewResource::collection($reviews->paginate()) );
+        return response()->apiCollection( DoctorResource::collection($reviews->paginate()) );
 
         //
     }

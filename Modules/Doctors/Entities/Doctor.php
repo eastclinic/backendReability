@@ -9,10 +9,14 @@ class Doctor extends Model
 {
     use HasFactory;
 
-    protected $fillable = [];
-    
-    protected static function newFactory()
-    {
-        return \Modules\Doctors\Database\factories\DoctorFactory::new();
-    }
+    protected $connection = 'MODX';
+
+    protected $table = 'modx_doc_doctors';
+
+    protected $fillable = ['fullname'];
+
+//    protected static function newFactory()
+//    {
+//        return \Modules\Doctors\Database\factories\DoctorFactory::new();
+//    }
 }

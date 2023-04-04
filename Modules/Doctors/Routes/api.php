@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
+
+use Modules\Doctors\Http\Controllers\Admin\DoctorResourceController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,6 +16,13 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/doctors', function (Request $request) {
-    return $request->user();
+Route::group([
+    'middleware' => 'api',
+], function ($router) {
+
+    Route::apiResources([
+        'doctors'=>DoctorResourceController::class
+    ]);
+
+
 });
