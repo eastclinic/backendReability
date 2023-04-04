@@ -4,6 +4,7 @@ namespace Modules\Doctors\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Doctors\Database\factories\DoctorFactory;
 
 class Doctor extends Model
 {
@@ -19,4 +20,11 @@ class Doctor extends Model
 //    {
 //        return \Modules\Doctors\Database\factories\DoctorFactory::new();
 //    }
+
+
+    protected static function newFactory()
+    {
+        return DoctorFactory::new();
+    }
+
 }

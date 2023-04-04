@@ -2,14 +2,15 @@
 
 namespace Modules\Doctors\Database\Seeders;
 
+use Modules\Doctors\Entities\Doctor;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Modules\Doctors\Entities\Doctor;
 
 
-class DoctorsTableSeeder extends Seeder
+
+class DoctorsDatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,9 +21,7 @@ class DoctorsTableSeeder extends Seeder
     {
         Schema::disableForeignKeyConstraints();
 
-        DB::table('reviews')->truncate();
-        DB::table('review_messages')->truncate();
-        DB::table('reviews_content')->truncate();
+        DB::table('modx_doc_doctors')->truncate();
 
 
         Schema::enableForeignKeyConstraints();

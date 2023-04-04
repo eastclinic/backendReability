@@ -69,6 +69,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('doctors');
+        Schema::dropIfExists('modx_doc_doctors');
     }
 };
