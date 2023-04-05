@@ -45,7 +45,6 @@ return [
 
         'MODX' => [
             'driver' => env('DB_CONNECTION_MODX'),
-            'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST_MODX', '192.168.88.245'),
             'port' => env('DB_PORT_MODX', '3306'),
             'database' => env('DB_DATABASE_MODX', 'eastlar'),

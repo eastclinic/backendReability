@@ -7,6 +7,8 @@ use Modules\Doctors\Entities\Doctor;
 
 class DoctorFactory extends Factory
 {
+    protected $connection = 'MODX';
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -24,7 +26,7 @@ class DoctorFactory extends Factory
         return [
             'iid' => $this->faker->numberBetween(1, 100),
             'id_resource' => $this->faker->numberBetween(1, 100),
-            'uri' => $this->faker->url,
+            //'uri' => 'https://eastclinic.ru/'.$this->faker->firstName,
             'surname' => $this->faker->lastName,
             'name' => $this->faker->firstName,
             'middlename' => $this->faker->firstName,

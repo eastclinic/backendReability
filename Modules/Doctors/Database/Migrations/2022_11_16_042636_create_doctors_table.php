@@ -7,23 +7,32 @@ use Illuminate\Database\Migrations\Migration;
 return new class extends Migration
 {
     /**
+     * The database connection that should be used by the migration.
+     *
+     * @var string
+     */
+    protected $connection = 'MODX';
+
+    /**
      * Run the migrations.
      *
      * @return void
      */
     public function up()
     {
+        Schema::dropIfExists('modx_doc_doctors');
+
         Schema::create('modx_doc_doctors', function (Blueprint $table) {
-            $table->integer('id');
+            $table->id();
             $table->integer('iid')->default(0);
             $table->integer('id_resource')->default(0);
-            $table->string('uri', 255)->nullable();
+            $table->string('uri', 191)->nullable();
             $table->string('surname', 50)->nullable();
             $table->string('name', 100)->nullable();
             $table->string('middlename', 50)->nullable();
             $table->string('fullname', 100)->nullable();
             $table->string('photo', 255)->nullable();
-            $table->string('photo_type', 6)->nullable();
+            $table->string('photo_type', 60)->nullable();
             $table->json('photos')->nullable();
             $table->tinyInteger('holiday')->default(0);
             $table->integer('rating')->default(0);
@@ -55,11 +64,12 @@ return new class extends Migration
             $table->string('quotes', 5000)->default('');
             $table->text('interviews')->nullable();
             $table->text('awards')->nullable();
-            $table->primary('id');
+            $table->timestamps();
             $table->index('iid');
             $table->index('id_resource');
             $table->index('uri');
         });
+
     }
 
     /**

@@ -41,13 +41,13 @@ class DoctorResourceController extends Controller
     public function index(ApiDataTableRequest $request)
     {
 
-        //$doctors = Doctor::query();
+        $doctors = Doctor::query();
         Log::info('ReviewResourceController index!');
-        //$doctors = $this->QueryBuilderByRequest->build( $doctors, $request );
+        $doctors = $this->QueryBuilderByRequest->build( $doctors, $request );
 //        $doctors->with('content')->with('messages');
-        $dbconnect = DB::connection('MODX')->getPDO();
-        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
-        dd($dbname);
+//        $dbconnect = DB::connection('MODX')->getPDO();
+//        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
+//        dd($dbname);
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
 //        return response()->apiCollection( $reviews );
