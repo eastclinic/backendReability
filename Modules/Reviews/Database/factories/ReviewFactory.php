@@ -29,6 +29,7 @@ class ReviewFactory extends Factory
             'text' => $this->faker->realText(),
             'rating' => $this->faker->randomElement([3, 3.5, 4, 4.1, 4.2, 4.5, 4.7, 4.9, 5, 5]),
             'published' => $this->faker->numberBetween(0,1),
+            'is_new' => $this->faker->numberBetween(0,1),
         ];
     }
 }
