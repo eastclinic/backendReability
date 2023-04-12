@@ -42,7 +42,22 @@ class ResponseService extends Response
     {
         return \Illuminate\Routing\ResponseFactory::apiCollection($modelQuery);
     }
+
+//    /**
+//     *
+//     *
+//     * @see \App\Providers\AppServiceProvider::boot()
+//     * @param \Illuminate\Database\Eloquent\Builder $modelQuery
+//     * @static
+//     */
+//    public static function apiCollection($modelQuery)
+//    {
+//        return \Illuminate\Routing\ResponseFactory::apiCollection($modelQuery);
+//    }
+
+
     /**
+     *
      *
      *
      * @see \App\Providers\AppServiceProvider::boot()

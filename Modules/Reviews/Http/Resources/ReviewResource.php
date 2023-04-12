@@ -25,8 +25,10 @@ class ReviewResource extends JsonResource
             'reviewable_id' => $this->reviewable_id,
             'reviewable_type' => $this->reviewable_type,
             'author' => $this->author,
+            'published' => (bool)$this->published,
             'content' => ReviewContentResource::collection($this->whenLoaded('content')),
             'messages' => ReviewMessageResource::collection($this->whenLoaded('messages')),
+
 
         ];
 

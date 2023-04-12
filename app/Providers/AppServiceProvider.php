@@ -50,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
 //                'toSql' => $itemsCollection->toSql(),
             ]);
         });
+        Response::macro('apiEntity', function ( $entity ){
+            return response()->json(['ok' => true, 'item' => $entity]);
+        });
 
 
         Response::macro('error', function ( $error, $errorCode = 422 ){

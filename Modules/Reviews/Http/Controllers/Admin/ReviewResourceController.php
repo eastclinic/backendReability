@@ -86,7 +86,9 @@ class ReviewResourceController extends Controller
      */
     public function show($id)
     {
-        //
+        $reviews = Review::query()->where('id', $id);
+        $reviews->with('content')->with('messages');
+        return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
     /**
