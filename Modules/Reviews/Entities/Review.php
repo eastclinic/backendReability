@@ -12,7 +12,7 @@ class Review extends Model
 {
     use HasFactory;
 
-    protected $fillable = [  'author', 'author_id', 'text', 'contact', 'reviewable_type', 'reviewable_id', 'rating' ];
+    protected $fillable = [  'author', 'author_id', 'text', 'contact', 'reviewable_type', 'reviewable_id', 'rating', 'published' ];
 
     protected static function newFactory()
     {

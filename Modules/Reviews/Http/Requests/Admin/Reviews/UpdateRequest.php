@@ -22,7 +22,8 @@ class UpdateRequest extends FormRequest
             //'author_id' => 'nullable',
             'reviewable_type' => ['nullable', Rule::in(array_keys(Relation::$morphMap))],
             'reviewable_id' => 'nullable',
-            'rating' => ['nullable', 'numeric']
+            'rating' => ['nullable', 'numeric'],
+            'published' => ['nullable', 'boolean']
         ];
     }
 

@@ -100,6 +100,7 @@ class ReviewResourceController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
+        Log::info(print_r($request->validated(), 1));
         $review = Review::where('id', $id)->first();
         $review -> update($request->validated());
         return response()->okMessage('Change data.', 200);

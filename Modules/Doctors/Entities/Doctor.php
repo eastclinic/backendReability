@@ -13,7 +13,7 @@ class Doctor extends Model
     protected $connection = 'MODX';
 
     protected $table = 'modx_doc_doctors';
-
+    //todo permission
     protected $fillable = ['fullname'];
 
 //    protected static function newFactory()
