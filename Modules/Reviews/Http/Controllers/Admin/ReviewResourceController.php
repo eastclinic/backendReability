@@ -47,7 +47,7 @@ class ReviewResourceController extends Controller
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
-        Log::info('ReviewResourceController index!');
+        //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
         $reviews->with('content')->with('messages');
 
@@ -66,11 +66,11 @@ class ReviewResourceController extends Controller
     public function store(StoreRequest $request)
     {
         $requestData = $request->validated();
+        Log::info(print_r($requestData,1));
         $review = new Review($requestData);
         $target = $this->targetModel->getModel($requestData['reviewable_type']);
-        if( $target && $target->where('id',  $requestData['reviewable_id']) -> first()){
-            $review->reviewable()->associate($target);
-        }else{
+        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
+            //$review->reviewable()->associate($target);
             return response()->error('Не задано, на кого отзыв.', 400);
         }
         $review->save();
