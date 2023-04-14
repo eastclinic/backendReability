@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class ApiDataTableRequest extends ApiAbstractRequest
 {
@@ -13,7 +14,16 @@ class ApiDataTableRequest extends ApiAbstractRequest
      */
     public function rules()
     {
-        return parent::rules() + ['mustSort' => ['nullable'],  'multiSort' => ['nullable'], ];
+        Log::info(print_r(parent::rules() + [
+                'mustSort' => ['nullable'],
+                'multiSort' => ['nullable'],
+                'sort.*' =>['nullable', 'string'],
+            ],1));
+        return parent::rules() + [
+            'mustSort' => ['nullable'],
+                'multiSort' => ['nullable'],
+                'sort.*' =>['nullable', 'string'],
+                ];
     }
 
     /**

@@ -23,6 +23,7 @@ class ApiAbstractRequest extends FormRequest
             'sortDesc.*' =>'string|nullable',
             'ids'=>'nullable',
             'id'=>'nullable',
+
         ];
     }
 
