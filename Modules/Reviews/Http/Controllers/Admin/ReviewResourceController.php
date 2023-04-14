@@ -66,12 +66,15 @@ class ReviewResourceController extends Controller
     public function store(StoreRequest $request)
     {
         $requestData = $request->validated();
-        Log::info(print_r($requestData,1));
+
         $review = new Review($requestData);
         $target = $this->targetModel->getModel($requestData['reviewable_type']);
         if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
-            //$review->reviewable()->associate($target);
             return response()->error('Не задано, на кого отзыв.', 400);
+        }else{
+           // Log::info(print_r(phpinfo(),1));
+            //todo check why not work associate
+            //$review->reviewable()->associate($target);
         }
         $review->save();
 
