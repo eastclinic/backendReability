@@ -32,5 +32,12 @@ class Target
     {
 
     }
+    public function getTargetMap()
+    {
+        return self::TARGET_MAP;
+    }
+    public function getTargetNameByClass($class):string {
+        return array_search($class, self::TARGET_MAP );
+    }
 
 }

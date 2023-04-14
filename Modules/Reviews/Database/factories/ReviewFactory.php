@@ -27,7 +27,7 @@ class ReviewFactory extends Factory
             'reviewable_type' => 'Modules\Doctors\Entities\Doctor',
             'reviewable_id' => $this->faker->numberBetween(1, 20),
             'text' => $this->faker->realText(),
-            'rating' => $this->faker->randomElement([3, 3.5, 4, 4.1, 4.2, 4.5, 4.7, 4.9, 5, 5]),
+            'rating' => $this->faker->randomElement([60, 65, 70, 75, 80, 85, 90, 95, 100, 100]),
             'published' => $this->faker->numberBetween(0,1),
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now')->getTimestamp(),
             'is_new' => $this->faker->numberBetween(0,1),

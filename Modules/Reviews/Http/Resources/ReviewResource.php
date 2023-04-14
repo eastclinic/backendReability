@@ -4,6 +4,7 @@ namespace Modules\Reviews\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Reviews\Entities\ReviewMessage;
+use Modules\Reviews\Http\Services\Target;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Modules\Reviews\Transformers\Admin\ReviewMessageResource;
 
@@ -23,7 +24,7 @@ class ReviewResource extends JsonResource
             'text' => $this->text,
             'rating' => $this->rating * 1,
             'reviewable_id' => $this->reviewable_id,
-            'reviewable_type' => $this->reviewable_type,
+            'reviewable_type' => (new Target())->getTargetNameByClass($this->reviewable_type),
             'author' => $this->author,
             'published' => (bool)$this->published,
             'is_new' => (bool)$this->is_new,
