@@ -4,7 +4,7 @@ namespace Modules\Health\Transformers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class Service extends JsonResource
+class ServiceResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,6 +14,9 @@ class Service extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            ];
     }
 }

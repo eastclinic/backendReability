@@ -2,19 +2,41 @@
 
 namespace Modules\Health\Http\Controllers\Admin;
 
+use App\Http\Requests\ApiDataTableRequest;
+use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\Response\ResponseService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Health\Entities\Service;
+use Modules\Health\Transformers\ServiceResource;
+
 
 class ServiceResourceController extends Controller
 {
+
+    private ApiDataTableService $QueryBuilderByRequest;
+
+    public function __construct(        ApiDataTableService $apiHandler)    {
+        $this->QueryBuilderByRequest = $apiHandler;
+    }
+
     /**
      * Display a listing of the resource.
-     * @return Renderable
+     * @param ApiDataTableRequest $request
+     * @return array|string
      */
-    public function index()
+    public function index(ApiDataTableRequest $request)
     {
-        return view('health::index');
+
+        $services = Service::query();
+
+        //Log::info('ReviewResourceController index!');
+        $services = $this->QueryBuilderByRequest->build( $services, $request );
+
+        //necessarily models to collection must get with pagination data:  collection($model->paginate())
+
+        return ResponseService::apiCollection( ServiceResource::collection($services->paginate()) );
     }
 
     /**
