@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('reviews_content', function (Blueprint $table) {
             $table->id();
-            $table->char('path')->nullable();
-            $table->char('upload_name')->nullable();
+            $table->char('file');
             $table->char('url')->nullable();
             $table->text('converted_content_info')->nullable();
             $table->nullableMorphs('contentable');

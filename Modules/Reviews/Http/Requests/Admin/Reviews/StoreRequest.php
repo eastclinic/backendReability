@@ -61,4 +61,12 @@ class StoreRequest extends FormRequest
 //            'rating.required' => 'Be sure to specify id of review target',
         ];
     }
+
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        throw new \Illuminate\Validation\ValidationException($validator, response()->json([
+            'errors' => $validator->errors(), 'ok' => false
+        ], 422));
+    }
+
 }

@@ -2,8 +2,11 @@
 
 namespace Modules\Reviews\Providers;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Modules\Reviews\Entities\Review;
+use Modules\Reviews\Observers\ReviewAttachObserver;
 
 class ReviewsServiceProvider extends ServiceProvider
 {
@@ -24,10 +27,13 @@ class ReviewsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
+
+        Review::observe(ReviewAttachObserver::class);
     }
 
     /**
@@ -98,6 +104,7 @@ class ReviewsServiceProvider extends ServiceProvider
      */
     public function provides()
     {
+
         return [];
     }
 

@@ -9,7 +9,13 @@ class ReviewMessage extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['review_id', 'parent_id', 'message', 'author_id', 'author'];
+    protected $fillable = [
+        'review_id',
+        'parent_id',
+        'message',
+        'author_id',
+        'author'
+    ];
 
     protected static function newFactory()
     {
@@ -20,8 +26,12 @@ class ReviewMessage extends Model
         return $this->morphMany(ReviewContent::class, 'contentable');
     }
 
-    public function getMorphClass()
+    /**
+     * Get the review that owns the message.
+     */
+    public function review()
     {
-        return 'reviewMessage';
+        return $this->belongsTo(Review::class);
     }
+
 }

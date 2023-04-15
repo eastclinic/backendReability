@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -39,15 +40,18 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
-        Response::macro('apiCollection', function ($resourceCollection ){
-            return response()->json(['ok' => true, 'items' => $resourceCollection,
-                //'total' => $resourceCollection->count(),
-                'count' => $resourceCollection->total(),
-                'per_page' => $resourceCollection->perPage(),
-                //'current_page' => $resourceCollection->currentPage(),
-                'total_pages' => $resourceCollection->lastPage(),
-//                'toSql' => $resourceCollection->toSql(),
+        Response::macro('apiCollection', function (\Illuminate\Http\Resources\Json\ResourceCollection $itemsCollection ){
+            return response()->json(['ok' => true, 'items' => $itemsCollection->items(),
+                //'total' => $itemsCollection->count(),
+                'count' => $itemsCollection->total(),
+                'per_page' => $itemsCollection->perPage(),
+                //'current_page' => $itemsCollection->currentPage(),
+                'total_pages' => $itemsCollection->lastPage(),
+//                'toSql' => $itemsCollection->toSql(),
             ]);
+        });
+        Response::macro('apiEntity', function ( $entity ){
+            return response()->json(['ok' => true, 'item' => $entity]);
         });
 
 

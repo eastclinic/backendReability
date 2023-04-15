@@ -3,8 +3,10 @@
 namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiRequestHandlers\QueryBuilderHandleApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\Response\ResponseService;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
@@ -12,17 +14,25 @@ use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Http\Resources\ReviewResource;
+use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
+use Illuminate\Support\Facades\Response;
 
 class ReviewResourceController extends Controller
 {
 
-    private QueryBuilderHandleApiDataTableService $QueryBuilderByRequest;
+    private ApiDataTableService $QueryBuilderByRequest;
     private Target $targetModel;
+    private ReviewService $reviewService;
 
-    public function __construct(QueryBuilderHandleApiDataTableService $apiHandler, Target $targetEntity)    {
+    public function __construct(
+        ReviewService $reviewService,
+        ApiDataTableService $apiHandler,
+        Target $targetEntity)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
+        $this->reviewService = $reviewService;
+
     }
 
     /**
@@ -37,12 +47,14 @@ class ReviewResourceController extends Controller
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
+        //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
-        $reviews->with('content');
+        $reviews->with('content')->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
-        return response()->apiCollection( ReviewResource::collection($reviews->paginate()) );
+//        return response()->apiCollection( $reviews );
+        return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
     /**
@@ -54,12 +66,15 @@ class ReviewResourceController extends Controller
     public function store(StoreRequest $request)
     {
         $requestData = $request->validated();
+
         $review = new Review($requestData);
         $target = $this->targetModel->getModel($requestData['reviewable_type']);
-        if( $target && $target->where('id',  $requestData['reviewable_id']) -> first()){
-            $review->reviewable()->associate($target);
-        }else{
+        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
             return response()->error('Не задано, на кого отзыв.', 400);
+        }else{
+           // Log::info(print_r(phpinfo(),1));
+            //todo check why not work associate
+            //$review->reviewable()->associate($target);
         }
         $review->save();
 
@@ -74,7 +89,9 @@ class ReviewResourceController extends Controller
      */
     public function show($id)
     {
-        //
+        $reviews = Review::query()->where('id', $id);
+        $reviews->with('content')->with('messages');
+        return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
     /**
@@ -86,6 +103,7 @@ class ReviewResourceController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
+        Log::info(print_r($request->validated(), 1));
         $review = Review::where('id', $id)->first();
         $review -> update($request->validated());
         return response()->okMessage('Change data.', 200);
@@ -98,13 +116,14 @@ class ReviewResourceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $review = Review::find($id);
-        if($review && $review->delete()){
-            return response()->okMessage('Removed review');
+        if($this->reviewService->delete($id)){
+            return ResponseService::okMessage('Removed review');
         }else{
-            return  response()->error('not found review', 404);
+            return  ResponseService::error('Failed to remove review');
         }
     }
+
+
     public function reviewableType() {
         $accessList = ['doctorReview' => ['id' => 'doctorReview', 'text' => 'Доктор']];
         //return array_values(array_intersect_key( $accessList, Relation::$morphMap ));

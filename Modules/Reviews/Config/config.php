@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'name' => 'Reviews'
+    'name' => 'Reviews',
+    'storeDisk' => 'reviewContent',
 ];

@@ -22,16 +22,17 @@ class ReviewMessageFactory extends Factory
      */
     public function definition()
     {
-
-        $authorId = $this->faker->numberBetween(0,5);
+        $parentId = (ReviewMessage::all()->count() > 0 ) ?  $this->faker->randomElement([ReviewMessage::all()->random()->id, 0, 0]) : 0;
+        //if exist parentID, then not possible 0 authorId
+        $authorId = ($parentId) ? $this->faker->numberBetween(1,5) : $this->faker->numberBetween(0,5);
         $authorName = (!$authorId) ? $this->faker->firstName() : null;
-        $parentId = (ReviewMessage::all()->count() > 0 ) ? ReviewMessage::all()->random()->id : null;
+
 
         return [
             'author' => $authorName,
             'author_id' => ($authorId) ? $authorId : null,
             'review_id' => Review::all()->random()->id,
-            'parent_id' =>  $parentId,
+            //'parent_id' =>  $parentId,
             'message' => $this->faker->realText(),
             'published' => $this->faker->numberBetween(0,1),
         ];
