@@ -6,7 +6,10 @@ use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Health\Entities\Iservice;
 use Modules\Health\Entities\Service;
+use Modules\Health\Entities\Variation;
+
 class HealthDatabaseSeeder extends Seeder
 {
     /**
@@ -24,8 +27,9 @@ class HealthDatabaseSeeder extends Seeder
 
         Schema::enableForeignKeyConstraints();
 
-
-        Service::factory(200)->create();
+        Iservice::factory(250)->create();
+        Variation::factory(250)->create();
+        Service::factory(50)->create();
 
     }
 }
