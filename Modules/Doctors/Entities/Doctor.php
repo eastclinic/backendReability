@@ -4,7 +4,9 @@ namespace Modules\Doctors\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
 use Modules\Doctors\Database\factories\DoctorFactory;
+use Modules\Doctors\Events\DoctorEvent;
 
 class Doctor extends Model
 {
@@ -26,5 +28,21 @@ class Doctor extends Model
     {
         return DoctorFactory::new();
     }
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+//        static::created(function ($doctor) {
+//            event(new DoctorEvent($doctor, 'created'));
+//        });
+//
+//        static::deleted(function ($doctor) {
+//            //event(new DoctorHandle($doctor, 'deleted'));
+//        });
+    }
+
+
 
 }

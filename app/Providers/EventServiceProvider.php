@@ -6,6 +6,8 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Modules\Doctors\Events\DoctorHandle;
+use Modules\Health\Listeners\SyncHealthDoctor;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Observers\ReviewObserver;
 
@@ -20,6 +22,7 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        //DoctorObserver::class=>[ SyncHealthDoctor::class]
     ];
 
     /**
@@ -29,7 +32,12 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        //parent::boot();
+
+//        Event::listen(
+//            DoctorObserver::class,
+//            [SyncHealthDoctor::class, 'handle']
+//        );
     }
 
     /**

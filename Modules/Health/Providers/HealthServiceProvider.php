@@ -3,7 +3,12 @@
 namespace Modules\Health\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Support\Facades\Event;
+use Modules\Doctors\Entities\Doctor;
+use Modules\Doctors\Events\DoctorEvent;
+use Modules\Health\Observers\DoctorObserver;
+use Modules\Reviews\Entities\Review;
+use Modules\Reviews\Observers\ReviewAttachObserver;
 
 class HealthServiceProvider extends ServiceProvider
 {
@@ -28,6 +33,13 @@ class HealthServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
+        //Doctor::observe(DoctorObserver::class);
+
+        Event::listen(
+            DoctorEvent::class,
+            [DoctorObserver::class, 'handle']
+        );
+
     }
 
     /**
@@ -111,4 +123,12 @@ class HealthServiceProvider extends ServiceProvider
         }
         return $paths;
     }
+    /**
+     * Классы подписчиков для регистрации.
+     *
+     * @var array
+     */
+    protected $subscribe = [
+        DoctorObserver::class,
+    ];
 }
