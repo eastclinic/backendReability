@@ -4,6 +4,7 @@ namespace Modules\Health\Database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Health\Entities\Iservice;
+use Modules\Health\Entities\Service;
 
 class VariationFactory extends Factory
 {
@@ -22,11 +23,14 @@ class VariationFactory extends Factory
     public function definition()
     {
         //todo move it out fabric or faster this code
-        $iserviceId = $this->faker->unique(true)->randomElement(Iservice::all()->pluck('id'));
+        //Iservice::count()
+        $iserviceId = $this->faker->numberBetween(1, Iservice::count());
+        $serviceId = $this->faker->numberBetween(1, Service::count());
         $names = array_column($this->nameVariations, 'name');
         return [
-            'name' => $this->faker->unique()->randomElement($names),
+            'name' => $this->faker->randomElement($names),
             'iservice_id' => $iserviceId,
+            'service_id' => $serviceId,
         ];
     }
 

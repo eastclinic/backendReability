@@ -15,4 +15,15 @@ class Variation extends Model
     {
         return \Modules\Health\Database\factories\VariationFactory::new();
     }
+
+    public function iservice()
+    {
+        return $this->belongsTo(Iservice::class);
+    }
+
+    public function doctors()
+    {
+        return $this->belongsToMany(Doctor::class);
+    }
+
 }

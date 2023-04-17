@@ -13,13 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('health_iservices', function (Blueprint $table) {
+        Schema::create('health_doctor_variation', function (Blueprint $table) {
             $table->id();
-            $table->char('name');
-            $table->unsignedBigInteger('iid')->default(0);
-            $table->float('price')->default(0);
-
+            $table->unsignedBigInteger('doctor_id');
+            $table->unsignedBigInteger('variation_id');
             $table->timestamps();
+
+            $table->foreign('doctor_id')->references('id')->on('doctors')->onDelete('cascade');
+            $table->foreign('variation_id')->references('id')->on('health_variations')->onDelete('cascade');
+
         });
     }
 
@@ -30,8 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('health_iservices');
-        Schema::enableForeignKeyConstraints();
+        Schema::dropIfExists('health_doctor_variation');
     }
 };

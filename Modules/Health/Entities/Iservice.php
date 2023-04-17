@@ -4,6 +4,7 @@ namespace Modules\Health\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Iservice extends Model
 {
@@ -15,5 +16,13 @@ class Iservice extends Model
     protected static function newFactory()
     {
         return \Modules\Health\Database\factories\IserviceFactory::new();
+    }
+
+    /**
+     * Get the comments for the blog post.
+     */
+    public function variations(): HasMany
+    {
+        return $this->hasMany(Variation::class);
     }
 }
