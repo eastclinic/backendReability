@@ -15,9 +15,10 @@ class DoctorObserver
      */
     public function deleted(Doctor $doctor)
     {
-//        $healthDoctors = HealthDoctor::where('doctor_id', $doctor->id);
-//        //Log::info(print_r($healthDoctors, 1));
-//        $healthDoctors->delete();
+        //todo handle error
+        //todo !test
+        $healthDoctors = HealthDoctor::where('doctor_id', $doctor->id);
+        $healthDoctors->delete();
 
 
     }
@@ -28,11 +29,11 @@ class DoctorObserver
      */
     public function created(Doctor $doctor)
     {
-
-//        $healthDoctor = new HealthDoctor();
-//        $healthDoctor->doctor_id = $doctor->id;
-//        //Log::info(print_r($doctor->id, 1));
-//        $healthDoctor->save();
+        //todo handle error
+        //todo !test
+        $healthDoctor = new HealthDoctor();
+        $healthDoctor->doctor_id = $doctor->id;
+        $healthDoctor->save();
     }
 
 
@@ -45,26 +46,35 @@ class DoctorObserver
         //
     }
 
-    /**
-     * Обработать событие входа пользователя в систему.
-     */
     public function handle($event) {
+        if(!$event->action) return true;
+        switch ($event->action){
+            case 'truncate':
+                //truncate Doctors
+                //todo handle error
+                //todo !test
+                HealthDoctor::truncate();
+                break;
+            case 'createdMass':
+                //several Doctors
 
-
-        if ($event->action == 'createdMass') {
-            Log::info(print_r('createdMass', 1));
-            Log::info(print_r($event, 1));
+                if($event->doctors->count()){
+                    //todo handle error
+                    //todo !test
+                    $event->doctors->map(function ($doctor){
+//                        Log::info(print_r($doctor, 1));
+                        HealthDoctor::create(['doctor_id' => $doctor->id]);
+                    });
+                }
+                break;
+            case 'deletedMass':
+                if($event->doctors->count()) {
+                    //todo handle error
+                    //todo !test
+                    HealthDoctor::whereIn('id', $event->doctors->pluck('id')->toArray())->delete();
+                }
+                break;
         }
-        else if ($event->action == 'created') {
-            Log::info(print_r('created', 1));
-        }else if ($event->action == 'deletingMass') {
-            Log::info(print_r('deletingMass', 1));
-            //Log::info(print_r($event->doctors, 1));
-        }else{
-            //Log::info(print_r($event, 1));
-        }
-
-
     }
 
     /**
@@ -74,10 +84,12 @@ class DoctorObserver
      * @return array
      */
     public function subscribe(Dispatcher $events): array
-    {Log::info(print_r('subscribe', 1));
+    {
 
         return [
             DoctorEvent::class => 'handle',
         ];
     }
+
+
 }

@@ -4,7 +4,9 @@ namespace Modules\Doctors\Events;
 
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Support\Facades\Log;
 use Modules\Doctors\Entities\Doctor;
+use Illuminate\Database\Eloquent\Collection;
 
 class DoctorEvent
 {
@@ -21,10 +23,8 @@ class DoctorEvent
      *
      * @return void
      */
-    public function __construct($doctors, $action)
+    public function __construct()
     {
-        $this->doctors = $doctors;
-        $this->action = $action;
     }
 
     /**
@@ -36,5 +36,25 @@ class DoctorEvent
     {
         return [];
     }
+
+    public function createdMass($doctors)
+    {
+        $this->doctors = $doctors;
+        $this->action = 'createdMass';
+        return $this;
+    }
+
+    public function deletedMass($doctors)
+    {
+        $this->doctors = $doctors;
+        $this->action = 'deletedMass';
+        return $this;
+    }
+    public function truncate()
+    {
+        $this->action = 'truncate';
+        return $this;
+    }
+
 
 }

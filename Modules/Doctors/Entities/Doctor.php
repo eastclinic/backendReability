@@ -30,19 +30,6 @@ class Doctor extends Model
     }
 
 
-    protected static function boot()
-    {
-        parent::boot();
-
-//        static::created(function ($doctor) {
-//            event(new DoctorEvent($doctor, 'created'));
-//        });
-//
-//        static::deleted(function ($doctor) {
-//            //event(new DoctorHandle($doctor, 'deleted'));
-//        });
-    }
-
 
 
 }
