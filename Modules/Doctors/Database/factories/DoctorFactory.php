@@ -9,6 +9,10 @@ class DoctorFactory extends Factory
 {
     protected $connection = 'MODX';
 
+    public function configure()
+    {
+        return $this->connection('MODX');
+    }
     /**
      * The name of the factory's corresponding model.
      *

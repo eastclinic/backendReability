@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Doctor extends Model
 
 {
-    protected $connection = 'sqlite';
 
     protected $table = 'health_doctors';
     //todo permission

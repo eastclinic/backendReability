@@ -20,20 +20,22 @@ class DoctorsDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        config(['database.default' => 'MODX']);
+//        config(['database.default' => 'MODX']);
         Schema::disableForeignKeyConstraints();
         //create event without model events
 
         //todo check completely truncate
         //todo !test
         Doctor::truncate();
+//        config(['database.default' => 'sqlite']);
 //        DB::table('modx_doc_doctors')->truncate();
         event((new DoctorEvent())->truncate());
         Schema::enableForeignKeyConstraints();
 
-
-        Doctor::factory(3)->create();
+//        config(['database.default' => 'MODX']);
+//        Doctor::factory(3)->create();
+        Doctor::factory()->count(3)->create();
+//        config(['database.default' => 'sqlite']);
         //event((new DoctorEvent())->createdMass($doctors));
-        config(['database.default' => 'sqlite']);
     }
 }

@@ -3,8 +3,10 @@
 namespace Modules\Health\Database\factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Log;
 use Modules\Health\Entities\Iservice;
 use Modules\Health\Entities\Service;
+use Modules\Health\Entities\Variation;
 
 class VariationFactory extends Factory
 {
@@ -24,13 +26,20 @@ class VariationFactory extends Factory
     {
         //todo move it out fabric or faster this code
         //Iservice::count()
-        $iserviceId = $this->faker->numberBetween(1, Iservice::count());
-        $serviceId = $this->faker->numberBetween(1, Service::count());
+//        $existVariationsIds = Variation::pluck('id')->all();
+//        Log::info(print_r($existVariationsIds,1));
+//        $iserviceId = Iservice::whereNotIn('id', Variation::all()->pluck('id'))->inRandomOrder()->pluck('id')->first();
+//        $serviceId = $this->faker->numberBetween(1, Service::count());0
         $names = array_column($this->nameVariations, 'name');
         return [
             'name' => $this->faker->randomElement($names),
-            'iservice_id' => $iserviceId,
-            'service_id' => $serviceId,
+            'iservice_id' => function () {
+                return Iservice::pluck('id')->unique()->random();
+            },
+//            'iservice_id' => $iserviceId,
+            'service_id' =>function () {
+                return Service::pluck('id')->unique()->random();
+            },
         ];
     }
 
