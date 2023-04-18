@@ -3,7 +3,7 @@
 namespace Modules\Doctors\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use App\Services\Response\ResponseService;
 
 
@@ -18,13 +18,13 @@ use App\Http\Requests\ApiDataTableRequest;
 class DoctorResourceController extends Controller
 {
 
-    private ApiDataTableService $QueryBuilderByRequest;
+    private ApiBindsService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
 
     public function __construct(
         //ReviewService $reviewService,
-        ApiDataTableService $apiHandler//,
+        ApiBindsService $apiHandler//,
         //Target $targetEntity
     )    {
         $this->QueryBuilderByRequest = $apiHandler;

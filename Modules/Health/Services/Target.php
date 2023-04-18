@@ -1,14 +1,16 @@
 <?php
 
 
-namespace Modules\Health\Services;
-use Modules\Health\Entities\Doctor;
+namespace Modules\Reviews\Http\Services;
+//use Modules\Reviews\Entities\DoctorReview;
+use Modules\Doctors\Entities\Doctor;
 
 
 class Target
 {
     private const TARGET_MAP = [
-        'doctor' => 'Modules\Health\Entities\Doctor',
+        //'doctorReview' => 'Modules\Reviews\Entities\DoctorReview',
+        'doctor' => 'Modules\Doctors\Entities\Doctor',
     ];
 
     public function getModel(string $type) {

@@ -2,7 +2,7 @@
 
 namespace Modules\Reviews\Http\Requests\Admin\Reviews;
 
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;

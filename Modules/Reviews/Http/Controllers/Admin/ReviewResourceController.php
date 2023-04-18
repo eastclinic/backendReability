@@ -3,7 +3,7 @@
 namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use App\Services\Response\ResponseService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
@@ -21,13 +21,13 @@ use Illuminate\Support\Facades\Response;
 class ReviewResourceController extends Controller
 {
 
-    private ApiDataTableService $QueryBuilderByRequest;
+    private ApiBindsService $QueryBuilderByRequest;
     private Target $targetModel;
     private ReviewService $reviewService;
 
     public function __construct(
         ReviewService $reviewService,
-        ApiDataTableService $apiHandler,
+        ApiBindsService $apiHandler,
         Target $targetEntity)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;

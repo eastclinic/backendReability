@@ -4,7 +4,7 @@ namespace Modules\Reviews\Http\Controllers\Admin;
 
 use App\Http\Requests\ApiDataTableRequest;
 use App\Http\Resources\ApiCollectionResource;
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -17,10 +17,10 @@ use Modules\Reviews\Http\Services\Target;
 class MessageResourceController extends Controller
 {
 
-    private ApiDataTableService $QueryBuilderByRequest;
+    private ApiBindsService $QueryBuilderByRequest;
     private Target $targetModel;
 
-    public function __construct(ApiDataTableService $apiHandler, Target $targetEntity)    {
+    public function __construct(ApiBindsService $apiHandler, Target $targetEntity)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
     }

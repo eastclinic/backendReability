@@ -2,7 +2,7 @@
 
 namespace Modules\Reviews\Http\Controllers\Admin;
 
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -11,7 +11,7 @@ use Modules\Reviews\Http\Services\Target;
 class TargetTypeController extends Controller
 {
     private Target $targetModel;
-    public function __construct(ApiDataTableService $apiHandler, Target $targetEntity)    {
+    public function __construct(ApiBindsService $apiHandler, Target $targetEntity)    {
         $this->targetModel = $targetEntity;
     }
 

@@ -3,7 +3,7 @@
 namespace Modules\Health\Http\Controllers\Admin;
 
 use App\Http\Requests\ApiDataTableRequest;
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiBindsService;
 use App\Services\Response\ResponseService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -15,9 +15,9 @@ use Modules\Health\Transformers\ServiceResource;
 class ServiceResourceController extends Controller
 {
 
-    private ApiDataTableService $QueryBuilderByRequest;
+    private ApiBindsService $QueryBuilderByRequest;
 
-    public function __construct(        ApiDataTableService $apiHandler)    {
+    public function __construct(ApiBindsService $apiHandler)    {
         $this->QueryBuilderByRequest = $apiHandler;
     }
 

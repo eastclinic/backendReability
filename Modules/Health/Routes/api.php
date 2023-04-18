@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Modules\Health\Http\Controllers\Admin\ServiceResourceController;
+use Modules\Health\Http\Controllers\Admin\HealthVariationsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,10 +17,19 @@ use Modules\Health\Http\Controllers\Admin\ServiceResourceController;
 Route::group([
     'prefix'=>'health', 'middleware' => 'api',
 ], function ($router) {
+//    Route::get('binds',[HealthBindsController::class, 'binds']);
 
+    //todo handle {baseModel}/{secondModel} vars
     Route::apiResources([
-        'services'=>ServiceResourceController::class
+        'services'=>ServiceResourceController::class,
+        'binds/{baseModel}/{secondModel}'=> HealthVariationsController::class
     ]);
+
+
+
+
+
+
 
 
 });
