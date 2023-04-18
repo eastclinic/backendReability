@@ -34,7 +34,7 @@ class DoctorsDatabaseSeeder extends Seeder
 
 //        config(['database.default' => 'MODX']);
 //        Doctor::factory(3)->create();
-        Doctor::factory()->count(3)->create();
+        Doctor::factory()->count(20)->create();
 //        config(['database.default' => 'sqlite']);
         //event((new DoctorEvent())->createdMass($doctors));
     }

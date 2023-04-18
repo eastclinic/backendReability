@@ -4,6 +4,7 @@ namespace Modules\Health\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Doctor extends Model
 
@@ -16,9 +17,9 @@ class Doctor extends Model
 
 
 
-    public function variations()
+    public function variations(): BelongsToMany
     {
-        return $this->belongsToMany(Variation::class);
+        return $this->belongsToMany(Variation::class, 'health_doctor_variation');
     }
 
 }

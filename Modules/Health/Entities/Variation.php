@@ -23,7 +23,7 @@ class Variation extends Model
 
     public function doctors()
     {
-        return $this->belongsToMany(Doctor::class);
+        return $this->belongsToMany(Doctor::class, 'health_doctor_variation');
     }
 
 }

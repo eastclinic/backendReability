@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\Health\Entities\Doctor as Doctor ;
+use Modules\Health\Entities\Doctor as HealthDoctor ;
+use Modules\Doctors\Entities\Doctor;
 use Modules\Health\Entities\Iservice;
 use Modules\Health\Entities\Service;
 use Modules\Health\Entities\Variation;
@@ -16,6 +17,7 @@ use Faker\Factory as Faker;
 
 class HealthDatabaseSeeder extends Seeder
 {
+
     /**
      * Run the database seeds.
      *
@@ -40,10 +42,16 @@ class HealthDatabaseSeeder extends Seeder
         Iservice::factory(20)->create();
 
         Service::factory(50)->create();
+
         // Create 20 variations
         $variations = Variation::factory()->count(20)->create();
-        $doctors = Doctor::inRandomOrder()->take(10)->get();
-        Log::info(print_r($doctors,1));
+
+        $doctorsIds = Doctor::pluck('id')->all();
+        Log::info(print_r($doctorsIds,1));
+        if($doctorsIds)     $this->healthDoctorsSeed($doctorsIds);
+        $doctors = HealthDoctor::inRandomOrder()->take(10)->get();
+
+
         if($doctors){
             //        // Attach variations to doctors
             foreach ($doctors as $doctor) {
@@ -54,5 +62,11 @@ class HealthDatabaseSeeder extends Seeder
 
 
 
+    }
+
+    protected function healthDoctorsSeed($doctorsIds){
+        foreach ($doctorsIds as $doctorId) {
+            HealthDoctor::create(['doctor_id' => $doctorId]);
+        }
     }
 }
