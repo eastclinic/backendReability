@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Modules\Health\Http\Controllers\Admin\ServiceResourceController;
-use Modules\Health\Http\Controllers\Admin\HealthVariationsController;
+use Modules\Health\Http\Controllers\Admin\VariationsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,7 +22,7 @@ Route::group([
     //todo handle {baseModel}/{secondModel} vars
     Route::apiResources([
         'services'=>ServiceResourceController::class,
-        'binds/{baseModel}/{secondModel}'=> HealthVariationsController::class
+        'binds/{baseModel}/{secondModel}'=> VariationsController::class
     ]);
 
 
