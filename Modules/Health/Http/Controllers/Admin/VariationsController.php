@@ -3,6 +3,7 @@
 namespace Modules\Health\Http\Controllers\Admin;
 
 use App\Http\Requests\ApiDataTableRequest;
+use App\Services\Graph\RelationGraph;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -41,6 +42,12 @@ class VariationsController extends Controller
 
         $requestData = $request->validated();
 
+        $relationGraph = new RelationGraph();
+
+        //есть инфа, какие сущности нужны в итоге
+        //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
+        $relationGraph->withResponse(['service', 'doctor', 'variation']);
+
         if($requestData['doctorsIds']){
             $doctors = Doctor::whereIn('id', $requestData['doctorsIds'])->with('variations')->get();
         }
@@ -58,67 +65,18 @@ class VariationsController extends Controller
 
         }
 
-        $modelAliases = [
-            'doctor' => Doctor::class,
-            'service' => Service::class,
-            'variation' => Variation::class,
-            //'seoResource' => SeoResource::class,
-
-
-
-
-        ];
 
         //есть многомерный массив, в котором содержатся графы (псевдонимы моделей)
         $graphHealth = [['clinic', 'doctor'],
             [ 'seoResource', 'service', 'variation', 'doctor']
             ];
-        //есть инфа, какие сущности нужны в итоге
-        //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
-        $models = ['service', 'doctor', 'variation'];
+
 
         //определяем ветки графа которые подходят для relation mirror
         //для этого обходим массив $graph и определяем ветки, в которых есть более 1 элемента из массива $models
         //отфильтровали граф, по заданным узлам - моделям
         $graph = [ 'seoResource', 'service', 'variation', 'doctor'];
 
-        //запускаем прямой обход графа
-        //stalker forward
-        //graphForward = $this->stalkerForwardGraph($graph);
-        $graphModels = [];
-        $prevNode = null;
-        foreach($graph as $key => $node){
-            if(is_array($node)) {
-                //если node это массив запускаем рекурсию этой функции
-
-            }
-            elseif (is_string($node)){
-                //если node это строка, значит это псевдоним модели
-                //выбираем модели из бд
-                //при этом могут быть ограничения
-                // примеру $requestData['doctorsIds']
-                //или $requestData['servicesIds']
-                if($modelAliases['$node']){
-                    //если нашли класс соответствующий node
-                    //выборка из бд
-                    $graphModels[$node] = $model = $modelAliases['$node']::query();
-
-                    //проверяем, есть ли предыдущий node
-                    $prevModelAlias = (isset($graph[ $key - 1 ]) && $graph[ $key - 1 ] && is_string($graph[ $key - 1 ])) ? $graph[ $key - 1 ] : false;
-                    //проверяем есть ли следующий node
-                    $nextModelAlias = (isset($graph[ $key + 1 ]) && $graph[ $key + 1 ] && is_string( $graph[ $key + 1 ] )) ? $graph[ $key + 1 ] : false;
-                    //проверяем что бы у node model были методы $prevModelAlias и $nextModelAlias,
-                    // которые возвращают коллекции
-                    if(($prevModelAlias && !method_exists($model, $prevModelAlias.'Graph'))
-                        || ($nextModelAlias && !method_exists($model, $nextModelAlias.'Graph'))){
-                        //если метода нет, то заканчиваем с ошибкой. Это обязательное условие для работы графа
-                        break;
-                    }
-
-
-                }
-            }
-        }
 
 
 
