@@ -22,7 +22,7 @@ Route::group([
     //todo handle {baseModel}/{secondModel} vars
     Route::apiResources([
         'services'=>ServiceResourceController::class,
-        'binds/{baseModel}/{secondModel}'=> VariationsController::class
+        'binds'=> VariationsController::class
     ]);
 
 

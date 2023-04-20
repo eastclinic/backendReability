@@ -20,25 +20,18 @@ use Modules\Health\Services\Target;
 class VariationsController extends Controller
 {
     private ApiBindsService $QueryBuilderByRequest;
-    private Target $targetModel;
 
-    public function __construct(
-        ApiBindsService $apiHandler,
-        Target $targetEntity)    {
+    public function __construct( ApiBindsService $apiHandler )    {
         $this->QueryBuilderByRequest = $apiHandler;
-        $this->targetModel = $targetEntity;
+
 
     }
 
     /**
      * Display a listing of the resource.
      */
-    public function index(ApiBindsRequest $request, $baseModel, $secondModel)
+    public function index(ApiBindsRequest $request)
     {
-        $baseCollection = $this->targetModel->getModel($baseModel);
-        if( !$baseCollection ){
-            return response()->error('Do not have '.$baseModel.' collection', 400);
-        }
 
         $requestData = $request->validated();
 
@@ -46,7 +39,9 @@ class VariationsController extends Controller
 
         //есть инфа, какие сущности нужны в итоге
         //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
-        $relationGraph->withResponse(['service', 'doctor', 'variation']);
+        $relationGraph->withResponseModels([ Doctor::class, Service::class, Variation::class])->stalker();
+
+        return response()->json([ 'data' => [], 'code' => 200, 'ok' => true],200);
 
         if($requestData['doctorsIds']){
             $doctors = Doctor::whereIn('id', $requestData['doctorsIds'])->with('variations')->get();

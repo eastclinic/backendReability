@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Doctor extends Model
-
 {
 
     protected $table = 'health_doctors';
@@ -16,10 +15,24 @@ class Doctor extends Model
     //todo Need duplicate doctor_id to table health_doctor and sync data between doctors table
 
 
+    public array $relationsMethods = [Variation::class=> 'variations'];
 
     public function variations(): BelongsToMany
     {
         return $this->belongsToMany(Variation::class, 'health_doctor_variation');
     }
 
+
+    public function getRelationsMethods(){
+        return $this->relationsMethods;
+    }
+
+    public function getRelationMethodName($modelClass):string {
+        return ($this->relationsMethods[$modelClass]) ? $this->relationsMethods[$modelClass] : '';
+    }
+
+    public function a34()
+    {
+
+    }
 }
