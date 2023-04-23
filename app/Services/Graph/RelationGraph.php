@@ -15,6 +15,7 @@ class RelationGraph
     protected array $graph = [['seoServices', 'services', 'variation', 'doctor']];
     protected array $responseModels = [];
     protected array $graphFiltered = [];
+    protected array $graphModels = [];
 
     protected array $modelsWhere = [];
 
@@ -43,6 +44,7 @@ class RelationGraph
 
     public function withResponseModels( array $models):self    {
         $this->responseModels = $models;
+        $this->graphModels = $this->composeGraph($models);
         return $this;
     }
 
@@ -60,59 +62,39 @@ class RelationGraph
     //которые в свою очередь тоже будут посещены для поиска поля $relationsMethods
     //найденные модели будут помещены в массив с указанием их реляций с другими моделями
     //если модель из $relationsMethods уже будет в массиве, то такая реляция записывается но обхода по ней не будет
-        protected function composeGraph(array $responseModels):array {
+    protected function composeGraph(array $models):array {
+        $modelsWithRelations = [];
 
+    //можно не использовать ветки и вообще граф!
+    //у нас есть допустим массив по которому нужно построить ответ
+    //[ 'Modules\Health\Entities\Doctor', 'Modules\Health\Entities\Service', 'Modules\Health\Entities\Variation'];
+    //такой массив приходит уже от контроллера, который знает как преобразовать request данные в необходимые модели
+    //может быть какой то спец класс будет этим заниматься
+    //для каждой модели, ищем, relation  методы, которые возвращают коллекцию нужного типа
+    //т.е для модели Modules\Health\Entities\Doctor нашли метод variations() который возвращает коллекцию Modules\Health\Entities\Variation
+    //записываем в массив отфильтрованных моделей
+    //[Doctor, 'Modules\Health\Entities\Variation']
+    //[ Doctor::class=>['variations' => Variation::class], Service::class, Variation::class]
+    //для Doctor::class проверяем есть ли Service::class, Variation::class relation methods
+    //нашли 'variations'
+    //заполняем массив
+    //[ Doctor::class=>['variations' => Variation::class]]
+    //из массива $responseModels обработаны классы Doctor::class и Variation::class, остался Service::class
+    //для класса Service::class находим 'variations' => Variation::class
 
-        //можно не использовать ветки и вообще граф!
-        //у нас есть допустим массив по которому нужно построить ответ
-        //[ 'Modules\Health\Entities\Doctor', 'Modules\Health\Entities\Service', 'Modules\Health\Entities\Variation'];
-        //такой массив приходит уже от контроллера, который знает как преобразовать request данные в необходимые модели
-        //может быть какой то спец класс будет этим заниматься
-        //для каждой модели, ищем, relation  методы, которые возвращают коллекцию нужного типа
-        //т.е для модели Modules\Health\Entities\Doctor нашли метод variations() который возвращает коллекцию Modules\Health\Entities\Variation
-        //записываем в массив отфильтрованных моделей
-        //[Doctor, 'Modules\Health\Entities\Variation']
-        //[ Doctor::class=>['variations' => Variation::class], Service::class, Variation::class]
-        //для Doctor::class проверяем есть ли Service::class, Variation::class relation methods
-        //нашли 'variations'
-        //заполняем массив
-        //[ Doctor::class=>['variations' => Variation::class]]
-        //из массива $responseModels обработаны классы Doctor::class и Variation::class, остался Service::class
-        //для класса Service::class находим 'variations' => Variation::class
+        foreach ($models as $model){
 
+            $modelsWithRelations[$model] = ($model::RELATIONS_METHODS) ? $model::RELATIONS_METHODS : [];
+        }
 
-
+        Log::info(print_r($modelsWithRelations,1));
+        return  $modelsWithRelations;
 
         return [
             Doctor::class=>['variations' => Variation::class],
             Service::class=>['variations' => Variation::class],
             Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
         ];
-
-
-
-
-
-
-        foreach ($responseModels as $modelClass){
-
-            $d = $modelClass::all();
-            if($d)
-                foreach ($d as $m){
-                    dd($m);
-                }
-            //$modelRelationsMethods = get_class_methods( $modelClass );
-            //$d->getRelations();
-            Log::info(print_r($d->getRelations(), 1));
-
-        }
-
-
-
-
-        $graphFiltered = [ 'service', 'variation', 'doctor'];//mock
-
-        return $graphFiltered;
     }
 
 
@@ -194,99 +176,59 @@ class RelationGraph
         return $this->stalker($graph);
     }
 
-    public function filterByBaseModel($graph, $id):array {
-        $filteredGraph = [];
-        $baseModel = key($graph);
-
-        foreach ($graph as $model => $collection) {
-            foreach ($collection as $id => $relations) {
-                if ($model === $baseModel) {
-                    $filteredGraph[$model][$id] = $collection;
-                }
-                if(!$collection)  continue;
-                //if($model === $baseModel && )
-                if (!$relations) {
-                    throw new \Exception('error relations for '.$model.'. Check relationsMethods array, this model');
-                }
-                foreach ($relations as $relationModel => $relationsIds) {
-                    if($filteredGraph[$relationModel]){
-                        //array intersect
-                        $totalRelationsIds = array_intersect($filteredGraph[$relationModel], $relationsIds);
-                        $filteredGraph[$relationModel] = ( !$filteredGraph[$relationModel] ) ? $relationsIds : array_intersect($filteredGraph[$relationModel], $relationsIds);
-
-                        //if(!$totalRelationsIds)   todo тут надо придумать что делать если стала пустая модель для выдачи
-                        //либо
-                    }
-
-                }
-
-            }
-        }
-        return $graph;
-    }
-
-
-    public function stalker(array $graph, $modelBegin = null): array    {
-        $responseStructure = [];
-
-
-        foreach ($graph as $model => $collection) {
-            if (!$collection) continue;
-            foreach ($collection as $id => $relations) {
-                if (!$relations) {
-                    $responseStructure[$id] = [];
-                    continue;
-                }
-                foreach ($relations as $relationModel => $relationsIds) {
-
-                }
-
-            }
-
-
-//            if(is_array($node)) {
-//                //если node это массив запускаем рекурсию этой функции
-//            }
-//            elseif (is_string($node)){
-//                //если node это строка, значит это псевдоним модели
-//                //выбираем модели из бд
-//                if($this->modelAliases[$node]){
-//                    //если нашли класс соответствующий node
-//                    if($this->modelsWhere[$node])
-//                    //выборка из бд
-//                    $graphModels[$node] = $model = ( $this->modelsWhere[$node] ) ? $this->modelsWhere[$node] : $this->modelAliases[$node]::query();
+//    public function filterByBaseModel($graph, $id):array {
+//        $filteredGraph = [];
+//        $baseModel = key($graph);
 //
-//                    //в $this->modelsWhere[Doctor::class] уже может быть фильтрация по pivot
-//                    //поэтом нужно проверить, вызывался ли метод реляции, или нет
-//                    //методы реляции хранятся в $this->createGraph()
+//        foreach ($graph as $model => $collection) {
+//            foreach ($collection as $id => $relations) {
+//                if ($model === $baseModel) {
+//                    $filteredGraph[$model][$id] = $collection;
+//                }
+//                if(!$collection)  continue;
+//                //if($model === $baseModel && )
+//                if (!$relations) {
+//                    throw new \Exception('error relations for '.$model.'. Check relationsMethods array, this model');
+//                }
+//                foreach ($relations as $relationModel => $relationsIds) {
+//                    if($filteredGraph[$relationModel]){
+//                        //array intersect
+//                        $totalRelationsIds = array_intersect($filteredGraph[$relationModel], $relationsIds);
+//                        $filteredGraph[$relationModel] = ( !$filteredGraph[$relationModel] ) ? $relationsIds : array_intersect($filteredGraph[$relationModel], $relationsIds);
 //
-//
-//                    //проверяем есть ли методы - алиасы моделей
-//                    $modelRelationsMethods = get_class_methods( $model );
-//                    $modelRelationsMethods = array_combine( $modelRelationsMethods, $modelRelationsMethods );
-//
-//
-//
-//                    //проверяем, есть ли предыдущий node
-//                    $prevModelAlias = (isset($graph[ $key - 1 ]) && $graph[ $key - 1 ] && is_string($graph[ $key - 1 ])) ? $graph[ $key - 1 ] : false;
-//                    //проверяем есть ли следующий node
-//                    $nextModelAlias = (isset($graph[ $key + 1 ]) && $graph[ $key + 1 ] && is_string( $graph[ $key + 1 ] )) ? $graph[ $key + 1 ] : false;
-//                    //проверяем что бы у node model были методы $prevModelAlias и $nextModelAlias,
-//                    // которые возвращают коллекции
-//                    if(($prevModelAlias && !method_exists($model, $prevModelAlias.'Graph'))
-//                        || ($nextModelAlias && !method_exists($model, $nextModelAlias.'Graph'))){
-//                        //если метода нет, то заканчиваем с ошибкой. Это обязательное условие для работы графа
-//                        break;
+//                        //if(!$totalRelationsIds)   todo тут надо придумать что делать если стала пустая модель для выдачи
+//                        //либо
 //                    }
 //
-//
 //                }
+//
 //            }
+//        }
+//        return $graph;
+//    }
+
+
+    protected function stalker(array $discoveryMap, $cityBegin = null, array $roadsBegin = null): array    {
+        $terrain = ($cityBegin && $roadsBegin) ? array_intersect_key(array_combine($roadsBegin, $roadsBegin),$this->graph) : $this->graph;
+
+        foreach ($terrain as $city => $roads) {
+            if($discoveryMap[$city] || !$roads) continue;
+
+            foreach ($roads as $street => $nearCities) {
+                if (!$nearCities) {
+                    $discoveryMap[$city] = [];
+                    continue;
+                }
+                foreach ($nearCities as $nearCity => $nearCityRoads) {
+                    if ( $discoveryMap[$nearCity] || !$nearCityRoads ) {
+                        continue;
+                    }
+                    $discoveryMap[$city] = $this->stalker($discoveryMap, $nearCity, $nearCityRoads );
+                }
+            }
         }
 
-
-
-        return [];
+        return $discoveryMap;
     }
 
 

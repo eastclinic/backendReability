@@ -11,6 +11,8 @@ class Variation extends Model
 
     protected $fillable = ['name'];
     protected $table = 'health_variations';
+    public const RELATIONS_METHODS = [Doctor::class=> 'doctors', Service::class => 'services'];
+
     protected static function newFactory()
     {
         return \Modules\Health\Database\factories\VariationFactory::new();
@@ -24,6 +26,11 @@ class Variation extends Model
     public function doctors()
     {
         return $this->belongsToMany(Doctor::class, 'health_doctor_variation');
+    }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'health_service_variation');
     }
 
 }
