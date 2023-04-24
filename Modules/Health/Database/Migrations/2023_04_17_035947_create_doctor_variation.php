@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('doctor_id');
             $table->unsignedBigInteger('variation_id');
+            $table->float('custom_price')->default(0);
             $table->timestamps();
 
             $table->foreign('doctor_id')->references('id')->on('health_doctors')->onDelete('cascade');

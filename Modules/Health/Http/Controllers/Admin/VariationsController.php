@@ -39,8 +39,11 @@ class VariationsController extends Controller
 
         //есть инфа, какие сущности нужны в итоге
         //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
-        $relationGraph->withResponseModels([ Doctor::class, Service::class, Variation::class]);
-        Log::info(print_r($relationGraph,1));
+        $r = $relationGraph->withResponseModels([ Doctor::class, Service::class, Variation::class])
+            ->withModel(Doctor::whereIn('id', [1, 2]))
+            ->get();
+
+        //Log::info(print_r($r,1));
         return response()->json([ 'data' => [], 'code' => 200, 'ok' => true],200);
 
         if($requestData['doctorsIds']){

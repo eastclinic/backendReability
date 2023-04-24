@@ -13,23 +13,25 @@ class RelationGraph
 {
 
     protected array $graph = [['seoServices', 'services', 'variation', 'doctor']];
+    protected array $graphData = [];
     protected array $responseModels = [];
     protected array $graphFiltered = [];
     protected array $graphModels = [];
+    protected array $graphIds = [];
 
     protected array $modelsWhere = [];
 
 
-    protected array         $modelAliases = [
-        'doctor' => Doctor::class,
-        'service' => Service::class,
-        'variation' => Variation::class,
-        //'seoResource' => SeoResource::class,
-
-
-
-
-    ];
+//    protected array         $modelAliases = [
+//        'doctor' => Doctor::class,
+//        'service' => Service::class,
+//        'variation' => Variation::class,
+//        //'seoResource' => SeoResource::class,
+//
+//
+//
+//
+//    ];
 
     protected array $modelClassToAlias = [
         'Modules\Health\Entities\Doctor' => 'doctor',
@@ -48,20 +50,12 @@ class RelationGraph
         return $this;
     }
 
-    public function withModel($model):self {
-        $modelClass = get_class($model);
-        if(!$modelClass) return $this;
-        $modelAlias = $this->modelClassToAlias[$modelClass];
-        if(!$modelAlias) return $this;
-        $this->modelsWhere[$modelAlias] = $model;
+    public function withModel($builder):self {
+        $modelClass = get_class($builder->getModel());
+        $this->modelsWhere[$modelClass] = $builder;
         return $this;
     }
 
-
-    //по заданным моделям, будет обход, если найдено поле $relationsMethods то обнаружатся еще модели для обхода
-    //которые в свою очередь тоже будут посещены для поиска поля $relationsMethods
-    //найденные модели будут помещены в массив с указанием их реляций с другими моделями
-    //если модель из $relationsMethods уже будет в массиве, то такая реляция записывается но обхода по ней не будет
     protected function composeGraph(array $models):array {
         $modelsWithRelations = [];
 
@@ -87,77 +81,87 @@ class RelationGraph
             $modelsWithRelations[$model] = ($model::RELATIONS_METHODS) ? $model::RELATIONS_METHODS : [];
         }
 
-        Log::info(print_r($modelsWithRelations,1));
-        return  $modelsWithRelations;
 
-        return [
-            Doctor::class=>['variations' => Variation::class],
-            Service::class=>['variations' => Variation::class],
-            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
-        ];
+        return  $modelsWithRelations;
     }
 
 
-    protected function collectionsToIds( array $graph, array $collections ){
-
-        $graph = [
-            Doctor::class=>['variations' => Variation::class],
-            Service::class=>['variations' => Variation::class],
-            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
-        ];
-
-        $modelIds = [];
-        foreach ($graph as $node => $relations){
-            if(!$relations) continue;
-
-            foreach ($relations as $key => $relation) {
-
-            }
-
-            if(is_array($relations)) {
-                //если node это массив запускаем рекурсию этой функции
-                $modelIds[$node] = $this->collectionsToIds($path, $collections);
-            }else{
-                $modelIds[$node] = $collections[$node]->pluck('id');
-            }
-
+    public function get():array{
+        $this->graphData = $this->graphFillFromDB($this->graphModels);
+        if(! $this->graphData) {
+            return [];
         }
-        return $modelIds;
+//        $this->graphIds = $this->graphToIds();
+
+
+//        Log::info(print_r($this->graphData,1));
+        return [];
     }
 
 
     protected function graphFillFromDB( array $graph ) : array {
-        $graph = [
-            Doctor::class=>['variations' => Variation::class],
-            Service::class=>['variations' => Variation::class],
-            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
-        ];
-
         $graphCollections = [];
-        foreach ($graph as $model => $relations){
-            $graphCollections[$model] = ( $this->modelsWhere[$model] ) ? $this->modelsWhere[$model] : $this->modelAliases[$model]::query();
-            if( !$relations ) continue;
 
-            foreach ($relations as $relation => $relationModel) {
-                if($graphCollections[$relationModel] ){
-                    //если уже есть коллекция с данными из базы
-                    //todo нужно взять ids и распределить в текущую коллекцию с заданными ключами
+        foreach ($graph as $model => $relations){
+            $q = ( isset($this->modelsWhere[$model]) ) ?
+                $this->modelsWhere[$model] :
+                $model::query();
+
+            if( $relations ) {
+                foreach ($relations as $relationModel => $relation ) {
+                    if(isset($graphCollections[$relationModel]) ){
+                        //если уже есть коллекция с данными из базы
+                        //todo нужно взять ids и распределить в текущую коллекцию с заданными ключами
+                    }
+                    //todo select $relationModels, only ids with pivot data
+                    //todo проверить что запрос уже может быть настроен извне, на фильтрацию по текущему pivot
+                    //проверить как накладываются where по pivot
+                    $q -> with($relation);
                 }
-                //todo select $relationModels, only ids with pivot data
-                //todo проверить что запрос уже может быть настроен извне, на фильтрацию по текущему pivot
-                //проверить как накладываются where по pivot
-                $graphCollections[$model] -> with($relation);
             }
 
-            $graphCollections[$model]->get();
+
+
+            $graphCollections[$model] = $q->get();
 
         }
 
         //todo так же запускаем обратный обход графа, для дофильтрации
+        dd($graphCollections);
 
 
         return $graphCollections;
     }
+
+
+//    protected function graphToIds( array $graph, array $collections ){
+//
+//        $graph = [
+//            Doctor::class=>['variations' => Variation::class],
+//            Service::class=>['variations' => Variation::class],
+//            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
+//        ];
+//
+//        $modelIds = [];
+//        foreach ($graph as $node => $relations){
+//            if(!$relations) continue;
+//
+//            foreach ($relations as $key => $relation) {
+//
+//            }
+//
+//            if(is_array($relations)) {
+//                //если node это массив запускаем рекурсию этой функции
+//                $modelIds[$node] = $this->collectionsToIds($path, $collections);
+//            }else{
+//                $modelIds[$node] = $collections[$node]->pluck('id');
+//            }
+//
+//        }
+//        return $modelIds;
+//    }
+
+
 
 
 
