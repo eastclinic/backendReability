@@ -143,6 +143,9 @@ return [
         // 'store'  => 'redis',
     ],
 
+    'facades'  => [
+        'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
+    ],
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
@@ -194,7 +197,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
+        Barryvdh\Debugbar\ServiceProvider::class,
 
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
     ],

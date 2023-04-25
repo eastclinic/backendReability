@@ -25,7 +25,7 @@ class Variation extends Model
 
     public function doctors()
     {
-        return $this->belongsToMany(Doctor::class, 'health_doctor_variation');
+        return $this->belongsToMany(Doctor::class, 'health_doctor_variation')->withPivot(['custom_price']);
     }
 
     public function services()

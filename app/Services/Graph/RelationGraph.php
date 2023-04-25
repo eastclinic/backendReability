@@ -106,7 +106,7 @@ class RelationGraph
             $q = ( isset($this->modelsWhere[$model]) ) ?
                 $this->modelsWhere[$model] :
                 $model::query();
-
+            $q->addSelect('id'); //always use ids
             if( $relations ) {
                 foreach ($relations as $relationModel => $relation ) {
                     if(isset($graphCollections[$relationModel]) ){
@@ -116,18 +116,23 @@ class RelationGraph
                     //todo select $relationModels, only ids with pivot data
                     //todo проверить что запрос уже может быть настроен извне, на фильтрацию по текущему pivot
                     //проверить как накладываются where по pivot
-                    $q -> with($relation);
+                    $q -> with([$relation => function ($query) {
+                        $query->select('id');
+                    }]);
+//
                 }
             }
 
-
-
+            $_selectFields = $q->getQuery()->columns;
+            $_sql = $q->toSql();
+            $bindings = $q->getBindings();
             $graphCollections[$model] = $q->get();
+            $_r = $graphCollections[$model]->toArray();
+            $d = 9;
 
         }
-
+        //dd($graphCollections[$model]);
         //todo так же запускаем обратный обход графа, для дофильтрации
-        dd($graphCollections);
 
 
         return $graphCollections;
