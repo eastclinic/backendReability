@@ -108,7 +108,7 @@ class RelationGraph
                 $model::query();
             //if select fields filled add id
             if($selectFields = $q->getQuery()->columns){
-                if(array_search('id', $selectFields) === false){
+                if(!in_array('id', $selectFields)){
                     $q->addSelect('id'); //always use ids
                 }
             }
@@ -123,7 +123,20 @@ class RelationGraph
                     //todo проверить что запрос уже может быть настроен извне, на фильтрацию по текущему pivot
                     //проверить как накладываются where по pivot
                     $q -> with([$relation => function ($query) use($relation) {
-                        $query->select($relation.'id as id');
+
+//                        $queryBuilder = $query->getQuery();
+//                        $selectFields = $queryBuilder->columns;
+//
+//                        if($selectFields){
+//                            if(array_search('id', $selectFields) === false){
+//                                $query->addSelect('id'); //always use ids
+//                            }
+//                        }
+                        $prefix = $query->getQuery()->from;
+
+                        $query->addSelect($prefix.'.id as id');
+                        $t = $query->toSql();
+                        $f = 9;
                     }]);
 //
                 }
@@ -137,7 +150,7 @@ class RelationGraph
             $d = 9;
 
         }
-        //dd($graphCollections[$model]);
+//        dd($graphCollections);
         //todo так же запускаем обратный обход графа, для дофильтрации
 
 
