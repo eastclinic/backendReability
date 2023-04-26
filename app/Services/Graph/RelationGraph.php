@@ -18,6 +18,8 @@ class RelationGraph
     protected array $graphFiltered = [];
     protected array $graphModels = [];
     protected array $graphIds = [];
+    protected array $mapModelToAlias = [];
+    protected array $mapAliasToModel = [];
 
     protected array $modelsWhere = [];
 
@@ -46,7 +48,22 @@ class RelationGraph
 
     public function withResponseModels( array $models):self    {
         $this->responseModels = $models;
+
+        $this->composeGraphData($models);
+
+
+
+
+        return $this;
+    }
+
+    protected function composeGraphData($models):self {
         $this->graphModels = $this->composeGraph($models);
+        if(!$this->graphModels) return $this; //<<<<<<<<<<<<<<<<<
+        foreach ($this->graphModels as $graphModel => $graphRelations){
+            $this->mapModelToAlias[$graphModel] = $graphModel::MODEL_RELATION_ALIAS;
+            $this->mapAliasToModel[$graphModel::MODEL_RELATION_ALIAS] = $graphModel;
+        }
         return $this;
     }
 
@@ -92,7 +109,7 @@ class RelationGraph
 
 
 
-        $this->graphData = $this->graphToIds( $this->graphData );
+        //$this->graphData = $this->graphToIds( $this->graphData );
 
 
         if(! $this->graphData) {
@@ -150,7 +167,7 @@ class RelationGraph
             $modelArray = $this->collectionToKeyArray($c);
 
 
-            $graphModels[$model] = $modelArray;
+            $graphModels[$this->mapModelToAlias[$model]] = $modelArray;
             //add where relations models by get relations items ids
             if(isset($this->graphModels[$model])){
                 $currentRelationsIds = $this->getRelationsIds($modelArray, $this->graphModels[$model]);
@@ -164,6 +181,7 @@ class RelationGraph
         //$graphCollections = $this->reversFilterByIds($graphModelIds, $graphCollections);
 
         //$graphCollections = $this->setRelationsById($graphCollections);
+        return $graphModels;
         return $graphCollections;
     }
     protected function reversFilterByIds( array $graphModelIds, array $graphFromDb ):array {

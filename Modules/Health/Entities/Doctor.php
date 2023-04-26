@@ -16,6 +16,7 @@ class Doctor extends Model
 
 
     public const RELATIONS_METHODS = [Variation::class=> 'variations'];
+    public const MODEL_RELATION_ALIAS = 'doctors';
 
     public function variations(): BelongsToMany
     {

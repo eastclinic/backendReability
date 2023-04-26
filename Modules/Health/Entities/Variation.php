@@ -12,6 +12,7 @@ class Variation extends Model
     protected $fillable = ['name'];
     protected $table = 'health_variations';
     public const RELATIONS_METHODS = [Doctor::class=> 'doctors', Service::class => 'services'];
+    public const MODEL_RELATION_ALIAS = 'variations';
 
     protected static function newFactory()
     {

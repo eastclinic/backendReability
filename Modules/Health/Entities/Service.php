@@ -12,7 +12,10 @@ class Service extends Model
 
     protected $fillable = ['name'];
     protected $table = 'health_services';
+
     public const RELATIONS_METHODS = [Variation::class=> 'variations'];
+    public const MODEL_RELATION_ALIAS = 'services';
+
     protected static function newFactory()
     {
         return \Modules\Health\Database\factories\ServiceFactory::new();
