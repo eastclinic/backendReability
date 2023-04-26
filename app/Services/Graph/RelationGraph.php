@@ -115,6 +115,8 @@ class RelationGraph
         if(! $this->graphData) {
             return [];
         }
+
+        $st = $this->stalker(array_fill_keys(array_keys($this->graphData), null));
 //        $this->graphIds = $this->graphToIds();
 
 
@@ -281,31 +283,58 @@ class RelationGraph
             Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
         ];
 
-        return $this->stalker($graph);
+        return $r =  $this->stalker($graph);
     }
 
 
     protected function stalker(array $discoveryMap, $cityBegin = null, array $roadsBegin = null): array    {
-        $terrain = ($cityBegin && $roadsBegin) ? array_intersect_key(array_combine($roadsBegin, $roadsBegin),$this->graph) : $this->graph;
+        $terrain = $this->graphData;
+
+        if($cityBegin && $roadsBegin){
+            $roadsBegin = array_combine($roadsBegin, $roadsBegin);
+        }
 
         foreach ($terrain as $city => $roads) {
-            if($discoveryMap[$city] || !$roads) continue;
-
+            if((is_array($discoveryMap[$city]) && !$cityBegin) || !$roads) continue;
+            if($cityBegin && $city !== $cityBegin) continue;
             foreach ($roads as $street => $nearCities) {
-                if (!$nearCities) {
-                    $discoveryMap[$city] = [];
+                if($roadsBegin && !$roadsBegin[$street]) continue;
+                if (!$nearCities || !$openCities = $this->getRelationsByAlias($city)) {
+                    $discoveryMap[$city][$street] = [];
                     continue;
                 }
-                foreach ($nearCities as $nearCity => $nearCityRoads) {
-                    if ( $discoveryMap[$nearCity] || !$nearCityRoads ) {
-                        continue;
+                foreach ($openCities as $nearOpenCity){
+
+                    //next postfilter revers relation by exist models
+
+                    $nearOpenCityRoads = $nearCities[$nearOpenCity];
+                    if(!isset($discoveryMap[$city][$street])){
+                        $discoveryMap[$city][$street] = $nearCities;
                     }
-                    $discoveryMap[$city] = $this->stalker($discoveryMap, $nearCity, $nearCityRoads );
+
+                    if( !$nearOpenCityRoads && !$discoveryMap[$nearOpenCity]){
+                        $discoveryMap[$nearOpenCity] = [];
+                    }
+
+                    if( !$nearOpenCityRoads || $discoveryMap[$nearOpenCity]) continue;
+
+                    $discoveryMap = $this->stalker($discoveryMap, $nearOpenCity, array_keys($nearOpenCityRoads) );
+
                 }
             }
         }
 
         return $discoveryMap;
+    }
+
+
+    protected function getModelByAlias(string $alias){
+        return $this->mapAliasToModel[$alias];
+    }
+
+    protected function getRelationsByAlias(string $alias) : array {
+        if(!$model = $this->getModelByAlias($alias)) return  [];
+        return $this->graphModels[$model];
     }
 
 
