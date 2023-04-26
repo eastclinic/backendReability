@@ -87,7 +87,14 @@ class RelationGraph
 
 
     public function get():array{
-        $this->graphData = $this->graphFillFromDB($this->graphModels);
+        //fill data from db
+        $this->graphData = $this->graphFillFromDB();
+
+
+
+        $this->graphData = $this->graphToIds( $this->graphData );
+
+
         if(! $this->graphData) {
             return [];
         }
@@ -99,90 +106,145 @@ class RelationGraph
     }
 
 
-    protected function graphFillFromDB( array $graph ) : array {
-        $graphCollections = [];
 
-        foreach ($graph as $model => $relations){
+    protected function graphFillFromDB() : array {
+        $graphCollections = [];
+        $graphModels = [];
+        $graphModelIds = array_fill_keys(array_keys($this->graphModels), []);
+        foreach ($this->graphModels as $model => $relations){
             $q = ( isset($this->modelsWhere[$model]) ) ?
                 $this->modelsWhere[$model] :
                 $model::query();
             //if select fields filled add id
-            if($selectFields = $q->getQuery()->columns){
-                if(!in_array('id', $selectFields)){
-                    $q->addSelect('id'); //always use ids
-                }
+            $selectFields = $q->getQuery()->columns;
+            if(!$selectFields || !in_array('id', $selectFields)){
+                $q->addSelect('id'); //always use ids
             }
+
 
             if( $relations ) {
                 foreach ($relations as $relationModel => $relation ) {
+
                     if(isset($graphCollections[$relationModel]) ){
                         //если уже есть коллекция с данными из базы
                         //todo нужно взять ids и распределить в текущую коллекцию с заданными ключами
                     }
                     //todo select $relationModels, only ids with pivot data
                     //todo проверить что запрос уже может быть настроен извне, на фильтрацию по текущему pivot
-                    //проверить как накладываются where по pivot
                     $q -> with([$relation => function ($query) use($relation) {
-
-//                        $queryBuilder = $query->getQuery();
-//                        $selectFields = $queryBuilder->columns;
-//
-//                        if($selectFields){
-//                            if(array_search('id', $selectFields) === false){
-//                                $query->addSelect('id'); //always use ids
-//                            }
-//                        }
                         $prefix = $query->getQuery()->from;
-
                         $query->addSelect($prefix.'.id as id');
-                        $t = $query->toSql();
-                        $f = 9;
                     }]);
 //
                 }
             }
+            if(isset($graphModelIds[$model]) && $graphModelIds[$model]){
+                $q->whereIn('id', $graphModelIds[$model]);
+            }
 
-            $_selectFields = $q->getQuery()->columns;
-            $_sql = $q->toSql();
-            $bindings = $q->getBindings();
-            $graphCollections[$model] = $q->get();
-            $_r = $graphCollections[$model]->toArray();
-            $d = 9;
+            $s = $q->getQuery()->toSql();
+            $c = $q->get();
+            $graphCollections[$model] = $c;
 
+
+            $modelArray = $this->collectionToKeyArray($c);
+
+
+            $graphModels[$model] = $modelArray;
+            //add where relations models by get relations items ids
+            if(isset($this->graphModels[$model])){
+                $currentRelationsIds = $this->getRelationsIds($modelArray, $this->graphModels[$model]);
+                if($currentRelationsIds){
+                    $graphModelIds = array_merge_recursive($graphModelIds, $currentRelationsIds);
+                }
+            }
         }
-//        dd($graphCollections);
-        //todo так же запускаем обратный обход графа, для дофильтрации
+        //revers filter models by ids for consistent relations
+        //if necessary only fill relations of models
+        //$graphCollections = $this->reversFilterByIds($graphModelIds, $graphCollections);
 
-
+        //$graphCollections = $this->setRelationsById($graphCollections);
         return $graphCollections;
+    }
+    protected function reversFilterByIds( array $graphModelIds, array $graphFromDb ):array {
+        $graphModelCollections = $graphFromDb;
+        foreach ($graphModelIds as $model => $collectionIds){
+            if(isset($graphModelCollections[$model])){
+                $collectionIds = ($collectionIds)  ? $collectionIds : collect([]);
+                $graphModelCollections[$model] = $graphModelCollections[$model]->whereIn('id', $collectionIds);
+            }
+        }
+        return $graphModelCollections;
+    }
+
+    protected function collectionToKeyArray($modelCollection):array {
+        if( $modelCollection->count() < 1 ) return []; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        $modelArray = $modelCollection->toArray();
+        if( !$modelArray ) return []; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        $modelArray = array_combine(array_column($modelArray, 'id'), $modelArray);
+        foreach ($modelArray as $id => $item){
+            if(!$item) continue;
+            foreach ($item as $field=> $val){
+                if(is_array($val)){
+                    $modelArray[$id][$field] = array_combine(array_column($val, 'id'), $val);
+                }
+            }
+        }
+        return $modelArray;
+    }
+
+    protected function getRelationsIds($modelArray, $relationModels):array {
+        $arrayIds = [];
+        if( !$modelArray ) return []; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        foreach ($relationModels as $model => $field){
+            foreach ($modelArray as $id => $item){
+                if(isset($item[$field]) && $item[$field] && is_array($item[$field])) {
+                    $arrayIds[$model] = (isset($arrayIds[$model]) && $arrayIds[$model] ) ? $arrayIds[$model] + array_keys($item[$field]) : array_keys($item[$field]);
+                }
+            }
+        }
+
+        return $arrayIds;
     }
 
 
-//    protected function graphToIds( array $graph, array $collections ){
 //
-//        $graph = [
-//            Doctor::class=>['variations' => Variation::class],
-//            Service::class=>['variations' => Variation::class],
-//            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
-//        ];
+//    protected function graphToIds(array $graphCollections):array {
 //
-//        $modelIds = [];
-//        foreach ($graph as $node => $relations){
-//            if(!$relations) continue;
-//
-//            foreach ($relations as $key => $relation) {
-//
+//        $graphByIds = [];
+//        foreach ($graphCollections as $model => $collection){
+//            $relationsFields = [];
+//            //get relations fields
+//            if(isset($this->graphModels[$model]) && $this->graphModels[$model]){
+//                $relationsFields = array_values($this->graphModels[$model]);
+//            }
+//            if($relationsFields){
+//                foreach ($relationsFields as $field){
+//                    $f = $collection->variations;
+//                    $collection->setRelation($field, $collection->$field()->keyBy('id'));
+//                }
 //            }
 //
-//            if(is_array($relations)) {
-//                //если node это массив запускаем рекурсию этой функции
-//                $modelIds[$node] = $this->collectionsToIds($path, $collections);
-//            }else{
-//                $modelIds[$node] = $collections[$node]->pluck('id');
-//            }
+//            $r = $collection->keyBy('id')->toArray();
+//            $e = 98;
+////            if(!$relations && isset($graphCollections[$model])) {
+////                $graphByIds[$model] = $graphCollections[$model]->pluck('id');
+////                continue;
+////            }
+////
+////            foreach ($relations as $relationModel => $relation) {
+////
+////            }
+//
+////            if(is_array($relations)) {
+////                //если node это массив запускаем рекурсию этой функции
+////                $modelIds[$node] = $this->collectionsToIds($path, $collections);
+////            }else{
+////                $modelIds[$node] = $collections[$node]->pluck('id');
+////            }
 //
 //        }
-//        return $modelIds;
+//        return $graphByIds;
 //    }
 
 
@@ -203,37 +265,6 @@ class RelationGraph
 
         return $this->stalker($graph);
     }
-
-//    public function filterByBaseModel($graph, $id):array {
-//        $filteredGraph = [];
-//        $baseModel = key($graph);
-//
-//        foreach ($graph as $model => $collection) {
-//            foreach ($collection as $id => $relations) {
-//                if ($model === $baseModel) {
-//                    $filteredGraph[$model][$id] = $collection;
-//                }
-//                if(!$collection)  continue;
-//                //if($model === $baseModel && )
-//                if (!$relations) {
-//                    throw new \Exception('error relations for '.$model.'. Check relationsMethods array, this model');
-//                }
-//                foreach ($relations as $relationModel => $relationsIds) {
-//                    if($filteredGraph[$relationModel]){
-//                        //array intersect
-//                        $totalRelationsIds = array_intersect($filteredGraph[$relationModel], $relationsIds);
-//                        $filteredGraph[$relationModel] = ( !$filteredGraph[$relationModel] ) ? $relationsIds : array_intersect($filteredGraph[$relationModel], $relationsIds);
-//
-//                        //if(!$totalRelationsIds)   todo тут надо придумать что делать если стала пустая модель для выдачи
-//                        //либо
-//                    }
-//
-//                }
-//
-//            }
-//        }
-//        return $graph;
-//    }
 
 
     protected function stalker(array $discoveryMap, $cityBegin = null, array $roadsBegin = null): array    {
