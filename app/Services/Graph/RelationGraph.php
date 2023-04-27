@@ -20,6 +20,7 @@ class RelationGraph
     protected array $graphIds = [];
     protected array $mapModelToAlias = [];
     protected array $mapAliasToModel = [];
+    protected bool $groupById = false;
 
     protected array $modelsWhere = [];
 
@@ -48,15 +49,22 @@ class RelationGraph
 
     public function withResponseModels( array $models):self    {
         $this->responseModels = $models;
-
         $this->composeGraphData($models);
-
-
-
-
         return $this;
     }
 
+
+
+    public function withModel($builder):self {
+        $modelClass = get_class($builder->getModel());
+        $this->modelsWhere[$modelClass] = $builder;
+        return $this;
+    }
+
+    public function groupById():self   {
+        $this->groupById = true;
+        return $this;
+    }
     protected function composeGraphData($models):self {
         $this->graphModels = $this->composeGraph($models);
         if(!$this->graphModels) return $this; //<<<<<<<<<<<<<<<<<
@@ -66,13 +74,6 @@ class RelationGraph
         }
         return $this;
     }
-
-    public function withModel($builder):self {
-        $modelClass = get_class($builder->getModel());
-        $this->modelsWhere[$modelClass] = $builder;
-        return $this;
-    }
-
     protected function composeGraph(array $models):array {
         $modelsWithRelations = [];
 
@@ -106,18 +107,25 @@ class RelationGraph
     public function get():array{
         //fill data from db
         $this->graphData = $this->graphFillFromDB();
-
+        //полученные избыточные данные, можно преобразовать необходимый вид
 
 
         //$this->graphData = $this->graphToIds( $this->graphData );
 
 
-        if(! $this->graphData) {
-            return [];
-        }
+
 
         $st = $this->stalker(array_fill_keys(array_keys($this->graphData), null));
 //        $this->graphIds = $this->graphToIds();
+        if($this->groupById) {
+            return [];
+        }
+
+        //в цикле обходим первую модель по которой будет строится ответ
+        //для каждой сущности запускать сталкера
+
+        //полученный результат преобразовать в необходимый формат
+
 
 
 //        Log::info(print_r($this->graphData,1));
@@ -270,25 +278,9 @@ class RelationGraph
 
 
 
-
-
-    public function getRelationsData(array $graph){
-        $graph = [
-            Doctor::class => [
-                1 => [ Variation::class => [2, 15, 16, 18, 21, 58, 68] ],
-                2 => [ Variation::class => [22, 152, 162, 182, 212, 582, 682] ],
-                4 => [ Variation::class => [22, 152, 162, 182, 21, 58, 68] ],
-            ],
-            Service::class=>['variations' => Variation::class],
-            Variation::class => ['doctors' => Doctor::class, 'services' => Service::class],
-        ];
-
-        return $r =  $this->stalker($graph);
-    }
-
-
-    protected function stalker(array $discoveryMap, $cityBegin = null, array $roadsBegin = null): array    {
+    protected function stalker(array $discoveryMap, $cityBegin = null, array $roadsBegin = null, int $level = 0): array    {
         $terrain = $this->graphData;
+
 
         if($cityBegin && $roadsBegin){
             $roadsBegin = array_combine($roadsBegin, $roadsBegin);
@@ -298,7 +290,7 @@ class RelationGraph
             if((is_array($discoveryMap[$city]) && !$cityBegin) || !$roads) continue;
             if($cityBegin && $city !== $cityBegin) continue;
             foreach ($roads as $street => $nearCities) {
-                if($roadsBegin && !$roadsBegin[$street]) continue;
+                if($roadsBegin && !isset($roadsBegin[$street])) continue;
                 if (!$nearCities || !$openCities = $this->getRelationsByAlias($city)) {
                     $discoveryMap[$city][$street] = [];
                     continue;
@@ -318,7 +310,17 @@ class RelationGraph
 
                     if( !$nearOpenCityRoads || $discoveryMap[$nearOpenCity]) continue;
 
-                    $discoveryMap = $this->stalker($discoveryMap, $nearOpenCity, array_keys($nearOpenCityRoads) );
+                    $discoveryMap = $this->stalker($discoveryMap, $nearOpenCity, array_keys($nearOpenCityRoads),  $level + 1);
+
+                    //если сейчас верхний уровень стека вызова
+                    if($this->groupById && $level === 0 && array_search(null, $discoveryMap, true) === false){
+                        //и заполнены все необходимые модели
+                        $f = 89;
+                        //можно заполнять вложенные модели
+                        //т.к. одна текущая верхняя начальная модель
+                        //$discoveryMap = $this->distributeGraph($discoveryMap);
+
+                    }
 
                 }
             }
@@ -326,6 +328,73 @@ class RelationGraph
 
         return $discoveryMap;
     }
+
+    protected function distributeGraph(array $discoveryMap):array {
+        //можно заполнять вложенные модели
+        //т.к. одна текущая верхняя начальная модель
+        //но для этого случая, нужно будет уничтожать $discoveryMap, что бы следующее путишествие, было с чистого листа
+
+
+        //pivot data нужны только крайним моделям, т.е если встречается до этого, предыдуший можно удалить
+        $map = [];
+
+        $mapKeys = array_combine(array_keys($discoveryMap), array_keys($discoveryMap));
+        //revers loop map
+        end($discoveryMap);
+        while (($relation = key($discoveryMap)) !== null) {
+            prev($discoveryMap);
+            $prevKey = key($discoveryMap);
+            if(!$prevKey || !$discoveryMap[$prevKey]) continue;
+            if(!isset($map[$prevKey])) $map[$prevKey] = $discoveryMap[$prevKey];
+            //обходим текущие модели,
+            //выбираем для каждой модели ids предыдущих моделей
+            //для текущей модели:
+            //забираем все данные не реляции
+            //если предыдущая реляция, пропускаем
+            //если другие реляции, забираем только те, которые совпадают ids
+            foreach ($discoveryMap[$relation] as $modelId => $modelData){
+
+                if(!isset($modelData[$prevKey]) || !isset($discoveryMap[$prevKey])) continue;
+                $clearModelData = [];
+
+                foreach ($modelData as $modelField => $val){
+                    if($modelField === $prevKey) continue;
+                    $clearModelData[$modelField] = (isset($discoveryMap[$modelField]) && $discoveryMap[$modelField]) ? array_intersect_key($val, $discoveryMap[$modelField]) : $val;
+                }
+                //$ee =
+                //$prevModelIds = array_keys( array_intersect_key($map[$prevKey], $modelData[$prevKey]) );
+                //$f = $clearModelData;
+                foreach ($modelData[$prevKey] as $prevModelId => $prevModel){
+                    if(!isset($discoveryMap[$prevKey][$prevModelId])) continue;
+                    $map[$prevKey][$prevModelId][$relation][$modelId] += $clearModelData;
+                }
+            }
+
+
+
+//            foreach ($map[$prevKey] as $prevId => $prevData){
+//                foreach ($mapKeys as $rel){
+//                    if(!isset($prevData[$rel]) || !is_array($prevData[$rel]) || !is_array($discoveryMap[$rel])) continue;
+//                    //get items for merge relations and pivot
+//                    $relArray = array_intersect_key($map[$rel], $prevData[$rel]);
+//                    foreach ($prevData[$rel] as $k => $data){
+//                        //нужно не мержить, а передавать только необходимые данные
+//                        //т.е. соседние реляции не мержить, а остальные передавать только ids
+//                        foreach($relArray[$k] as $modelField => $modelData){
+//                            if($modelField === $prevKey)    continue;
+//                            if(!isset($map[$modelField]))   continue;
+//                            //нужны только те реляции для которых есть модели
+//                            $modelArray = array_intersect_key($modelData, $map[$modelField]);
+//                            $map[$prevKey][$prevId][$rel][$k] = array_merge($data, $relArray[$k]) ;
+//                        }
+//
+//                    }
+//                }
+//            }
+        }
+        return $map;
+    }
+
 
 
     protected function getModelByAlias(string $alias){

@@ -61,6 +61,18 @@ class HealthDatabaseSeeder extends Seeder
         }
 
 
+        $services = Service::inRandomOrder()->take(10)->get();
+
+
+        if($services){
+            //        // Attach variations to doctors
+            foreach ($services as $service) {
+                $variationsToAdd = $variations->random(5);
+                $service->variations()->attach($variationsToAdd);
+            }
+        }
+
+
 
     }
 
