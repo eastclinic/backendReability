@@ -318,7 +318,7 @@ class RelationGraph
                         $f = 89;
                         //можно заполнять вложенные модели
                         //т.к. одна текущая верхняя начальная модель
-                        //$discoveryMap = $this->distributeGraph($discoveryMap);
+                        $discoveryMap = $this->distributeGraph($discoveryMap);
 
                     }
 

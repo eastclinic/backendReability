@@ -36,6 +36,39 @@ class VariationsController extends Controller
         $requestData = $request->validated();
 
         $relationGraph = new RelationGraph();
+        $dd = Doctor::whereIn('id', [1])
+            ->with(
+                ['services',
+//                    'variations' => function ($query) {
+//                $prefix = $query->getQuery()->from;
+//                $query->addSelect($prefix.'.id as id')->groupBy('id');;
+//            },
+//                'variations.services' => function ($query) {
+//                $prefix = $query->getQuery()->from;
+//                $query->addSelect($prefix.'.id as id')->whereIn($prefix.'.id', [21,24])->groupBy($prefix.'.id');
+//                //$query->select('id', 'service_name');
+//            }
+            ])
+                //->with('variations.services')
+//                ->groupBy('created_at')
+//        ->has('variations.services')
+        ;
+
+
+
+        $ddd = $dd->get();
+        $ddd2 = $ddd
+//            ->groupBy('variations.doctors')
+//            ->groupBy('variations.services')
+//            ->groupBy('variations.services.id')
+        ;
+        $cl = [
+
+        ];
+//        $dd->getQuery()->toSql();
+        return response()->json([ 'data' => $ddd2->toArray(), 'code' => 200, 'ok' => true],200);
+
+
 
         //есть инфа, какие сущности нужны в итоге
         //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
