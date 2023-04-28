@@ -16,7 +16,7 @@ class ApiBindsService extends ApiRequestQueryBuilderAbstractService
         $requestData = $request->validated();
 
         $baseIds = ( isset($requestData['baseIds']) && $requestData['baseIds'] ) ? $requestData['baseIds'] : [];
-        $secondIds = ( isset($requestData['$secondIds']) && $requestData['$secondIds'] ) ? $requestData['$secondIds'] : [];
+        $secondIds = ( isset($requestData['secondIds']) && $requestData['secondIds'] ) ? $requestData['secondIds'] : [];
 
         if(!$baseIds ||! $secondIds){
             return $query;

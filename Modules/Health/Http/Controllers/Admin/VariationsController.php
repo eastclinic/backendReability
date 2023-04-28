@@ -38,20 +38,25 @@ class VariationsController extends Controller
         $relationGraph = new RelationGraph();
         $dd = Doctor::whereIn('id', [1])
             ->with(
-                ['services',
-
-
-                    'services.variations',
+                [
+                    //'services'=>['variations'],
 
 //                    'variations' => function ($query) {
 //                $prefix = $query->getQuery()->from;
 //                $query->addSelect($prefix.'.id as id')->groupBy('id');;
 //            },
-//                'variations.services' => function ($query) {
-//                $prefix = $query->getQuery()->from;
-//                $query->addSelect($prefix.'.id as id')->whereIn($prefix.'.id', [21,24])->groupBy($prefix.'.id');
-//                //$query->select('id', 'service_name');
-//            }
+                'services' => function ($query) {
+//                    $prefix = $query->getQuery()->from;
+                    $primaryKey = $query->getQuery()->getModel()->getKeyName();
+                    $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+                $query->addSelect($primaryKey)->whereIn($primaryKey, [21,24]);
+                //$query->select('id', 'service_name');
+            },
+            'services.variations' => function ($query) {
+                $primaryKey = $query->getQuery()->getModel()->getKeyName();
+                $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+                $query->addSelect($primaryKey);
+            },
             ])
                 //->with('variations.services')
 //                ->groupBy('created_at')

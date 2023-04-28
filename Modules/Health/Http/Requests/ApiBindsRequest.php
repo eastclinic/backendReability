@@ -16,7 +16,9 @@ class ApiBindsRequest extends ApiAbstractRequest
     public function rules()
     {
         return parent::rules() + [
-            'baseIds' => ['nullable'],
+            'baseModel'=>['required'],
+                'secondModel'=>['required'],
+                'baseIds' => ['nullable'],
                 'secondIds' => ['nullable'],
 //                'sort.*' =>['nullable', 'string'],
                 ];
