@@ -39,6 +39,10 @@ class VariationsController extends Controller
         $dd = Doctor::whereIn('id', [1])
             ->with(
                 ['services',
+
+
+                    'services.variations',
+
 //                    'variations' => function ($query) {
 //                $prefix = $query->getQuery()->from;
 //                $query->addSelect($prefix.'.id as id')->groupBy('id');;

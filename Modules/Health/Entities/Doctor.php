@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Doctor extends Model
 {
+    use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
     protected $table = 'health_doctors';
     //todo permission
@@ -23,19 +24,24 @@ class Doctor extends Model
         return $this->belongsToMany(Variation::class, 'health_doctor_variation')->withPivot(['custom_price']);
     }
 
-
-    public function services() {
-        //return $this->hasManyThrough(Service::class, Variation::class );
-
-
-        return $this->hasManyThrough(
-            Service::class,
-            Variation::class,
-            'doctor_id', // Foreign key on the variation table
-            'id', // Foreign key on the service table
-            'id', // Local key on the doctor table
-            'service_id' // Local key on the variation table
-        );
-
+    public function services()
+    {
+        return $this->hasManyDeep(Service::class, ['health_doctor_variation', Variation::class, 'health_service_variation']);
     }
+
+
+//    public function services() {
+//        //return $this->hasManyThrough(Service::class, Variation::class );
+//
+//
+//        return $this->hasManyThrough(
+//            Service::class,
+//            Variation::class,
+//            'doctor_id', // Foreign key on the variation table
+//            'id', // Foreign key on the service table
+//            'id', // Local key on the doctor table
+//            'service_id' // Local key on the variation table
+//        );
+//
+//    }
 }
