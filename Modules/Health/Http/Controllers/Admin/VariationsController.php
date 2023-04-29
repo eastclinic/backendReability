@@ -14,6 +14,7 @@ use Modules\Health\Entities\Service;
 use Modules\Health\Entities\Variation;
 use Modules\Health\Http\Requests\ApiBindsRequest;
 use Modules\Health\Services\ApiRequestQueryBuilders\ApiBindsService;
+use Modules\Health\Services\GraphRelations;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Health\Services\Target;
 
@@ -35,10 +36,22 @@ class VariationsController extends Controller
 
         $requestData = $request->validated();
 
+        //$this->QueryBuilderByRequest внутри себя выбирает класс который будет обрабатывать реквест, и добавлять условия к запросу
+        //у $request же можно спросить какой формат ответа выбрать - какой response
+
+        //get models and relations data
+        $modelAlias = new GraphRelations();
+
+        $baseModel = $request->getBaseModel();
+        $targetModel = $request->getTargetModel();
+        //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
         $relationGraph = new RelationGraph();
-        $dd = Doctor::whereIn('id', [1])
+        $dd = $baseModel::query()
+            ->with($targetModel)
+//            ->with($targetModel)
             ->with(
                 [
+
                     //'services'=>['variations'],
 
 //                    'variations' => function ($query) {
@@ -49,7 +62,7 @@ class VariationsController extends Controller
 //                    $prefix = $query->getQuery()->from;
                     $primaryKey = $query->getQuery()->getModel()->getKeyName();
                     $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
-                $query->addSelect($primaryKey)->whereIn($primaryKey, [21,24]);
+                $query->addSelect($primaryKey);//->whereIn($primaryKey, [21,24]);
                 //$query->select('id', 'service_name');
             },
             'services.variations' => function ($query) {
@@ -58,6 +71,7 @@ class VariationsController extends Controller
                 $query->addSelect($primaryKey);
             },
             ])
+
                 //->with('variations.services')
 //                ->groupBy('created_at')
 //        ->has('variations.services')
