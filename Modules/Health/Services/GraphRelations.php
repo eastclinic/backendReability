@@ -33,6 +33,11 @@ class GraphRelations
         Doctor::class => 'doctors',
     ];
 
+    public function getModels():array {
+
+        return array_keys(self::MODEL_INFO_MAP);
+    }
+
     public function getModelByAlias(string $alias) {
         return self::TARGET_MAP[$alias];
     }

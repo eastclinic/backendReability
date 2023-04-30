@@ -47,7 +47,7 @@ class VariationsController extends Controller
         $targetModel = $request->getTargetMethod();
         //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
         $relationGraph = new RelationGraph();
-        $queryBinds = $baseModel::query()
+        $queryBinds = $baseModel::query()->whereIn('id', [1])
             ->with($targetModel)
 //            ->with($targetModel)
 //            ->with(

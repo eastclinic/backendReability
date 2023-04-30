@@ -18,15 +18,12 @@ class BindsItemResource extends JsonResource
 
         $outArray = ['id' => $this->id,];
 
-        if(!$relationsMethods = (new GraphRelations())->getRelationsMethods()){
-            return $outArray;   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        }
-        foreach ($relationsMethods as $items){
-            if(isset($this->$items) ){
-                $outArray[$items] = ServiceResource::collection($this->whenLoaded($items));
-            }
-        }
+
+        if(isset($this->services))$outArray['services'] = ServiceResource::collection($this->whenLoaded('services'));
+        if(isset($this->variations))$outArray['variations'] = VariationResource::collection($this->whenLoaded('variations'));
+
 
         return $outArray;
     }
+
 }

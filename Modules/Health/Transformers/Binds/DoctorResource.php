@@ -3,9 +3,8 @@
 namespace Modules\Health\Transformers\Binds;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 
-class DoctorResource extends BindsItemResource
+class DoctorResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,14 +15,8 @@ class DoctorResource extends BindsItemResource
     public function toArray($request)
     {
         $outArray = ['id' => $this->id,];
-        if(isset($this->services)){
-            $outArray['services'] = ServiceResource::collection($this->whenLoaded('services'));
-        }
-        if(isset($this->variations)){
-            $outArray['variations'] = VariationResource::collection($this->whenLoaded('variations'));
-        }
-
-
-        return parent::toArray($request);
+//        if(isset($this->services))$outArray['services'] = ServiceResource::collection($this->whenLoaded('services'));
+        if(isset($this->variations))$outArray['variations'] = VariationResource::collection($this->variations)->toArray($request);
+        return $outArray;
     }
 }
