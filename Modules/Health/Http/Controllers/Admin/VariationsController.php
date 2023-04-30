@@ -14,6 +14,7 @@ use Modules\Health\Entities\Service;
 use Modules\Health\Entities\Variation;
 use Modules\Health\Http\Requests\ApiBindsRequest;
 use Modules\Health\Services\ApiRequestQueryBuilders\ApiBindsService;
+use Modules\Health\Services\ApiResponse\ApiBindsResponse;
 use Modules\Health\Services\GraphRelations;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Health\Services\Target;
@@ -43,34 +44,34 @@ class VariationsController extends Controller
         $modelAlias = new GraphRelations();
 
         $baseModel = $request->getBaseModel();
-        $targetModel = $request->getTargetModel();
+        $targetModel = $request->getTargetMethod();
         //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
         $relationGraph = new RelationGraph();
-        $dd = $baseModel::query()
+        $queryBinds = $baseModel::query()
             ->with($targetModel)
 //            ->with($targetModel)
-            ->with(
-                [
-
-                    //'services'=>['variations'],
-
-//                    'variations' => function ($query) {
-//                $prefix = $query->getQuery()->from;
-//                $query->addSelect($prefix.'.id as id')->groupBy('id');;
+//            ->with(
+//                [
+//
+//                    //'services'=>['variations'],
+//
+////                    'variations' => function ($query) {
+////                $prefix = $query->getQuery()->from;
+////                $query->addSelect($prefix.'.id as id')->groupBy('id');;
+////            },
+//                'services' => function ($query) {
+////                    $prefix = $query->getQuery()->from;
+//                    $primaryKey = $query->getQuery()->getModel()->getKeyName();
+//                    $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+//                $query->addSelect($primaryKey);//->whereIn($primaryKey, [21,24]);
+//                //$query->select('id', 'service_name');
 //            },
-                'services' => function ($query) {
-//                    $prefix = $query->getQuery()->from;
-                    $primaryKey = $query->getQuery()->getModel()->getKeyName();
-                    $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
-                $query->addSelect($primaryKey);//->whereIn($primaryKey, [21,24]);
-                //$query->select('id', 'service_name');
-            },
-            'services.variations' => function ($query) {
-                $primaryKey = $query->getQuery()->getModel()->getKeyName();
-                $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
-                $query->addSelect($primaryKey);
-            },
-            ])
+//            'services.variations' => function ($query) {
+//                $primaryKey = $query->getQuery()->getModel()->getKeyName();
+//                $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+//                $query->addSelect($primaryKey);
+//            },
+//            ])
 
                 //->with('variations.services')
 //                ->groupBy('created_at')
@@ -79,8 +80,8 @@ class VariationsController extends Controller
 
 
 
-        $ddd = $dd->get();
-        $ddd2 = $ddd
+        //$ddd = $dd->get();
+        //$ddd2 = $ddd
 //            ->groupBy('variations.doctors')
 //            ->groupBy('variations.services')
 //            ->groupBy('variations.services.id')
@@ -88,21 +89,20 @@ class VariationsController extends Controller
         $cl = [
 
         ];
-//        $dd->getQuery()->toSql();
-        return response()->json([ 'data' => $ddd2->toArray(), 'code' => 200, 'ok' => true],200);
 
+    $response = (new ApiBindsResponse())->forRequest($request)->withBindsQuery($queryBinds)->answer();
 
 
         //есть инфа, какие сущности нужны в итоге
         //для таблицы доктора - рутовые услуги (порядок важен, так будет определятся вложенность):
-        $r = $relationGraph->withResponseModels([ Doctor::class, Service::class, Variation::class])
-            ->withModel(
-                Doctor::whereIn('id', [1, 2])->select('name')       )
-            ->groupById()
-            ->get();
+//        $r = $relationGraph->withResponseModels([ Doctor::class, Service::class, Variation::class])
+//            ->withModel(
+//                Doctor::whereIn('id', [1, 2])->select('name')       )
+//            ->groupById()
+//            ->get();
 
         //Log::info(print_r($r,1));
-        return response()->json([ 'data' => [], 'code' => 200, 'ok' => true],200);
+        return response()->json([ 'data' => $response, 'code' => 200, 'ok' => true],200);
 
         if($requestData['doctorsIds']){
             $doctors = Doctor::whereIn('id', $requestData['doctorsIds'])->with('variations')->get();

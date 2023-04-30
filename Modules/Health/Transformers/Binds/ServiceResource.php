@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Health\Transformers;
+namespace Modules\Health\Transformers\Binds;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ServiceResource extends JsonResource
+class ServiceResource extends BindsItemResource
 {
     /**
      * Transform the resource into an array.
@@ -14,12 +14,6 @@ class ServiceResource extends JsonResource
      */
     public function toArray($request)
     {
-
-
-
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            ];
+        return parent::toArray($request);
     }
 }

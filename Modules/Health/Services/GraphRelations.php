@@ -20,6 +20,12 @@ class GraphRelations
         'variations' => Variation::class,
     ];
 
+    private const MODEL_INFO_MAP = [
+        Doctor::class => ['alias' => 'doctor', 'name' => 'Doctor'],
+        Service::class => ['alias' => 'service', 'name' => 'Service'],
+        Variation::class => ['alias' => 'variation', 'name' => 'Variation'],
+    ];
+
 
     private const RELATIONS_METHODS = [
         Service::class => 'services',
@@ -32,13 +38,19 @@ class GraphRelations
     }
 
     public function getAliasByModel( $model ) {
-        return array_search($model, self::TARGET_MAP);
+        return self::MODEL_INFO_MAP[$model]['alias'];
     }
 
     public function getRelationsMethod(string $model){
         return self::RELATIONS_METHODS[$model];
     }
 
+    public function getClassNameByModel(string $model):string {
+        return self::MODEL_INFO_MAP[$model]['name'];
+    }
 
+    public function getRelationsMethods():array {
+        return array_values( self::RELATIONS_METHODS );
+    }
 
 }
