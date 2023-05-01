@@ -19,9 +19,15 @@ class BindsItemResource extends JsonResource
         $outArray = ['id' => $this->id,];
 
 
-        if(isset($this->services))$outArray['services'] = ServiceResource::collection($this->whenLoaded('services'));
-        if(isset($this->variations))$outArray['variations'] = VariationResource::collection($this->whenLoaded('variations'));
-
+        if($this->relationLoaded('services') && $this->services->isNotEmpty()){
+            $outArray['services'] = ServiceResource::collection($this->services);
+        }
+        if($this->relationLoaded('variations') && $this->variations->isNotEmpty()){
+            $outArray['variations'] = VariationResource::collection($this->variations);
+        }
+        if($this->relationLoaded('doctors') && $this->doctors->isNotEmpty()){
+            $outArray['doctors'] = DoctorResource::collection($this->doctors);
+        }
 
         return $outArray;
     }

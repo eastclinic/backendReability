@@ -24,7 +24,10 @@ class DoctorService extends ApiBindsResponseAbstract
 
         $data = $this->query->get();
 
+
         if(!$responseClass = $this->getResponseClass()) return $data->toArray(); //<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 
         return $responseClass::collection( $data );
 
