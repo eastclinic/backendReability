@@ -44,13 +44,13 @@ class VariationsController extends Controller
         $modelAlias = new GraphRelations();
 
         $baseModel = $request->getBaseModel();
-        $targetModel = $request->getTargetMethod();
+//        $targetModel = $request->getTargetMethod();
         //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
         $relationGraph = new RelationGraph();
         $queryBinds = $baseModel::query()->whereIn('id', [1])
-            ->with('variations')
-            ->with('variations.'.$targetModel)
-            ->with('variations.doctors')
+
+//            ->with($targetModel)
+//            ->with($targetModel.'.variations')
 //            ->with('variations')
 //            ->with(
 //                [
@@ -80,17 +80,6 @@ class VariationsController extends Controller
 //        ->has('variations.services')
         ;
 
-
-
-        //$ddd = $dd->get();
-        //$ddd2 = $ddd
-//            ->groupBy('variations.doctors')
-//            ->groupBy('variations.services')
-//            ->groupBy('variations.services.id')
-        ;
-        $cl = [
-
-        ];
 
     $response = (new ApiBindsResponse())->forRequest($request)->withBindsQuery($queryBinds)->answer();
 
