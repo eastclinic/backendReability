@@ -5,32 +5,78 @@ namespace Modules\Health\Services\VariationsCalculators;
 
 
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
+use Modules\Health\Services\GraphRelations;
+use Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator\DoctorUseVariationCalculator;
 
 class VariationsCalculator
 {
 
     protected Collection $collection;
     protected bool $putData = false;
+    protected array $variationsPaths = [];
+    protected Collection $variationsIds;
+    protected Collection $doctorsIds;
+
 
     public function forCollection($collection):self {
         $this->collection = $collection;
-        //обходим коллекцию и находим где скрываются вариации
-        //сохраняем путь как добраться до вариации
-        //сохраняем части пути как добраться до вариации
-        //если среди пути есть доктора и вложенные вариации тогда возможны калькуляции
-        //если нет, тогда просто возвращаем коллекцию
-        //$first
-        $variationsPaths = $this->getVariationPathOfCollection($collection);
-        //нужны только те пути которые содержат doctors и variations
-        //если внешняя коллекция содержит доктора то отталкиваемся от нее
-        //либо ищем doctors в путях
-
+        //get paths for use in pluck()
+        $paths = $this->getPathOfCollection($collection);
+        //add base class to paths
+        $paths = $this->addBaseToPaths($paths, $collection);
+        //get variations after doctors paths
+        $variationsPaths = $this->getPathsByTargets(['doctors', 'variations'], $paths);
+        $doctorsPaths = array_unique($this->getPathsByTargets(['doctors'], $paths));
+        if(!$variationsPaths || !$doctorsPaths) return $this;
+        $this->variationsIds = $this->getIdsByPaths($variationsPaths, $collection);
+        $this->doctorsIds = $this->getIdsByPaths($doctorsPaths, $collection);
 
         return $this;
     }
 
+    protected function getPathsByTargets(array $targets, array $paths):array {
+        $outPaths = [];
+        foreach ($paths as $path){
+            $beginOffset = false;
+            $offset = false;
+            foreach ($targets as $target){
+                $tstrpos = strpos($path, $target, $offset);
+                if($beginOffset === false) $beginOffset = $tstrpos;
+                if($tstrpos === false) {
+                    $offset = false;
+                    break;
+                }
+                $offset += $tstrpos;
+            }
+            if($offset !== false && $beginOffset !== false){
+                $lastTarget = $targets[array_key_last($targets)];
+                $outPaths[] = substr($path, $beginOffset, $offset + strlen($lastTarget));
+            }
+        }
+
+        return $outPaths;
+    }
+
+    protected function getIdsByPaths(array $paths, Collection $collection):Collection{
+        $outCollection = collect([]);
+        foreach ($paths as $path){
+            $outCollection = $outCollection->merge($collection->pluck($path.'.*.id'));
+        }
+        return $outCollection->unique();
+    }
+
+
+
     public function get():Collection    {
+
+        if( !$this->variationsIds || !$this->doctorsIds )return $this->collection;
+
+        $doctorsUseVariations = (new DoctorUseVariationCalculator())
+        ->forDoctorsIds(collect([1]))
+        ->forVariationsIds(collect([2]))
+        ->get();
+
         return $this->collection;
     }
 
@@ -41,53 +87,36 @@ class VariationsCalculator
     }
 
     protected function putData():self {
-        $putData = true;
+        $this->putData = true;
         return $this;
     }
-
-
-    protected function getVariationPathOfCollection($collection, $level = 0) {
-        $baseModel = $collection->first();
-        $keys = $baseModel->getRelations();
-        if(!$keys) return '';
-        $outKeys = [];
-        foreach ($keys as $key => $relatedCollection){
-            $relKeys = $this->getVariationPathOfCollection($relatedCollection, $level+1);
-            if(!$relKeys) return $keys;
-            if(is_array($relKeys)){
-                foreach (array_keys($relKeys) as $k){
-                    $outKeys[$key.'.'.$k] = $key.'.'.$k;
-                }
-            }
-            if(is_string($relKeys)){
-                $outKeys[$key.'.'.$relKeys] = $key.'.'.$relKeys;
-            }
+    protected function addBaseToPaths( array $paths, $collection):array {
+        $outPaths = [];
+        $baseClass = $collection->first();
+        if(!$baseClass) return $paths;
+        $baseModelName = (new GraphRelations())->getRelationsMethod(get_class($baseClass));
+        if(!$baseModelName) return $paths;
+        foreach ($paths as $path){
+            $outPaths[] = $baseModelName.'.'.$path;
         }
 
-        if($level === 0){
-            $modelName = class_basename($baseModel);
-            $rKeys = $outKeys;
-            if($modelName === 'Doctor'){
-                $rKeys = array_map( function ($rk){
-                    $ttt = strrpos($rk, 'variations');
-                    return 'doctor.'.$rk;
-            }, $outKeys);
-            }
-            if($rKeys){
-                $outKeys = array_filter($rKeys, function ($key){
-                    $posDoc = strpos($key, 'doctor' );
-                    $strPosVar = strpos($key, 'variations' );
-                    return ($posDoc >= 0 && $strPosVar > $posDoc);
-                });
-            }
-            $outKeys = array_map( function ($rk){
-                return substr($rk, 0, strrpos($rk, 'variations')+10);
-            }, array_keys($outKeys));
-            return $outKeys;
-        }
-
-        return $outKeys;
+        return $outPaths;
     }
 
+
+    protected function getPathOfCollection($collection, $level = 0)
+    {
+        $keys = $collection->first()->getRelations();
+        if (!$keys) return [];
+        $outKeys = [];
+        foreach ($keys as $key => $relatedCollection) {
+            $relKeys = $this->getPathOfCollection($relatedCollection, $level + 1);
+            if (!$relKeys) return $keys;
+            foreach (array_keys($relKeys) as $k) {
+                $outKeys[$key . '.' . $k] = $key . '.' . $k;
+            }
+            return $outKeys;
+        }
+    }
 
 }
