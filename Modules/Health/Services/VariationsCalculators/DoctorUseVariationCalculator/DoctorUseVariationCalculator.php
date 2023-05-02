@@ -5,12 +5,18 @@ namespace Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalcul
 
 
 use Illuminate\Support\Collection;
+use Modules\Health\Entities\Doctor;
+use Modules\Health\Entities\Variation;
 
 class DoctorUseVariationCalculator
 {
     protected Collection $doctorsIds;
     protected Collection $variationsIds;
     protected bool $onlyMark = false;
+    protected array $calculatorsClasses = [
+        UseBySkill::class,
+//        UseByAlwaysMark::class
+    ];
     protected array $calculators = [];
 
 
@@ -38,6 +44,12 @@ class DoctorUseVariationCalculator
     }
 
     public function get():Collection {
+        if(!$this->calculators) {
+            $this->calculators = $this->getCalculators();
+        }
+        if(!$this->variationsIds || !$this->calculators) return collect([]);
+
+
 
         //выбираем коллекцию докторов и вариаций распределенных по доктора
         //для доктора нужен только id и  skill
@@ -58,11 +70,59 @@ class DoctorUseVariationCalculator
         //какую метку ставить решает сам калькулятор
 
         //межно дать возможность, извне управлять очередность и номенклатуру срабатывания калькуляторов
+        if($this->doctorsIds){
+            $query = Doctor::whereIn('id', $this->doctorsIds)->
+            with('variations', function ($query){
+                $primaryKey = $query->getQuery()->getModel()->getKeyName();
+                $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+                $query->whereIn($primaryKey, $this->variationsIds);
+            });
 
+
+        }else{
+            $query = Variation::whereIn('id', $this->variationsIds);
+
+        }
+        if($query)
+
+        foreach ($this->calculators as $calculator){
+            $query = $calculator->buildQuery($query);
+        }
+//        $collection = $query->get();
 
 
 
         return collect([1, 2]);
+    }
+
+    protected function calcByDoctors(){
+        $query = Doctor::whereIn('id', $this->doctorsIds)->
+        with('variations', function ($query){
+            $conditions = $this->getVariationsConditions();
+            $primaryKey = $query->getQuery()->getModel()->getKeyName();
+            $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
+            $query->whereIn($primaryKey, $this->variationsIds);
+        });
+
+
+
+    }
+
+    protected function getCalculators(){
+        if(!$this->calculatorsClasses) return [];
+        $calculators = [];
+        foreach ($this->calculatorsClasses as $calculatorClass){
+            $calculators[$calculatorClass] = new $calculatorClass();
+        }
+        return $calculators;
+    }
+
+    protected function caLcByVariations(){
+
+    }
+
+    protected function getVariationsConditions(){
+//        return $conditions;
     }
 
 }

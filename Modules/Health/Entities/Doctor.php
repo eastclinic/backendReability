@@ -5,6 +5,8 @@ namespace Modules\Health\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Doctors\Entities\Doctor as DoctorInfo;
 
 class Doctor extends Model
 {
@@ -28,4 +30,10 @@ class Doctor extends Model
     {
         return $this->hasManyDeep(Service::class, ['health_doctor_variation', Variation::class, 'health_service_variation']);
     }
+    public function info(): HasOne{
+
+        return $this->hasOne(DoctorInfo::class);
+    }
+
+
 }

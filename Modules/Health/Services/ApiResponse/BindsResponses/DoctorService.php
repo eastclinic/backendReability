@@ -29,7 +29,7 @@ class DoctorService extends ApiBindsResponseAbstract
         $target = $this->request->getTargetMethod(); //doctors or services
         $relations = [ ];
 
-        foreach ([$target, $target.'.variations', 'variations'] as $relation){
+        foreach ([$target, $target.'.variations'] as $relation){
             $relations[$relation] = function ($query) {
                 $primaryKey = $query->getQuery()->getModel()->getKeyName();
                 $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
@@ -39,17 +39,15 @@ class DoctorService extends ApiBindsResponseAbstract
         if($relations){
             $this->query->with($relations);
         }
-
-
+$ffr = $this->query->getModels();
+$ffr2 = $this->query->getModel();
+        $eagerLoad = $this->query->getEagerLoads();
 
         $data = $this->query->get();
         //из коллекции, выбрать ids докторов и ids вариаций
         //для выбранных ids сделать запрос в бд, для выборки связок доктор-вариация с pivot data
         //структура не задана точно, поэтому, сначала определяем где
-        $calc = (new VariationsCalculator())->forCollection($data);
-
-
-$fg  = $data->toArray();
+        $calc = (new VariationsCalculator())->forCollection($data)->get();
 
         if(!$responseClass = $this->getResponseClass()) return $data->toArray(); //<<<<<<<<<<<<<<<<<<<<<<<<
 

@@ -70,13 +70,14 @@ class VariationsCalculator
 
     public function get():Collection    {
 
-        if( !$this->variationsIds || !$this->doctorsIds )return $this->collection;
-
+        if( !$this->variationsIds || !$this->doctorsIds )   return $this->collection;
+        //need calculators
         $doctorsUseVariations = (new DoctorUseVariationCalculator())
         ->forDoctorsIds(collect([1]))
         ->forVariationsIds(collect([2]))
         ->get();
 
+        //merge collections
         return $this->collection;
     }
 

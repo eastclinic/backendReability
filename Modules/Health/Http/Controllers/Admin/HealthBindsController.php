@@ -19,7 +19,7 @@ use Modules\Health\Services\GraphRelations;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Health\Services\Target;
 
-class VariationsController extends Controller
+class HealthBindsController extends Controller
 {
     private ApiBindsService $QueryBuilderByRequest;
 
@@ -42,6 +42,7 @@ class VariationsController extends Controller
 
         //get models and relations data
         $modelAlias = new GraphRelations();
+
 
         $baseModel = $request->getBaseModel();
 //        $targetModel = $request->getTargetMethod();
@@ -79,6 +80,9 @@ class VariationsController extends Controller
 //                ->groupBy('created_at')
 //        ->has('variations.services')
         ;
+
+
+
 
 
     $response = (new ApiBindsResponse())->forRequest($request)->withBindsQuery($queryBinds)->answer();
