@@ -39,9 +39,7 @@ class DoctorService extends ApiBindsResponseAbstract
         if($relations){
             $this->query->with($relations);
         }
-$ffr = $this->query->getModels();
-$ffr2 = $this->query->getModel();
-        $eagerLoad = $this->query->getEagerLoads();
+
 
         $data = $this->query->get();
         //из коллекции, выбрать ids докторов и ids вариаций
@@ -50,8 +48,6 @@ $ffr2 = $this->query->getModel();
         $calc = (new VariationsCalculator())->forCollection($data)->get();
 
         if(!$responseClass = $this->getResponseClass()) return $data->toArray(); //<<<<<<<<<<<<<<<<<<<<<<<<
-
-
 
         return $responseClass::collection( $data );
 

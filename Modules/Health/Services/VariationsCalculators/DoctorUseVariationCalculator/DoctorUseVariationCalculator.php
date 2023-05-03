@@ -70,45 +70,21 @@ class DoctorUseVariationCalculator
         //какую метку ставить решает сам калькулятор
 
         //межно дать возможность, извне управлять очередность и номенклатуру срабатывания калькуляторов
-        if($this->doctorsIds){
-            $query = Doctor::whereIn('id', $this->doctorsIds)->
-            with('variations', function ($query){
-                $primaryKey = $query->getQuery()->getModel()->getKeyName();
-                $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
-                $query->whereIn($primaryKey, $this->variationsIds);
-            });
-
-
-        }else{
-            $query = Variation::whereIn('id', $this->variationsIds);
-
-        }
-        if($query)
+        $query = $this->getCalculatorQuery();
 
         foreach ($this->calculators as $calculator){
             $query = $calculator->buildQuery($query);
         }
-//        $collection = $query->get();
+
+        $data = $query->get();
 
 
 
         return collect([1, 2]);
     }
 
-    protected function calcByDoctors(){
-        $query = Doctor::whereIn('id', $this->doctorsIds)->
-        with('variations', function ($query){
-            $conditions = $this->getVariationsConditions();
-            $primaryKey = $query->getQuery()->getModel()->getKeyName();
-            $primaryKey = $query->getQuery()->from.'.'.$primaryKey;
-            $query->whereIn($primaryKey, $this->variationsIds);
-        });
 
-
-
-    }
-
-    protected function getCalculators(){
+    protected function getCalculators():array {
         if(!$this->calculatorsClasses) return [];
         $calculators = [];
         foreach ($this->calculatorsClasses as $calculatorClass){
@@ -117,12 +93,18 @@ class DoctorUseVariationCalculator
         return $calculators;
     }
 
-    protected function caLcByVariations(){
+    protected function getCalculatorQuery(){
+        if($this->doctorsIds){
+            $query = Doctor::whereIn('id', $this->doctorsIds)->
+            with('variations', function ($query){
+                $primaryKey = $query->getQuery()->from.'.'.$query->getQuery()->getModel()->getKeyName();
+                $query->whereIn($primaryKey, $this->variationsIds);
+            });
+        }else{
+            $query = Variation::whereIn('id', $this->variationsIds);
 
-    }
-
-    protected function getVariationsConditions(){
-//        return $conditions;
+        }
+        return $query;
     }
 
 }

@@ -22,54 +22,22 @@ class VariationsCalculator
     public function forCollection($collection):self {
         $this->collection = $collection;
         //get paths for use in pluck()
-        $paths = $this->getPathOfCollection($collection);
+        $graph = new GraphRelations();
+        $paths = $graph->getPathOfCollection($collection);
         //add base class to paths
-        $paths = $this->addBaseToPaths($paths, $collection);
+        $paths = $graph->addBaseToPaths($paths, $collection);
         //get variations after doctors paths
-        $variationsPaths = $this->getPathsByTargets(['doctors', 'variations'], $paths);
-        $doctorsPaths = array_unique($this->getPathsByTargets(['doctors'], $paths));
+        $variationsPaths = $graph->getPathsByTargets(['doctors', 'variations'], $paths);
+        $doctorsPaths = array_unique($graph->getPathsByTargets(['doctors'], $paths));
         if(!$variationsPaths || !$doctorsPaths) return $this;
-        $this->variationsIds = $this->getIdsByPaths($variationsPaths, $collection);
-        $this->doctorsIds = $this->getIdsByPaths($doctorsPaths, $collection);
+        $this->variationsIds = $graph->getIdsByPaths($variationsPaths, $collection);
+        $this->doctorsIds = $graph->getIdsByPaths($doctorsPaths, $collection);
 
         return $this;
     }
 
-    protected function getPathsByTargets(array $targets, array $paths):array {
-        $outPaths = [];
-        foreach ($paths as $path){
-            $beginOffset = false;
-            $offset = false;
-            foreach ($targets as $target){
-                $tstrpos = strpos($path, $target, $offset);
-                if($beginOffset === false) $beginOffset = $tstrpos;
-                if($tstrpos === false) {
-                    $offset = false;
-                    break;
-                }
-                $offset += $tstrpos;
-            }
-            if($offset !== false && $beginOffset !== false){
-                $lastTarget = $targets[array_key_last($targets)];
-                $outPaths[] = substr($path, $beginOffset, $offset + strlen($lastTarget));
-            }
-        }
-
-        return $outPaths;
-    }
-
-    protected function getIdsByPaths(array $paths, Collection $collection):Collection{
-        $outCollection = collect([]);
-        foreach ($paths as $path){
-            $outCollection = $outCollection->merge($collection->pluck($path.'.*.id'));
-        }
-        return $outCollection->unique();
-    }
-
-
-
     public function get():Collection    {
-
+        if( !$this->collection )return collect([]);
         if( !$this->variationsIds || !$this->doctorsIds )   return $this->collection;
         //need calculators
         $doctorsUseVariations = (new DoctorUseVariationCalculator())
@@ -91,33 +59,7 @@ class VariationsCalculator
         $this->putData = true;
         return $this;
     }
-    protected function addBaseToPaths( array $paths, $collection):array {
-        $outPaths = [];
-        $baseClass = $collection->first();
-        if(!$baseClass) return $paths;
-        $baseModelName = (new GraphRelations())->getRelationsMethod(get_class($baseClass));
-        if(!$baseModelName) return $paths;
-        foreach ($paths as $path){
-            $outPaths[] = $baseModelName.'.'.$path;
-        }
-
-        return $outPaths;
-    }
 
 
-    protected function getPathOfCollection($collection, $level = 0)
-    {
-        $keys = $collection->first()->getRelations();
-        if (!$keys) return [];
-        $outKeys = [];
-        foreach ($keys as $key => $relatedCollection) {
-            $relKeys = $this->getPathOfCollection($relatedCollection, $level + 1);
-            if (!$relKeys) return $keys;
-            foreach (array_keys($relKeys) as $k) {
-                $outKeys[$key . '.' . $k] = $key . '.' . $k;
-            }
-            return $outKeys;
-        }
-    }
 
 }

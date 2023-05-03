@@ -6,16 +6,30 @@ namespace Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalcul
 
 class UseBySkill
 {
+    protected bool $isUse = true;
+
     public function buildQuery($query) {
-        //данный калькулятор использует скилы доктора и вариации
-        //без обоих данных нет смысла
-
-
-        $className = $query->getModel();
+        //this calc use skills doctor and variation
+        //if in query not Doctor, it makes no sense
+        $className = get_class($query->getModel());
+        if($className !== 'Modules\Health\Entities\Doctor'){
+            $this->isUse = false;
+            return $query;
+        }
         $eagerLoads = $query->getEagerLoads();
-        //если главная модель доктор,
-//        if()
-        $fffe = 44;
+        $alias = $query->getQuery()->from;
+        if($eagerLoads){
+            if($eagerLoads['variations']){
+                $eagerLoads['variations']->addSelect($alias.'.skill');
+            }else{
+                $query->with('variations', function ($query) use ( $alias ){
+                    $query->addSelect($alias.'.skill');
+                });
+            }
+
+        }
+        return $query;
     }
+
 
 }
