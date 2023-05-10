@@ -15,8 +15,8 @@ class DoctorVariationsCalculator
     protected Collection $collection;
     protected bool $putData = false;
     protected array $variationsPaths = [];
-    protected Collection $variationsIds;
-    protected Collection $doctorsIds;
+    protected ?Collection $variationsIds = null;
+    protected ?Collection $doctorsIds = null;
 
 
 
@@ -31,6 +31,9 @@ class DoctorVariationsCalculator
         $variationsPaths = $graph->getPathsByTargets(['doctors', 'variations'], $paths);
         $doctorsPaths = array_unique($graph->getPathsByTargets(['doctors'], $paths));
         if(!$variationsPaths || !$doctorsPaths) return $this;
+        $variationsPaths = array_map(function ($p){return (strpos($p, 'doctors') === 0) ? str_replace('doctors.', '', $p):$p;}, $variationsPaths);
+//        $variationsPaths = array_map(function ($p){return (strpos($p, 'doctors') === 0) ? str_replace('doctors.', '', $p):$p;}, $variationsPaths);
+
         $this->variationsIds = $graph->getIdsByPaths($variationsPaths, $collection);
         $this->doctorsIds = $graph->getIdsByPaths($doctorsPaths, $collection);
 

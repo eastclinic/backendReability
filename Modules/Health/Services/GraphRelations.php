@@ -59,20 +59,27 @@ class GraphRelations
         return array_values( self::RELATIONS_METHODS );
     }
 
-    public function getPathOfCollection($collection):array {
-        $keys = $collection->first()->getRelations();
-        if (!$keys) return [];
+    public function getPathOfCollection(Collection $collection, $prefix = ''):array {
         $outKeys = [];
-        foreach ($keys as $key => $relatedCollection) {
-            $relKeys = $this->getPathOfCollection($relatedCollection);
-            if (!$relKeys) return $keys;
-            foreach (array_keys($relKeys) as $k) {
-                $outKeys[$key . '.' . $k] = $key . '.' . $k;
+        if($collection->isEmpty()) return [];
+        foreach ($collection as $model){
+            $relations = $model->getRelations();
+            if(!$relations) continue;
+            foreach ($relations as $relationName => $relatedCollection) {
+                if ($relatedCollection instanceof Collection) {
+                    $key = ($prefix) ? $prefix . '.' . $relationName : $relationName;
+                    $outKeys[$key] = $key;
+                    if($relatedCollection->isEmpty()) continue;
+                    $relKeys = $this->getPathOfCollection($relatedCollection, $relationName);
+                    $outKeys = array_merge($outKeys, $relKeys);
+                }
+
             }
-            return $outKeys;
         }
         return $outKeys;
     }
+
+
     public function addBaseToPaths( array $paths, $collection):array {
         $outPaths = [];
         $baseClass = $collection->first();
