@@ -47,6 +47,8 @@ class HealthBindsController extends Controller
         $relationGraph = new RelationGraph();
         $queryBinds = $baseModel::query()->whereIn('id', [1]);
 
+
+
         //attempt get special handler
         $responseHandlerClass = $this->getResponseHandlerClass($request);
         $response = [];

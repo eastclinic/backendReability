@@ -7,7 +7,7 @@ namespace Modules\Health\Services\ApiResponse\BindsResponses;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Health\Http\Requests\ApiBindsRequest;
 use Modules\Health\Services\ApiResponse\ApiBindsResponseAbstract;
-use Modules\Health\Services\VariationsCalculators\VariationsCalculator;
+use Modules\Health\Services\VariationsCalculators\DoctorVariationsCalculator;
 
 class DoctorService extends ApiBindsResponseAbstract
 {
@@ -45,7 +45,7 @@ class DoctorService extends ApiBindsResponseAbstract
         //из коллекции, выбрать ids докторов и ids вариаций
         //для выбранных ids сделать запрос в бд, для выборки связок доктор-вариация с pivot data
         //структура не задана точно, поэтому, сначала определяем где
-        $calc = (new VariationsCalculator())->forCollection($data)->get();
+        $calcData = (new DoctorVariationsCalculator())->forCollection($data)->mergeCalcData();
 
         if(!$responseClass = $this->getResponseClass()) return $data->toArray(); //<<<<<<<<<<<<<<<<<<<<<<<<
 

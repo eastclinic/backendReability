@@ -2,7 +2,7 @@
 
 
 namespace Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator;
-
+use Illuminate\Support\Collection;
 
 class UseBySkill
 {
@@ -16,20 +16,34 @@ class UseBySkill
             $this->isUse = false;
             return $query;
         }
-        $eagerLoads = $query->getEagerLoads();
+//        $eagerLoads = $query->getEagerLoads();
         $alias = $query->getQuery()->from;
-        if($eagerLoads){
-            if($eagerLoads['variations']){
-                $eagerLoads['variations']->addSelect($alias.'.skill');
-            }else{
-                $query->with('variations', function ($query) use ( $alias ){
-                    $query->addSelect($alias.'.skill');
-                });
-            }
+        $query->with('variations', function ($query){
+            $alias = $query->getQuery()->from;
+            $query->addSelect($alias.'.id', $alias.'.skill');
+        });
+        $query->with('info', function($query){
+            $alias = $query->getQuery()->from;
+            $query->addSelect($alias.'.id', $alias.'.skill');
 
-        }
+        });
+
+
+//        if($eagerLoads){
+//            if($eagerLoads['variations']){
+//                $eagerLoads['variations']->addSelect($alias.'.skill');
+//            }else{
+//                $query->with('variations', function ($query) use ( $alias ){
+//                    $query->addSelect($alias.'.skill');
+//                });
+//            }
+//
+//        }
         return $query;
     }
 
 
+    public function calculate(Collection $collection):Collection    {
+        return collect([]);
+    }
 }

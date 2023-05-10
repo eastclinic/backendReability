@@ -32,7 +32,7 @@ class Doctor extends Model
     }
     public function info(): HasOne{
 
-        return $this->hasOne(DoctorInfo::class);
+        return $this->hasOne(DoctorInfo::class, 'id', 'doctor_id');
     }
 
 

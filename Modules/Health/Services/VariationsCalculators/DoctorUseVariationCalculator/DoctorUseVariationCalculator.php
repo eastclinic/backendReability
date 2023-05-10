@@ -12,7 +12,7 @@ class DoctorUseVariationCalculator
 {
     protected Collection $doctorsIds;
     protected Collection $variationsIds;
-    protected bool $onlyMark = false;
+    protected bool $mark = false;
     protected array $calculatorsClasses = [
         UseBySkill::class,
 //        UseByAlwaysMark::class
@@ -30,8 +30,8 @@ class DoctorUseVariationCalculator
         return $this;
     }
 
-    public function onlyMark():self {
-        $this->onlyMark = true;
+    public function mark():self {
+        $this->mark = true;
         return $this;
     }
 
@@ -77,6 +77,12 @@ class DoctorUseVariationCalculator
         }
 
         $data = $query->get();
+        foreach ($this->calculators as $calc){
+            if($this->mark){
+                $calc->mark();
+            }
+            $calc->calculate($data);
+        }
 
 
 

@@ -19,7 +19,7 @@ return new class extends Migration
             //$table->unsignedBigInteger('iservice_id')->default(0);
             $table->foreignId('iservice_id')->references('id')->on('health_iservices');
             $table->foreignId('service_id')->references('id')->on('health_services');
-            $table->char( 'skill' )->default('');
+            $table->char( 'skill' )->default('usual');
             $table->char( 'option' )->default('');
             $table->timestamps();
         });

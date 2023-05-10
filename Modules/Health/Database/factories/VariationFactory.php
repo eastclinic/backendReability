@@ -37,6 +37,7 @@ class VariationFactory extends Factory
                 return Iservice::pluck('id')->unique()->random();
             },
 //            'iservice_id' => $iserviceId,
+            'skill' => $this->faker->randomElement(['usual', 'lead', 'expert']),
             'service_id' =>function () {
                 return Service::pluck('id')->unique()->random();
             },

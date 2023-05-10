@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Modules\Health\Services\GraphRelations;
 use Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator\DoctorUseVariationCalculator;
 
-class VariationsCalculator
+class DoctorVariationsCalculator
 {
 
     protected Collection $collection;
@@ -17,6 +17,7 @@ class VariationsCalculator
     protected array $variationsPaths = [];
     protected Collection $variationsIds;
     protected Collection $doctorsIds;
+
 
 
     public function forCollection($collection):self {
@@ -36,7 +37,8 @@ class VariationsCalculator
         return $this;
     }
 
-    public function get():Collection    {
+    public function mergeCalcData():Collection    {
+
         if( !$this->collection )return collect([]);
         if( !$this->variationsIds || !$this->doctorsIds )   return $this->collection;
         //need calculators
@@ -46,6 +48,17 @@ class VariationsCalculator
         ->get();
 
         //merge collections
+        return $this->collection;
+    }
+
+    public function filter():Collection {
+        return $this->collection;
+    }
+    public function filterWithMergeCalcData():Collection {
+        return $this->collection;
+    }
+
+    protected function get():Collection{
         return $this->collection;
     }
 
