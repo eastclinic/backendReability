@@ -31,7 +31,10 @@ class DoctorVariationsCalculator
         $variationsPaths = $graph->getPathsByTargets(['doctors', 'variations'], $paths);
         $doctorsPaths = array_unique($graph->getPathsByTargets(['doctors'], $paths));
         if(!$variationsPaths || !$doctorsPaths) return $this;
-        $variationsPaths = array_map(function ($p){return (strpos($p, 'doctors') === 0) ? str_replace('doctors.', '', $p):$p;}, $variationsPaths);
+        $variationsPaths = $graph->removeBaseFromPaths( $variationsPaths );
+        $doctorsPaths = $graph->removeBaseFromPaths( $doctorsPaths );
+
+
 //        $variationsPaths = array_map(function ($p){return (strpos($p, 'doctors') === 0) ? str_replace('doctors.', '', $p):$p;}, $variationsPaths);
 
         $this->variationsIds = $graph->getIdsByPaths($variationsPaths, $collection);

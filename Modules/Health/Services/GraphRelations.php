@@ -93,6 +93,18 @@ class GraphRelations
         return $outPaths;
     }
 
+    public function removeBaseFromPaths( array $paths):array {
+        $outPaths = [];
+        foreach ($paths as $path){
+            $pathArray = explode('.', $path);
+            if($pathArray) unset($pathArray[0]);
+
+            $outPaths[] = ($pathArray) ? implode('.', $pathArray) : $path;
+        }
+
+        return $outPaths;
+    }
+
     public function getPathsByTargets(array $targets, array $paths):array {
         $outPaths = [];
         foreach ($paths as $path){
@@ -118,9 +130,21 @@ class GraphRelations
 
     public function getIdsByPaths(array $paths, Collection $collection):Collection{
         $outCollection = collect([]);
+
         foreach ($paths as $path){
-            $outCollection = $outCollection->merge($collection->pluck($path.'.*.id'));
+            $path = explode('.', $path);
+            $path = implode('.*.', $path);
+//            $rew = $collection->pluck('services.*.variations.*.id')->flatten();
+            $outCollection = $outCollection->merge($collection->pluck($path.'.*.id')->flatten());
         }
+
+//        foreach ($collection as $item){
+//            foreach ($paths as $path){
+//                $ffr = $item->pluck('services'.'.id')->flatten();
+//                $outCollection = $outCollection->merge($ffr);
+//            }
+//        }
+
         return $outCollection->unique();
     }
 }
