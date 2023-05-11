@@ -99,9 +99,10 @@ class GraphRelations
             $pathArray = explode('.', $path);
             if($pathArray) unset($pathArray[0]);
 
-            $outPaths[] = ($pathArray) ? implode('.', $pathArray) : $path;
+            $outPaths[] = implode('.', $pathArray);
         }
-
+        $outPaths = array_filter($outPaths);
+        $outPaths = array_unique($outPaths);
         return $outPaths;
     }
 
@@ -130,21 +131,12 @@ class GraphRelations
 
     public function getIdsByPaths(array $paths, Collection $collection):Collection{
         $outCollection = collect([]);
-
+        if(!$paths) return $collection->pluck('id')->flatten();
         foreach ($paths as $path){
             $path = explode('.', $path);
             $path = implode('.*.', $path);
-//            $rew = $collection->pluck('services.*.variations.*.id')->flatten();
             $outCollection = $outCollection->merge($collection->pluck($path.'.*.id')->flatten());
         }
-
-//        foreach ($collection as $item){
-//            foreach ($paths as $path){
-//                $ffr = $item->pluck('services'.'.id')->flatten();
-//                $outCollection = $outCollection->merge($ffr);
-//            }
-//        }
-
         return $outCollection->unique();
     }
 }

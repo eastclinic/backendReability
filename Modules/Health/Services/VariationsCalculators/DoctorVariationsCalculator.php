@@ -49,8 +49,9 @@ class DoctorVariationsCalculator
         if( !$this->variationsIds || !$this->doctorsIds )   return $this->collection;
         //need calculators
         $doctorsUseVariations = (new DoctorUseVariationCalculator())
-        ->forDoctorsIds(collect([1]))
-        ->forVariationsIds(collect([2]))
+        ->forDoctorsIds( $this->doctorsIds )
+        ->forVariationsIds( $this->variationsIds )
+        ->mark()
         ->get();
 
         //merge collections

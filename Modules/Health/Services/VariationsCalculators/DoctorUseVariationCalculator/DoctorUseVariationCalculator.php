@@ -78,9 +78,6 @@ class DoctorUseVariationCalculator
 
         $data = $query->get();
         foreach ($this->calculators as $calc){
-            if($this->mark){
-                $calc->mark();
-            }
             $calc->calculate($data);
         }
 

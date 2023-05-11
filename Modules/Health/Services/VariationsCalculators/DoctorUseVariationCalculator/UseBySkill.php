@@ -44,6 +44,18 @@ class UseBySkill
 
 
     public function calculate(Collection $collection):Collection    {
-        return collect([]);
+        $fewf = $collection->first();
+        $classModel = ( $collection->first() ) ?  get_class($collection->first()) : null;
+        //work if
+        if( !$classModel || $classModel !== 'Modules\Health\Entities\Doctor') return collect();
+        foreach ( $collection as $doctor ){
+            $fer = $doctor->info->skill;
+        }
+
+
+
+        return collect();
     }
+
+
 }
