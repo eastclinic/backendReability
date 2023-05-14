@@ -7,6 +7,9 @@ use Illuminate\Support\Collection;
 class UseBySkill
 {
     protected bool $isUse = true;
+    protected array $variationsPaths = [];
+    protected array $doctorsPaths = [];
+    protected Collection $collection;
 
     public function buildQuery($query) {
         //this calc use skills doctor and variation
@@ -44,9 +47,19 @@ class UseBySkill
 
 
     public function calculate(Collection $collection):Collection    {
+        //находим и сохраняем пути до докторов
+        //если коллекция по докторам, то сохраняем метку что заданная коллекция по докторам
+        //находим и сохраняем пути до вариаций внутри докторов
+        //обходим коллекцию
+
+        foreach ( $collection as $doctor ){
+            if(!$doctor->info || !$doctor->info->skill) continue;
+            $fer = $doctor->info->skill;
+        }
         $fewf = $collection->first();
         $classModel = ( $collection->first() ) ?  get_class($collection->first()) : null;
         //work if
+
         if( !$classModel || $classModel !== 'Modules\Health\Entities\Doctor') return collect();
         foreach ( $collection as $doctor ){
             $fer = $doctor->info->skill;
@@ -55,6 +68,11 @@ class UseBySkill
 
 
         return collect();
+    }
+
+    public function forCollection(Collection $collection):self{
+        $this->collection = $collection;
+        return $this;
     }
 
 

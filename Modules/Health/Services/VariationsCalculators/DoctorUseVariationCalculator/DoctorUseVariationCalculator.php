@@ -12,6 +12,9 @@ class DoctorUseVariationCalculator
 {
     protected Collection $doctorsIds;
     protected Collection $variationsIds;
+    protected Collection $collection;
+    protected array $variationsPaths = [];
+    protected array $doctorsPaths = [];
     protected bool $mark = false;
     protected array $calculatorsClasses = [
         UseBySkill::class,
@@ -47,7 +50,8 @@ class DoctorUseVariationCalculator
         if(!$this->calculators) {
             $this->calculators = $this->getCalculators();
         }
-        if(!$this->variationsIds || !$this->calculators) return collect([]);
+
+        if(!$this->variationsIds || !$this->calculators || !$this->collection) return collect();
 
 
 
@@ -73,17 +77,19 @@ class DoctorUseVariationCalculator
         $query = $this->getCalculatorQuery();
 
         foreach ($this->calculators as $calculator){
-            $query = $calculator->buildQuery($query);
+            $query = $calculator->forCollection($this->collection)->buildQuery($query);
         }
 
         $data = $query->get();
+        //получены доктора с вариациями, и с другими необходимыми данными
+        //каждому калькулятору передаем исходную коллекцию,
         foreach ($this->calculators as $calc){
             $calc->calculate($data);
         }
 
 
 
-        return collect([1, 2]);
+        return $this->collection;
     }
 
 
@@ -108,6 +114,26 @@ class DoctorUseVariationCalculator
 
         }
         return $query;
+    }
+
+
+
+    public function forCollection(Collection $collection):self{
+        $this->collection = $collection;
+        $fdf  = $collection->getQueueableRelations();
+        $Ids  = $collection->getQueueableIds();
+        $odelClass  = $collection->getQueueableClass();
+        return $this;
+    }
+
+    public function withDoctorsPaths(array $doctorsPaths):self{
+        $this->doctorsPaths = $doctorsPaths;
+        return $this;
+    }
+
+    public function withVariationsPaths(array $variationsPaths):self{
+        $this->doctorsPaths = $variationsPaths;
+        return $this;
     }
 
 }

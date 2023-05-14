@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\Health\Http\Requests\ApiBindsRequest;
 use Modules\Health\Services\ApiResponse\ApiBindsResponseAbstract;
 use Modules\Health\Services\VariationsCalculators\DoctorVariationsCalculator;
+use Modules\Health\Services\CollectionTransformer;
 
 class DoctorService extends ApiBindsResponseAbstract
 {
@@ -42,6 +43,8 @@ class DoctorService extends ApiBindsResponseAbstract
 
 
         $data = $this->query->get();
+        $data = (new CollectionTransformer())->byKeys($data);
+
         //из коллекции, выбрать ids докторов и ids вариаций
         //для выбранных ids сделать запрос в бд, для выборки связок доктор-вариация с pivot data
         //структура не задана точно, поэтому, сначала определяем где

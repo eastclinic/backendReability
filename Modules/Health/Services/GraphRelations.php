@@ -51,6 +51,11 @@ class GraphRelations
         return self::RELATIONS_METHODS[$model];
     }
 
+    public function getRelationName(string $model){
+        return self::RELATIONS_METHODS[$model];
+    }
+
+
     public function getClassNameByModel(string $model):string {
         return self::MODEL_INFO_MAP[$model]['name'];
     }
@@ -139,4 +144,8 @@ class GraphRelations
         }
         return $outCollection->unique();
     }
+
+
+
+
 }
