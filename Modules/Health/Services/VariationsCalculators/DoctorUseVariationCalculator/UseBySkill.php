@@ -6,21 +6,13 @@ use Illuminate\Support\Collection;
 
 class UseBySkill
 {
-    protected bool $isUse = true;
-    protected array $variationsPaths = [];
-    protected array $doctorsPaths = [];
+    protected bool $merge = false;
+    protected bool $filter = false;
     protected Collection $collection;
+
 
     public function buildQuery($query) {
         //this calc use skills doctor and variation
-        //if in query not Doctor, it makes no sense
-        $className = get_class($query->getModel());
-        if($className !== 'Modules\Health\Entities\Doctor'){
-            $this->isUse = false;
-            return $query;
-        }
-//        $eagerLoads = $query->getEagerLoads();
-        $alias = $query->getQuery()->from;
         $query->with('variations', function ($query){
             $alias = $query->getQuery()->from;
             $query->addSelect($alias.'.id', $alias.'.skill');
@@ -31,49 +23,63 @@ class UseBySkill
 
         });
 
-
-//        if($eagerLoads){
-//            if($eagerLoads['variations']){
-//                $eagerLoads['variations']->addSelect($alias.'.skill');
-//            }else{
-//                $query->with('variations', function ($query) use ( $alias ){
-//                    $query->addSelect($alias.'.skill');
-//                });
-//            }
-//
-//        }
         return $query;
     }
 
 
-    public function calculate(Collection $collection):Collection    {
+
+
+    public function calculate(Collection $collectionFromDB, array $outData = [])    {
         //находим и сохраняем пути до докторов
         //если коллекция по докторам, то сохраняем метку что заданная коллекция по докторам
         //находим и сохраняем пути до вариаций внутри докторов
         //обходим коллекцию
 
-        foreach ( $collection as $doctor ){
-            if(!$doctor->info || !$doctor->info->skill) continue;
+        foreach ( $collectionFromDB as $doctor ){
+            if(!$outData[$doctor->id]) $outData[$doctor->id] = ['id' => $doctor->id, 'variations' => [] ];
+            if(!$doctor->info || !$doctor->variations) continue;
+            foreach ($doctor->variations as $variation){
+                //if(!$variation->skill) continue;
+                if(!$this->filter && !$outData[$doctor->id]['variations'][$variation->id]){
+                    $outData[$doctor->id]['variations'][$variation->id] = ['id' => $variation->id];
+                }
+
+                if($variation->skill && $doctor->info->skill === $variation->skill){
+                    if($this->merge){
+                        $outData[$doctor->id]['variations'][$variation->id] += ($outData[$doctor->id]['variations'][$variation->id])
+                            ? $outData[$doctor->id]['variations'][$variation->id] + ['id' => $variation->id, 'useBySkill' => true]
+                            : ['id' => $variation->id, 'useBySkill' => true];
+                    }
+                }elseif (!$variation->skill && !$this->filter){
+
+                }
+
+
+                $fe = 123;
+            }
             $fer = $doctor->info->skill;
         }
-        $fewf = $collection->first();
-        $classModel = ( $collection->first() ) ?  get_class($collection->first()) : null;
-        //work if
-
-        if( !$classModel || $classModel !== 'Modules\Health\Entities\Doctor') return collect();
-        foreach ( $collection as $doctor ){
-            $fer = $doctor->info->skill;
-        }
 
 
-
-        return collect();
+        return ;
     }
 
-    public function forCollection(Collection $collection):self{
-        $this->collection = $collection;
-        return $this;
+    public function merge(Collection $collectionFromDB, array $outData = []){
+        $this->merge = true;
+        return [];
     }
+
+    public function filter(Collection $collectionFromDB, array $outData = []) {
+        $this->filter = true;
+        return [];
+    }
+
+    public function filterAndMerge(Collection $collectionFromDB, array $outData = []) {
+        $this->merge = true;
+        $this->filter = true;
+
+    }
+
 
 
 }

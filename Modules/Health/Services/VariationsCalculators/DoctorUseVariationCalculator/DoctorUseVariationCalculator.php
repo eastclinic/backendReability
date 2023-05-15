@@ -10,11 +10,9 @@ use Modules\Health\Entities\Variation;
 
 class DoctorUseVariationCalculator
 {
-    protected Collection $doctorsIds;
-    protected Collection $variationsIds;
+    protected array $doctorsIds;
+    protected array $variationsIds;
     protected Collection $collection;
-    protected array $variationsPaths = [];
-    protected array $doctorsPaths = [];
     protected bool $mark = false;
     protected array $calculatorsClasses = [
         UseBySkill::class,
@@ -23,12 +21,12 @@ class DoctorUseVariationCalculator
     protected array $calculators = [];
 
 
-    public function forDoctorsIds(Collection $doctorsIds):self {
+    public function forDoctorsIds(array $doctorsIds):self {
         $this->doctorsIds = $doctorsIds;
         return $this;
     }
 
-    public function forVariationsIds(Collection $variationsIds):self {
+    public function forVariationsIds(array $variationsIds):self {
         $this->variationsIds = $variationsIds;
         return $this;
     }
@@ -42,16 +40,16 @@ class DoctorUseVariationCalculator
         //метод выставляте калькуляторы для обработки вариаций
         //он добавляет калькуляторы в начало массивов калькуляторов
         //дубли калькуляторов удаляются из массива
-        array_unshift();
+
         return $this;
     }
 
-    public function get():Collection {
+    public function get():array {
         if(!$this->calculators) {
             $this->calculators = $this->getCalculators();
         }
 
-        if(!$this->variationsIds || !$this->calculators || !$this->collection) return collect();
+        if( !$this->variationsIds || !$this->calculators ) return [];
 
 
 
@@ -77,19 +75,20 @@ class DoctorUseVariationCalculator
         $query = $this->getCalculatorQuery();
 
         foreach ($this->calculators as $calculator){
-            $query = $calculator->forCollection($this->collection)->buildQuery($query);
+            $query = $calculator->buildQuery($query);
         }
 
-        $data = $query->get();
+        $collectionFromDb = $query->get();
         //получены доктора с вариациями, и с другими необходимыми данными
         //каждому калькулятору передаем исходную коллекцию,
+        $outData = [];
         foreach ($this->calculators as $calc){
-            $calc->calculate($data);
+            $calc->calculate($collectionFromDb, $outData );
         }
 
 
 
-        return $this->collection;
+        return [];
     }
 
 
@@ -114,26 +113,6 @@ class DoctorUseVariationCalculator
 
         }
         return $query;
-    }
-
-
-
-    public function forCollection(Collection $collection):self{
-        $this->collection = $collection;
-        $fdf  = $collection->getQueueableRelations();
-        $Ids  = $collection->getQueueableIds();
-        $odelClass  = $collection->getQueueableClass();
-        return $this;
-    }
-
-    public function withDoctorsPaths(array $doctorsPaths):self{
-        $this->doctorsPaths = $doctorsPaths;
-        return $this;
-    }
-
-    public function withVariationsPaths(array $variationsPaths):self{
-        $this->doctorsPaths = $variationsPaths;
-        return $this;
     }
 
 }
