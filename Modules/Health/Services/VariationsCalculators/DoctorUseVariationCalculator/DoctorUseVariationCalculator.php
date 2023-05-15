@@ -14,6 +14,8 @@ class DoctorUseVariationCalculator
     protected array $variationsIds;
     protected Collection $collection;
     protected bool $mark = false;
+    protected bool $merge = false;
+    protected bool $filter = false;
     protected array $calculatorsClasses = [
         UseBySkill::class,
 //        UseByAlwaysMark::class
@@ -83,7 +85,7 @@ class DoctorUseVariationCalculator
         //каждому калькулятору передаем исходную коллекцию,
         $outData = [];
         foreach ($this->calculators as $calc){
-            $calc->calculate($collectionFromDb, $outData );
+            $calc->mergeData($this->merge)->filterVariations($this->filter)->calculate($collectionFromDb, $outData );
         }
 
 
@@ -113,6 +115,16 @@ class DoctorUseVariationCalculator
 
         }
         return $query;
+    }
+
+    public function mergeData(bool $merge = true):self{
+        $this->merge = $merge;
+        return $this;
+    }
+
+    public function filterVariations(bool $filter = true):self {
+        $this->filter = $filter;
+        return $this;
     }
 
 }

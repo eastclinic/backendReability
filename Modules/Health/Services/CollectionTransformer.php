@@ -12,6 +12,7 @@ class collectionTransformer
 
     public function byKeys($collection){
         if(!$collection instanceof EloquentCollection) return $collection;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        if(!$collection->first()) return $collection;
         $primaryKey = $collection->first()->getKeyName();
         if($primaryKey){
             $collection = $collection->keyBy($primaryKey);

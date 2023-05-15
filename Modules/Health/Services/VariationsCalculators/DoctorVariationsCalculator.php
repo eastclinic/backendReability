@@ -79,7 +79,7 @@ class DoctorVariationsCalculator
         $doctorsUseVariations = (new DoctorUseVariationCalculator())
             ->forDoctorsIds( $this->doctorsIds )
             ->forVariationsIds( $this->variationsIds )
-            ->mark()
+            ->mergeData()
             ->get();
 
         //merge collections

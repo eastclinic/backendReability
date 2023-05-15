@@ -29,18 +29,13 @@ class UseBySkill
 
 
 
-    public function calculate(Collection $collectionFromDB, array $outData = [])    {
-        //находим и сохраняем пути до докторов
-        //если коллекция по докторам, то сохраняем метку что заданная коллекция по докторам
-        //находим и сохраняем пути до вариаций внутри докторов
-        //обходим коллекцию
+    public function calculate(Collection $collectionDoctorsVariations, array $outData = [])    {
 
-        foreach ( $collectionFromDB as $doctor ){
-            if(!$outData[$doctor->id]) $outData[$doctor->id] = ['id' => $doctor->id, 'variations' => [] ];
+        foreach ( $collectionDoctorsVariations as $doctor ){
+            if(!isset($outData[$doctor->id])) $outData[$doctor->id] = ['id' => $doctor->id, 'variations' => [] ];
             if(!$doctor->info || !$doctor->variations) continue;
             foreach ($doctor->variations as $variation){
-                //if(!$variation->skill) continue;
-                if(!$this->filter && !$outData[$doctor->id]['variations'][$variation->id]){
+                if(!$this->filter && !isset($outData[$doctor->id]['variations'][$variation->id])){
                     $outData[$doctor->id]['variations'][$variation->id] = ['id' => $variation->id];
                 }
 
@@ -49,29 +44,22 @@ class UseBySkill
                         $outData[$doctor->id]['variations'][$variation->id] += ($outData[$doctor->id]['variations'][$variation->id])
                             ? $outData[$doctor->id]['variations'][$variation->id] + ['id' => $variation->id, 'useBySkill' => true]
                             : ['id' => $variation->id, 'useBySkill' => true];
-                    }
-                }elseif (!$variation->skill && !$this->filter){
-
+                    }else $outData[$doctor->id]['variations'][$variation->id] = ['id' => $variation->id];
                 }
-
-
-                $fe = 123;
             }
-            $fer = $doctor->info->skill;
         }
-
 
         return ;
     }
 
-    public function merge(Collection $collectionFromDB, array $outData = []){
-        $this->merge = true;
-        return [];
+    public function mergeData(bool $merge = true):self{
+        $this->merge = $merge;
+        return $this;
     }
 
-    public function filter(Collection $collectionFromDB, array $outData = []) {
-        $this->filter = true;
-        return [];
+    public function filterVariations(bool $filter = true):self {
+        $this->filter = $filter;
+        return $this;
     }
 
     public function filterAndMerge(Collection $collectionFromDB, array $outData = []) {
