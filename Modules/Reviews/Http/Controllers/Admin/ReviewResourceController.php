@@ -65,6 +65,7 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
+        error_log('store-rewiew');
         $requestData = $request->validated();
 
         $review = new Review($requestData);

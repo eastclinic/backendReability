@@ -12,7 +12,7 @@ class ReviewContent extends Model
     use HasFactory;
 
     protected $table = 'reviews_content';
-    protected $fillable = ['path', 'upload_name', 'url', 'converted_content_info'];
+    protected $fillable = ['file', 'url', 'contentable_id'];
     public const STORAGE_DISK = 'reviewContent';
 
     protected static function newFactory()

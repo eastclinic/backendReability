@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-
+use Modules\Reviews\Http\Controllers\Admin\ReviewContentController;
 use Modules\Reviews\Http\Controllers\Admin\ReviewResourceController;
 use Modules\Reviews\Http\Controllers\Admin\TargetTypeController;
 use Modules\Reviews\Http\Controllers\DoctorReviewController;
@@ -25,6 +25,7 @@ use Modules\Reviews\Http\Requests\ApiListReviewsByDoctorRequest;
 Route::group([
     'middleware' => 'api',
 ], function ($router) {
+
     Route::get('reviews/reviewable-type', [TargetTypeController::class, 'index']);
 //    Route::get('doctor/reviews', [DoctorReviewController::class, 'getReviews']);
     Route::get('doctor/reviews', function (ApiListReviewsByDoctorRequest $request){
@@ -32,7 +33,10 @@ Route::group([
         $doctorReviewController = new  DoctorReviewController($apiRequestQueryBuilder);
         return $doctorReviewController->getReviews($request);
     });
-
+//    Route::get('reviews/content',[ReviewContentController::class]);
+    Route::apiResources([
+        'reviews/content'=>ReviewContentController::class
+    ]);
     Route::apiResources([
         'reviews'=>ReviewResourceController::class
     ]);
