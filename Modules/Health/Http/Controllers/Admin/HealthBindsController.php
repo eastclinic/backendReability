@@ -44,7 +44,7 @@ class HealthBindsController extends Controller
         $baseModel = $request->getBaseModel();
 //        $targetModel = $request->getTargetMethod();
         //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
-        $relationGraph = new RelationGraph();
+//        $relationGraph = new RelationGraph();
         $queryBinds = $baseModel::query()->whereIn('id', [1, 2, 3, 4]);
 
 

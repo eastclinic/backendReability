@@ -8,8 +8,12 @@ namespace Modules\Health\Services\VariationsCalculators;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Log;
+use Modules\Health\Entities\Doctor;
+use Modules\Health\Entities\Variation;
 use Modules\Health\Services\GraphRelations;
 use Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator\DoctorUseVariationCalculator;
+use Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator\UseBySkill;
 
 class DoctorVariationsCalculator
 {
@@ -18,8 +22,12 @@ class DoctorVariationsCalculator
     protected bool $putData = false;
     protected ?array $variationsIds = null;
     protected ?array $doctorsIds = null;
-
-
+    protected array $calculatorsClasses = [
+        UseBySkill::class,
+//        UseByAlwaysMark::class
+    ];
+    protected bool $merge = false;
+    protected bool $filter = false;
 
 
 
@@ -27,25 +35,22 @@ class DoctorVariationsCalculator
         $graph = new GraphRelations();
         //add wrapper by base class
         $relationName = $graph->getRelationName($collection->getQueueableClass());
-        if(!$relationName) throw new \Exception('No set relations name for '.$collection->getQueueableClass());
+        if(!$relationName) return $this;
         $this->collection =$collection;
         //$this->collection = collect([$relationName => $collection]);
-        //$relations = $collection->getQueueableRelations();
+        $relations = $collection->getQueueableRelations();
 
 //        $ed = [
 //            2 =>['variations' => [ 3=> ['id' => 3, 'use' => true], 8 => ['id' => 8, 'use' => false]]]
 //        ];
 
-        $data = ['doctors' => $collection->toArray()];
+        $data = ['doctors' => $this->collection->toArray()];
         $this->doctorsIds = $this->getKeys($data, 'doctors');
         $this->variationsIds = $this->getKeys($data, 'variations');
 
 
+        Arr::set();
 
-//        foreach ($ed as $doctorId => $vari){
-//            //обходим исходный массив
-//            $data = $this->searhd($data, $doctorId, $vari['variations']);
-//        }
 //
 //       //$dde3 = collect(['doctors' => $data]);
 //        //$ter = $dde3->pluck('doctors.*.id');
@@ -71,19 +76,30 @@ class DoctorVariationsCalculator
         return $this;
     }
 
-    public function mergeCalcData():Collection    {
+    public function mergeCalcData():array    {
 
-        if( !$this->collection )return collect([]);
-        if( !$this->variationsIds || !$this->doctorsIds )   return $this->collection;
+        if( !$this->collection || !$this->variationsIds || !$this->doctorsIds )return [];
+        $this->merge = true;
+        $this->filter = false;
+        $doctorsVariationsBinds = $this->getDoctorsVariationsBinds();
+        $data = ['doctors' => $this->collection->toArray()];
+        foreach ($doctorsVariationsBinds as $doctorId => $doctorInfo){
+            if(!isset($doctorInfo['variations']) || !$doctorInfo['variations']) continue;
+            //обходим исходный массив
+            $data = $this->searhic($data, $doctorId, $doctorInfo['variations']);
+        }
+
+
+        return $doctorsVariationsBinds;
         //need calculators
-        $doctorsUseVariations = (new DoctorUseVariationCalculator())
-            ->forDoctorsIds( $this->doctorsIds )
-            ->forVariationsIds( $this->variationsIds )
-            ->mergeData()
-            ->get();
+//        $doctorsUseVariations = (new DoctorUseVariationCalculator())
+//            ->forDoctorsIds( $this->doctorsIds )
+//            ->forVariationsIds( $this->variationsIds )
+//            ->mergeData()
+//            ->get();
 
         //merge collections
-        return $this->collection;
+        return [];
     }
 
     public function filter():Collection {
@@ -93,9 +109,66 @@ class DoctorVariationsCalculator
         return $this->collection;
     }
 
-    protected function get():Collection{
-        return $this->collection;
+
+    public function getDoctorsVariationsBinds():array {
+        $doctorsUseCalculators = $this->getDoctorsUseCalculators();
+
+        if( !$this->variationsIds || !$doctorsUseCalculators ) return [];
+
+        //выбираем коллекцию докторов и вариаций распределенных по доктора
+        //для доктора нужен только id и  skill
+        //для вариаций нужны ids , skills, pivot данные
+        //какие pivot данные нужны, будут решать множество калькуляторов из массива калькуляторов
+        //эти калькуляторы настраивают какие еще нужны данные в запросе
+        //а потом получают коллекцию сфорированную запросом, и производят какие то действия
+        //в цикле обходим калькуляторы для каждого доктора,
+        //калькулятор производит вычисления с переданными данными доктора, вариаций и связок
+        //калькулятор не может ограничивать выборку вариаций или докторов, т.к. возможно другие вариации ожидают полный список
+        //калькулятор может добавлять select  поля в запрос, или доп запросы, к другим таблицам
+        //затем в цикле опрашиваются калькуляторы в порядке очередности
+        //если калькулятор обрабатывает вариации, он добавляет какие то данные
+        //калькулятор может удалить вариацию если посчитает нужным
+        //следующие калькуляторы тоже могут удалить вариацию, если посчитают нужным
+        //можно использовать метод onlyMark, что бы не удалять вариации, а проставлять метки
+        //какую метку ставить решает сам калькулятор
+
+        //межно дать возможность, извне управлять очередность и номенклатуру срабатывания калькуляторов
+        $query = $this->getDoctorUseQuery();
+
+        foreach ($doctorsUseCalculators as $calculator){
+            $query = $calculator->buildQuery($query);
+        }
+
+        $collectionFromDb = $query->get();
+        $f = $query->toSql();
+        //получены доктора с вариациями, и с другими необходимыми данными
+        //каждому калькулятору передаем исходную коллекцию,
+        $outData = [];
+        foreach ($doctorsUseCalculators as $calc){
+            if($this->merge) $calc->mergeData($this->merge);
+            if($this->filter) $calc->filterVariations($this->filter);
+            $outData = $calc->mergeData($this->merge)->filterVariations($this->filter)->calculate($collectionFromDb, $outData );
+        }
+
+
+
+        return $outData;
     }
+
+    protected function getDoctorUseQuery(){
+        if($this->doctorsIds){
+            $query = Doctor::whereIn('id', $this->doctorsIds)->
+            with('variations', function ($query){
+                $primaryKey = $query->getQuery()->from.'.'.$query->getQuery()->getModel()->getKeyName();
+                $query->whereIn($primaryKey, $this->variationsIds);
+            });
+        }else{
+            $query = Variation::whereIn('id', $this->variationsIds);
+
+        }
+        return $query;
+    }
+
 
     public function IsUse():self  {
         //в методе определяются вариации которые используются доктором
@@ -108,6 +181,15 @@ class DoctorVariationsCalculator
         return $this;
     }
 
+
+    protected function getDoctorsUseCalculators():array {
+        if(!$this->calculatorsClasses) return [];
+        $calculators = [];
+        foreach ($this->calculatorsClasses as $calculatorClass){
+            $calculators[$calculatorClass] = new $calculatorClass();
+        }
+        return $calculators;
+    }
 
     protected function getKeys( array $data, $keyName ){
         $ids = [];
@@ -122,14 +204,14 @@ class DoctorVariationsCalculator
         return $ids;
     }
 
-    protected function searhd(array $data, $doctorId, $vari = [], $isDoc = false):array {
+    protected function searhic(array $data, $doctorId, $vari = [], $isDoc = false):array {
         //обходим исходный массив
         //если сейчас $key === doctors и задан $doctorId
         //значит включается алгоритм поиска вариаций во вложенных уровнях массива
         foreach ($data as $key => $item){
             if(!is_array($item)) continue;
             if($key === 'doctors' && $item[$doctorId]){
-                $data[$key][$doctorId] = $this->searhd($item[$doctorId], $doctorId, $vari, true);
+                $data[$key][$doctorId] = $this->searhic($item[$doctorId], $doctorId, $vari, true);
                 break;
             }
             if($key === 'variations' && $vari && $isDoc){
@@ -142,7 +224,7 @@ class DoctorVariationsCalculator
                 $data[$key] = $variations;
                 break;
             }
-            $data[$key] = $this->searhd($item, $doctorId, $vari, $isDoc);
+            $data[$key] = $this->searhic($item, $doctorId, $vari, $isDoc);
 
         }
         return $data;

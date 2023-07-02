@@ -29,8 +29,7 @@ class UseBySkill
 
 
 
-    public function calculate(Collection $collectionDoctorsVariations, array $outData = [])    {
-
+    public function calculate(Collection $collectionDoctorsVariations, array $outData):array   {
         foreach ( $collectionDoctorsVariations as $doctor ){
             if(!isset($outData[$doctor->id])) $outData[$doctor->id] = ['id' => $doctor->id, 'variations' => [] ];
             if(!$doctor->info || !$doctor->variations) continue;
@@ -38,7 +37,8 @@ class UseBySkill
                 if(!$this->filter && !isset($outData[$doctor->id]['variations'][$variation->id])){
                     $outData[$doctor->id]['variations'][$variation->id] = ['id' => $variation->id];
                 }
-
+$d = $variation->skill ;
+                $d2 = $doctor->info->skill;
                 if($variation->skill && $doctor->info->skill === $variation->skill){
                     if($this->merge){
                         $outData[$doctor->id]['variations'][$variation->id] += ($outData[$doctor->id]['variations'][$variation->id])
@@ -49,7 +49,7 @@ class UseBySkill
             }
         }
 
-        return ;
+        return $outData;
     }
 
     public function mergeData(bool $merge = true):self{

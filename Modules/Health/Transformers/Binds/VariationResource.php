@@ -19,6 +19,9 @@ class VariationResource extends BindsItemResource
         if(isset($this->custom_price)){
             $outArray['custom_price'] = (int)$this->custom_price;
         }
+        if(isset($this->useBySkill)){
+            $outArray['useBySkill'] = $this->useBySkill;
+        }
         return $outArray;
     }
 }
