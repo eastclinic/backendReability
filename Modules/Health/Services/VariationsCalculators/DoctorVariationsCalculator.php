@@ -49,7 +49,7 @@ class DoctorVariationsCalculator
         $this->variationsIds = $this->getKeys($data, 'variations');
 
 
-        Arr::set();
+//        Arr::set();
 
 //
 //       //$dde3 = collect(['doctors' => $data]);
@@ -82,6 +82,10 @@ class DoctorVariationsCalculator
         $this->merge = true;
         $this->filter = false;
         $doctorsVariationsBinds = $this->getDoctorsVariationsBinds();
+
+
+        $d = $this->updateCollectionByDoctorVariationsBinds($this->collection, $doctorsVariationsBinds);
+
         $data = ['doctors' => $this->collection->toArray()];
         foreach ($doctorsVariationsBinds as $doctorId => $doctorInfo){
             if(!isset($doctorInfo['variations']) || !$doctorInfo['variations']) continue;
@@ -202,6 +206,42 @@ class DoctorVariationsCalculator
             $ids += $this->getKeys($item, $keyName);
         }
         return $ids;
+    }
+
+    protected function updateCollectionByDoctorVariationsBinds($collection, $doctorVariationsBinds, int $doctorId = 0){
+        $idDoctorClass = ($collection->getQueueableClass() === 'Modules\Health\Entities\Doctor');
+        foreach ($collection as $item){
+            if(!$doctorId && $idDoctorClass){
+                //get relations names
+                $relations = $collection->getQueueableRelations();
+                $doctorId = $item->id;
+                if(array_search('variations', $relations ) !== false){
+                    foreach ($item->variations as $variation){
+                        $gr = 10;
+                    }
+                    continue;
+                }
+            }
+            $collection = $this->updateCollectionByDoctorVariationsBinds($doctorVariationsBinds);
+        }
+
+
+
+
+
+        //get relations names
+        $relations = $collection->getQueueableRelations();
+//        if(array_search('variations', $relations ) !== false){
+//
+//        }else{
+//            foreach ()
+//            $this->updateCollectionByDoctorVariationsBinds();
+//        }
+        foreach ($collection as  $col){
+
+        }
+        return $collection;
+
     }
 
     protected function searhic(array $data, $doctorId, $vari = [], $isDoc = false):array {
