@@ -29,7 +29,11 @@ class AppServiceProvider extends ServiceProvider
 
         Response::macro('ok', function ($data, $extraData = [], $statusCode = 200){
             if (is_array($data) || is_object($data)){
-                return response()->json(['ok' => true, 'data' => $data] + $extraData, $statusCode );
+                if(is_array($extraData)){
+                    $data += $extraData;
+                }
+                elseif (is_int($extraData)) $statusCode = $extraData;
+                return response()->json(['ok' => true, 'data' => $data], $statusCode );
             }else{
                 return response()->json(['ok' => true, 'message' => $data], $statusCode );
             }
