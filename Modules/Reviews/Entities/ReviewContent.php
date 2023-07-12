@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Ramsey\Uuid\Uuid;
 
 class ReviewContent extends Model
 {
     use HasFactory;
-
+    use HasUuids;
     protected $table = 'reviews_content';
     protected $fillable = ['file', 'url', 'contentable_id'];
     public const STORAGE_DISK = 'reviewContent';
@@ -40,6 +42,24 @@ class ReviewContent extends Model
             Log::info('review content deleting!');
             //Storage::disk(self::STORAGE_DISK)->delete($content->file);
         });
+    }
+
+    /**
+     * Generate a new UUID for the model.
+     */
+    public function newUniqueId(): string
+    {
+        return (string) Uuid::uuid4();
+    }
+
+    /**
+     * Get the columns that should receive a unique identifier.
+     *
+     * @return array<int, string>
+     */
+    public function uniqueIds(): array
+    {
+        return ['id'];
     }
 
 }
