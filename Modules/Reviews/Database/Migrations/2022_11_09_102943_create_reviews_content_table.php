@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('reviews_content', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->char('file');
             $table->char('url')->nullable();
             $table->text('converted_content_info')->nullable();
