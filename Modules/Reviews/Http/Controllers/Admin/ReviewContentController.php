@@ -13,8 +13,10 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
+use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewContentController extends Controller
 {
@@ -62,14 +64,24 @@ class ReviewContentController extends Controller
      * @param  ContentRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ContentRequest $request)
+    public function store(StoreContentRequest $request)
     {
         error_log('store');
         $requestData = $request->validated();
-//        Log::info(print_r($request->validated(), 1));
-////        $data = [
-////            'url' => $requestData->
-////        ]
+        $fileNames = [];
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+
+            foreach ($files as $file) {
+
+                $fileName = uniqid().'.'.$file->getClientOriginalExtension();
+                Storage::disk('reviewContent')->putFileAs('upload', $file, $fileName);
+                $fileNames[] = $fileName;
+            }
+
+
+        }
+        return response()->ok([$fileNames], 200);
         $review = new ReviewContent($requestData);
 ////        $target = $this->targetModel->getModel($requestData['reviewable_type']);
 ////        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
@@ -131,5 +143,6 @@ class ReviewContentController extends Controller
             return  ResponseService::error('Failed to remove review');
         }
     }
+
 
 }
