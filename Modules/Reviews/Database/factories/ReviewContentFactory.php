@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewMessage;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Ramsey\Uuid\Uuid;
 
 class ReviewContentFactory extends Factory
 {
@@ -28,6 +29,7 @@ class ReviewContentFactory extends Factory
                 $target = $this->faker->randomKey($targetPassible);
 
         return [
+            'id' => Uuid::uuid4()->toString(),
             'url' => $this->faker->imageUrl(),
             'file' => 'upload'.DIRECTORY_SEPARATOR .$this->faker->file('storage/img', 'storage/img/upload', false),
             'contentable_type' => $target,
