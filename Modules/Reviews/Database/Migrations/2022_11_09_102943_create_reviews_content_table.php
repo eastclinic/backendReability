@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('reviews_content', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->char('file');
-            $table->char('url')->nullable();
+            $table->char('url');
             $table->text('converted_content_info')->nullable();
             $table->nullableMorphs('contentable');
             $table->timestamps();

@@ -6,7 +6,7 @@ use Illuminate\Validation\Factory as ValidationFactory;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Reviews\Http\Services\Target;
 
-class ContentRequest extends FormRequest
+class StoreContentRequest extends FormRequest
 {
 
     public function __construct(ValidationFactory $validationFactory, Target $targetModel) {

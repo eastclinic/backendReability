@@ -68,21 +68,41 @@ class ReviewContentController extends Controller
     {
         error_log('store');
         $requestData = $request->validated();
-        $fileNames = [];
+        $filesInfo = [];
         if ($request->hasFile('files')) {
             $files = $request->file('files');
 
             foreach ($files as $file) {
-
-                $fileName = uniqid().'.'.$file->getClientOriginalExtension();
-                Storage::disk('reviewContent')->putFileAs('upload', $file, $fileName);
-                $fileNames[] = $fileName;
+                $folder = 'upload';
+                $extension = $file->getClientOriginalExtension();
+                $fileName = uniqid().'.'.$extension;
+                Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
+                $path = Storage::disk('reviewContent')->path($folder.'/'.$fileName);
+                $url = Storage::disk('reviewContent')->url($folder.'/'.$fileName);
+                $filesInfo[] = [ 'fileName' => $fileName,
+                'path' => $path,
+                'url' => $url,
+                'extension' => $extension,
+                ];
             }
 
 
         }
-        return response()->ok([$fileNames], 200);
-        $review = new ReviewContent($requestData);
+
+
+
+        if(!$filesInfo) {
+            return response()->error('Error save upload files');
+        }
+        foreach ($filesInfo as $info){
+//            if($requestData['id'])
+//            $reviewContent = new ReviewContent($requestData);
+        }
+
+
+
+            return response()->ok($filesInfo, 200);
+
 ////        $target = $this->targetModel->getModel($requestData['reviewable_type']);
 ////        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
 ////            return response()->error('Не задано, на кого отзыв.', 400);
