@@ -97,7 +97,7 @@ class ReviewContentController extends Controller
             $files = $request->file('files');
 //save files
             foreach ($files as $file) {
-                $filesInfo[] = $this->saveFile($file, ($requestData->id) ?? 0 );
+                $filesInfo[] = $this->saveFile($file, ($requestData['id']) ?? 0,  $requestData['contentable_type']);
             }
 
 
@@ -181,13 +181,15 @@ class ReviewContentController extends Controller
     /** save one file to specific folder
      * @param $file
      * @param int $id
-     * @return array info saved file [url, path, name, extension]
+     * @param string $typeTarget
+     * @return array
      */
-    protected function saveFile($file, int $id = 0):array {
+    protected function saveFile($file, int $id, string $typeTarget):array {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
-        $folder = 'upload'. ($id) ? '/'.$id : '/0';
+        $folderNameByTargetId =  ($id) ? DIRECTORY_SEPARATOR.$id : DIRECTORY_SEPARATOR.'0';
+        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviewsModule'.DIRECTORY_SEPARATOR.$typeTarget.'s'.DIRECTORY_SEPARATOR. $folderNameByTargetId;
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
