@@ -1,4 +1,22 @@
 <?php
+/**
+ * @file
+ * @author Jan Doe <jandoe@example.com>
+ * @version 1.0
+ *
+ * @section LICENSE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * @section DESCRIPTION
+ *
+ * The time class represents a moment of time.
+ */
+
+
 
 namespace Modules\Reviews\Http\Controllers\Admin;
 
@@ -66,24 +84,20 @@ class ReviewContentController extends Controller
      */
     public function store(StoreContentRequest $request)
     {
+
+
+
+
+        //run job for
+
         error_log('store');
         $requestData = $request->validated();
         $filesInfo = [];
         if ($request->hasFile('files')) {
             $files = $request->file('files');
-
+//save files
             foreach ($files as $file) {
-                $folder = 'upload';
-                $extension = $file->getClientOriginalExtension();
-                $fileName = uniqid().'.'.$extension;
-                Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
-                $path = Storage::disk('reviewContent')->path($folder.'/'.$fileName);
-                $url = Storage::disk('reviewContent')->url($folder.'/'.$fileName);
-                $filesInfo[] = [ 'fileName' => $fileName,
-                'path' => $path,
-                'url' => $url,
-                'extension' => $extension,
-                ];
+                $filesInfo[] = $this->saveFile($file, ($requestData->id) ?? 0 );
             }
 
 
@@ -164,5 +178,27 @@ class ReviewContentController extends Controller
         }
     }
 
+    /** save one file to specific folder
+     * @param $file
+     * @param int $id
+     * @return array info saved file [url, path, name, extension]
+     */
+    protected function saveFile($file, int $id = 0):array {
+
+        //if isset id, save to folder with name id
+        //if not have id, that save in zero folder
+        $folder = 'upload'. ($id) ? '/'.$id : '/0';
+
+        $extension = $file->getClientOriginalExtension();
+        $fileName = uniqid().'.'.$extension;
+        Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
+        $path = Storage::disk('reviewContent')->path($folder.'/'.$fileName);
+        $url = Storage::disk('reviewContent')->url($folder.'/'.$fileName);
+        return [ 'fileName' => $fileName,
+            'path' => $path,
+            'url' => $url,
+            'extension' => $extension,
+        ];
+    }
 
 }

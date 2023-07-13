@@ -14,7 +14,11 @@ class ReviewContent extends Model
     use HasFactory;
     use HasUuids;
     protected $table = 'reviews_content';
-    protected $fillable = ['file', 'url', 'contentable_id'];
+    protected $fillable = ['file', 'url',
+        'contentable_id',
+    'review_id',
+    'message_id',
+    ];
     public const STORAGE_DISK = 'reviewContent';
 
     protected static function newFactory()
@@ -22,13 +26,13 @@ class ReviewContent extends Model
         return \Modules\Reviews\Database\factories\ReviewContentFactory::new();
     }
 
-    /**
-     * Get the parent contentable model (review or message).
-     */
-    public function contentable()
-    {
-        return $this->morphTo();
-    }
+//    /**
+//     * Get the parent contentable model (review or message).
+//     */
+//    public function contentable()
+//    {
+//        return $this->morphTo();
+//    }
 
     /**
      * The "booted" method of the model.

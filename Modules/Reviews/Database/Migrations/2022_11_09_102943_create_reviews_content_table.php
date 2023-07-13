@@ -18,8 +18,18 @@ return new class extends Migration
             $table->char('file');
             $table->char('url');
             $table->text('converted_content_info')->nullable();
-            $table->nullableMorphs('contentable');
-            $table->timestamps();
+            $table->unsignedInteger('review_id');
+            //$table->nullableMorphs('contentable');
+//            $table->foreignId('review_id')
+//                ->constrained()
+//                ->onUpdate('cascade')
+//                ->onDelete('cascade');
+//            $table->foreignId('message_id')
+//                ->default(0)
+//                ->constrained()
+//                ->onUpdate('cascade')
+//                ->onDelete('cascade');
+//            $table->timestamps();
         });
     }
 
