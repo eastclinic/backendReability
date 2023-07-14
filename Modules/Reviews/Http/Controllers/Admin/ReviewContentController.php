@@ -36,8 +36,10 @@ use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 
+
 class ReviewContentController extends Controller
 {
+
 
 //    private ApiDataTableService $QueryBuilderByRequest;
 //    private Target $targetModel;
@@ -90,7 +92,6 @@ class ReviewContentController extends Controller
 
         //run job for
 
-        error_log('store');
         $requestData = $request->validated();
         $filesInfo = [];
         if ($request->hasFile('files')) {
@@ -99,18 +100,21 @@ class ReviewContentController extends Controller
             foreach ($files as $file) {
                 $filesInfo[] = $this->saveFile($file, ($requestData['id']) ?? 0,  $requestData['contentable_type']);
             }
-
-
         }
-
-
-
         if(!$filesInfo) {
             return response()->error('Error save upload files');
         }
         foreach ($filesInfo as $info){
-//            if($requestData['id'])
-//            $reviewContent = new ReviewContent($requestData);
+
+            $reviewContentData  = ['file' => $info['path'], 'url' => $info['url']];
+            if($requestData['id']){
+                $reviewContentData['id'] = $requestData['id'];
+            }
+
+            $reviewContent = new ReviewContent($reviewContentData);
+
+
+
         }
 
 
@@ -178,18 +182,19 @@ class ReviewContentController extends Controller
         }
     }
 
-    /** save one file to specific folder
+    /**
+     * save one file to specific folder
      * @param $file
-     * @param int $id
-     * @param string $typeTarget
+     * @param int $targetId
+     * @param string $targetType
      * @return array
      */
-    protected function saveFile($file, int $id, string $typeTarget):array {
+    protected function saveFile($file, int $targetId, string $targetType):array {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
-        $folderNameByTargetId =  ($id) ? DIRECTORY_SEPARATOR.$id : DIRECTORY_SEPARATOR.'0';
-        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviewsModule'.DIRECTORY_SEPARATOR.$typeTarget.'s'.DIRECTORY_SEPARATOR. $folderNameByTargetId;
+        $folderNameByTargetId =  ($targetId) ? DIRECTORY_SEPARATOR.$id : DIRECTORY_SEPARATOR.'0';
+        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviewsModule'.DIRECTORY_SEPARATOR.$targetType.'s'.DIRECTORY_SEPARATOR. $folderNameByTargetId;
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
