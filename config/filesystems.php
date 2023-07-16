@@ -57,8 +57,10 @@ return [
         ],
         'reviewContent' => [
             'driver' => 'local',
-            'root' => storage_path('img'),
+            'root' => storage_path('app/public/img'),
             'throw' => false,
+            'url' => '/storage/img',
+            'visibility' => 'public',
         ],
 
     ],

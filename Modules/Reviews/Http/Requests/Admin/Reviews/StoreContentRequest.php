@@ -30,7 +30,7 @@ class StoreContentRequest extends FormRequest
 
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
             'files.*' => 'required|file|mimes:jpg,jpeg,png|max:4096',
-            'contentable_type' => 'required',
+            'contentable_type' => ['required', 'in:review,review_message'],
             'id' => ['integer', 'nullable'],
         ];
 

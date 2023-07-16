@@ -106,13 +106,13 @@ class ReviewContentController extends Controller
         }
         foreach ($filesInfo as $info){
 
-            $reviewContentData  = ['file' => $info['path'], 'url' => $info['url']];
+            $reviewContentData  = ['file' => $info['path'], 'url' => $info['url'], 'contentable_type' => $requestData['contentable_type'] ];
             if($requestData['id']){
-                $reviewContentData['id'] = $requestData['id'];
+                $reviewContentData['contentable_id'] = $requestData['id'];
             }
 
             $reviewContent = new ReviewContent($reviewContentData);
-
+            $reviewContent->save();
 
 
         }
@@ -193,14 +193,18 @@ class ReviewContentController extends Controller
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
-        $folderNameByTargetId =  ($targetId) ? DIRECTORY_SEPARATOR.$id : DIRECTORY_SEPARATOR.'0';
+        $folderNameByTargetId =  ($targetId) ? $targetId : '0';
         $folder = 'upload'.DIRECTORY_SEPARATOR.'reviewsModule'.DIRECTORY_SEPARATOR.$targetType.'s'.DIRECTORY_SEPARATOR. $folderNameByTargetId;
+
+        $urlFolderNameByTargetId =  ($targetId) ? $targetId : '0';
+        $urlPath = 'upload/reviewsModule/'.$targetType.'s'.'/'. $urlFolderNameByTargetId;
+
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
         Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
-        $path = Storage::disk('reviewContent')->path($folder.'/'.$fileName);
-        $url = Storage::disk('reviewContent')->url($folder.'/'.$fileName);
+        $path = Storage::disk('reviewContent')->path($folder.DIRECTORY_SEPARATOR.$fileName);
+        $url = Storage::disk('reviewContent')->url($urlPath.'/'.$fileName);
         return [ 'fileName' => $fileName,
             'path' => $path,
             'url' => $url,

@@ -16,8 +16,7 @@ class ReviewContent extends Model
     protected $table = 'reviews_content';
     protected $fillable = ['file', 'url',
         'contentable_id',
-    'review_id',
-    'message_id',
+    'contentable_type',
     ];
     public const STORAGE_DISK = 'reviewContent';
 
