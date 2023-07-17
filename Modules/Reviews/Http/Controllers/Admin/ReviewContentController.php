@@ -104,7 +104,7 @@ class ReviewContentController extends Controller
         if(!$filesInfo) {
             return response()->error('Error save upload files');
         }
-        foreach ($filesInfo as $info){
+        foreach ($filesInfo as $i => $info){
 
             $reviewContentData  = ['file' => $info['path'], 'url' => $info['url'], 'contentable_type' => $requestData['contentable_type'] ];
             if($requestData['id']){
@@ -113,6 +113,9 @@ class ReviewContentController extends Controller
 
             $reviewContent = new ReviewContent($reviewContentData);
             $reviewContent->save();
+            if($reviewContent->id){
+                $filesInfo[$i]['id'] = $reviewContent->id;
+            }
 
 
         }
@@ -175,11 +178,14 @@ class ReviewContentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        if($this->reviewService->delete($id)){
-            return ResponseService::okMessage('Removed review');
-        }else{
-            return  ResponseService::error('Failed to remove review');
+        $review = ReviewContent::find($id);
+
+        if ($review) {
+            $review->delete();
+            return response()->json(['message' => 'Review deleted successfully']);
         }
+
+        return response()->json(['message' => 'Review not found'], 404);
     }
 
     /**
