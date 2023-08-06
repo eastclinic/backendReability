@@ -33,6 +33,7 @@ use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
+use Modules\Reviews\Jobs\HandleReviewsContentJob;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 
@@ -111,12 +112,16 @@ class ReviewContentController extends Controller
                 $reviewContentData['contentable_id'] = $requestData['id'];
             }
 
+
+
+
             $reviewContent = new ReviewContent($reviewContentData);
             $reviewContent->save();
             if($reviewContent->id){
                 $filesInfo[$i]['id'] = $reviewContent->id;
             }
-
+            //dont forget to run  Supervisor
+            HandleReviewsContentJob::dispatch($reviewContent);
 
         }
 

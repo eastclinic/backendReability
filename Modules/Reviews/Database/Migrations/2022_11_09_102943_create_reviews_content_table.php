@@ -17,6 +17,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->char('file');
             $table->char('url');
+            $table->char('file_extension');
             $table->text('converted_content_info')->nullable();
             $table->nullableMorphs('contentable');
             $table->timestamps();

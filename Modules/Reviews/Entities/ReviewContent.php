@@ -14,7 +14,7 @@ class ReviewContent extends Model
     use HasFactory;
     use HasUuids;
     protected $table = 'reviews_content';
-    protected $fillable = ['file', 'url',
+    protected $fillable = ['file', 'url', 'file_extension',
         'contentable_id',
     'contentable_type',
     ];
