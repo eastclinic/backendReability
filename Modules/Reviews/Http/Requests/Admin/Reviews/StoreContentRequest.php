@@ -30,18 +30,12 @@ class StoreContentRequest extends FormRequest
 
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
             'files.*' => 'required|file|mimes:jpg,jpeg,png|max:4096',
-            'contentable_type' => ['required', 'in:review,review_message'],
-            'id' => ['integer', 'nullable'],
+//            'contentable_type' => ['required', 'in:review,review_message'],
+            'reviewId' => ['required', 'numeric'],
+            'messageId' => [['nullable', 'numeric'],],
+//            'id' => ['integer', 'nullable'],
         ];
 
-        //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
-        return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'file' =>'required',
-            'contentable_type' => 'required',
-            //'author_id' => 'nullable',
-            'url' => 'required',
-            'contentable_id' => 'required',
-        ];
     }
 
     /**

@@ -28,7 +28,8 @@ class Review extends Model
     }
 
     public function content(){
-        return $this->morphMany(ReviewContent::class, 'contentable');
+        return $this->hasMany(ReviewContent::class);
+        //return $this->morphMany(ReviewContent::class, 'contentable');
     }
 
     public function messages():HasMany{

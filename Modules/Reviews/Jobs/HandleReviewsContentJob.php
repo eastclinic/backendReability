@@ -13,6 +13,7 @@ class HandleReviewsContentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected array $passibleFileExtension = ['jpg' => 'photo', 'png' => 'photo', 'jpeg' => 'photo', 'avi' => 'video'];
     protected ReviewContent $content;
     /**
      * Create a new job instance.
@@ -31,11 +32,25 @@ class HandleReviewsContentJob implements ShouldQueue
      */
     public function handle()
     {
-        $img = Image::make($this->content->file);
+        //check type content
+
+        if(!$this->content->file_extension || !$fileType = $passibleFileExtension[$this->content->file_extension]){
+            return;
+        }
+
+        switch ($fileType){
+            case 'photo':
+                $img = Image::make($this->content->file);
 // resize the image to a width of 300 and constrain aspect ratio (auto height)
-        $img->resize(300, null, function ($constraint) {
-            $constraint->aspectRatio();
-        });
+                $img->resize(300, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                });
+                $thumbnail->save(Storage::path('/public/image/news/').'thumbnail/'.$filename);
+
+                break;
+        }
+
+
 
 
         error_log('HandleReviewsContentJob !!!');

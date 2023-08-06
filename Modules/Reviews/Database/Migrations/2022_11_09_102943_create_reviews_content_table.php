@@ -15,11 +15,13 @@ return new class extends Migration
     {
         Schema::create('reviews_content', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->char('file');
-            $table->char('url');
-            $table->char('file_extension');
-            $table->text('converted_content_info')->nullable();
-            $table->nullableMorphs('contentable');
+            $table->char('file')->default('');
+            $table->char('url')->default('');
+            $table->char('file_extension')->default('');
+            $table->text('converted_content_info')->default('');
+            $table->unsignedInteger('review_id');
+            $table->unsignedInteger('message_id')->default(0);
+            //$table->nullableMorphs('contentable');
             $table->timestamps();
 
         });

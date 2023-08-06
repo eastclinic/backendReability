@@ -27,8 +27,8 @@ class ReviewContentFactory extends Factory
     {
 //        $reviewId = Review::all()->random()->id;
 //        $reviewMessageId = $this->faker->randomElement([0, 0, 0, 0, ReviewMessage::all()->random()->id]);
-        $targetPassible = ['review' => Review::all()->random()->id, 'reviewMessage' => ReviewMessage::all()->random()->id];
-                $target = $this->faker->randomKey($targetPassible);
+//        $targetPassible = ['review' => Review::all()->random()->id, 'reviewMessage' => ReviewMessage::all()->random()->id];
+//                $target = $this->faker->randomKey($targetPassible);
 
 
 
@@ -38,9 +38,11 @@ class ReviewContentFactory extends Factory
             'url' => $this->faker->imageUrl(),
             'file' => 'upload'.DIRECTORY_SEPARATOR .$this->faker->file('storage/img', 'storage/img/upload', false),
             'file_extension' => $this->faker->randomElement(['jpg', 'avi']),
-//            'review_id' =>$reviewId,
-            'contentable_type' => $target,
-            'contentable_id' =>$targetPassible[$target],
+            'review_id' =>Review::all()->random()->id,
+            'message_id' => $this->faker->randomElement([0, 0, 0, 0, ReviewMessage::all()->random()->id])
+
+//            'contentable_type' => $target,
+//            'contentable_id' =>$targetPassible[$target],
 
 
 

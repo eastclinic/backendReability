@@ -99,47 +99,28 @@ class ReviewContentController extends Controller
             $files = $request->file('files');
 //save files
             foreach ($files as $file) {
-                $filesInfo[] = $this->saveFile($file, ($requestData['id']) ?? 0,  $requestData['contentable_type']);
+                $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
+                $reviewContent = ReviewContent::create($reviewContentData);
+                $reviewContent->save();
+                $fileInfo = $this->saveFile($file, $reviewContent);
+                if($fileInfo) {
+                    $reviewContent->update(['file' => $fileInfo['path'], 'url' => $fileInfo['url'], 'file_extension' => $fileInfo['extension']]);
+                }
+
+                //dont forget to run  Supervisor
+                HandleReviewsContentJob::dispatch($reviewContent);
+                if($reviewContent->id){
+                    $fileInfo['id'] = $reviewContent->id;
+                }
+                $filesInfo[] = $fileInfo;
             }
         }
         if(!$filesInfo) {
             return response()->error('Error save upload files');
         }
-        foreach ($filesInfo as $i => $info){
-
-            $reviewContentData  = ['file' => $info['path'], 'url' => $info['url'], 'contentable_type' => $requestData['contentable_type'] ];
-            if($requestData['id']){
-                $reviewContentData['contentable_id'] = $requestData['id'];
-            }
-
-
-
-
-            $reviewContent = new ReviewContent($reviewContentData);
-            $reviewContent->save();
-            if($reviewContent->id){
-                $filesInfo[$i]['id'] = $reviewContent->id;
-            }
-            //dont forget to run  Supervisor
-            HandleReviewsContentJob::dispatch($reviewContent);
-
-        }
-
-
 
             return response()->ok($filesInfo, 200);
 
-////        $target = $this->targetModel->getModel($requestData['reviewable_type']);
-////        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
-////            return response()->error('Не задано, на кого отзыв.', 400);
-////        }else{
-////           // Log::info(print_r(phpinfo(),1));
-////            //todo check why not work associate
-////            //$review->reviewable()->associate($target);
-////        }
-        $review->save();
-//
-        return response()->okMessage('Save new review.', 200);
     }
 
     /**
@@ -200,16 +181,11 @@ class ReviewContentController extends Controller
      * @param string $targetType
      * @return array
      */
-    protected function saveFile($file, int $targetId, string $targetType):array {
-
+    protected function saveFile($file, ReviewContent $reviewContent):array {
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
-        $folderNameByTargetId =  ($targetId) ? $targetId : '0';
-        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviewsModule'.DIRECTORY_SEPARATOR.$targetType.'s'.DIRECTORY_SEPARATOR. $folderNameByTargetId;
-
-        $urlFolderNameByTargetId =  ($targetId) ? $targetId : '0';
-        $urlPath = 'upload/reviewsModule/'.$targetType.'s'.'/'. $urlFolderNameByTargetId;
-
+        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviews'.DIRECTORY_SEPARATOR.$reviewContent->review_id;
+        $urlPath = 'upload/reviews/'.$reviewContent->review_id;
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
