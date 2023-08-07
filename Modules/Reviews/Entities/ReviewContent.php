@@ -17,8 +17,10 @@ class ReviewContent extends Model
     protected $fillable = ['file',
         'url',
         'file_extension',
+        'file_name',
         'review_id',
         'message_id',
+
 
 
 //        'contentable_id',

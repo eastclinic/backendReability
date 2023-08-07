@@ -33,9 +33,10 @@ use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
-use Modules\Reviews\Jobs\HandleReviewsContentJob;
+use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Bus;
 
 
 class ReviewContentController extends Controller
@@ -101,14 +102,19 @@ class ReviewContentController extends Controller
             foreach ($files as $file) {
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
-                $reviewContent->save();
-                $fileInfo = $this->saveFile($file, $reviewContent);
+//                $reviewContent->save();
+                $fileInfo = $this->saveFile($file, $reviewContent->review_id);
                 if($fileInfo) {
-                    $reviewContent->update(['file' => $fileInfo['path'], 'url' => $fileInfo['url'], 'file_extension' => $fileInfo['extension']]);
+                    $reviewContent->update(['file' => $fileInfo['file'],
+                        'url' => $fileInfo['url'],
+                        'file_extension' => $fileInfo['extension'],
+                        'file_name' => $fileInfo['file_name'],
+                        ]);
                 }
 
                 //dont forget to run  Supervisor
-                HandleReviewsContentJob::dispatch($reviewContent);
+                CreateReviewsPreviewsJob::dispatch($reviewContent);
+
                 if($reviewContent->id){
                     $fileInfo['id'] = $reviewContent->id;
                 }
@@ -181,20 +187,21 @@ class ReviewContentController extends Controller
      * @param string $targetType
      * @return array
      */
-    protected function saveFile($file, ReviewContent $reviewContent):array {
+    protected function saveFile($file, int $reviewId):array {
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
-        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviews'.DIRECTORY_SEPARATOR.$reviewContent->review_id;
-        $urlPath = 'upload/reviews/'.$reviewContent->review_id;
+        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviews'.DIRECTORY_SEPARATOR.$reviewId;
+        $urlPath = 'upload/reviews/'.$reviewId;
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
         Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
-        $path = Storage::disk('reviewContent')->path($folder.DIRECTORY_SEPARATOR.$fileName);
-        $url = Storage::disk('reviewContent')->url($urlPath.'/'.$fileName);
+
         return [ 'fileName' => $fileName,
-            'path' => $path,
-            'url' => $url,
+            'path' => Storage::disk('reviewContent')->path($folder),
+            'file' => Storage::disk('reviewContent')->path($folder.DIRECTORY_SEPARATOR.$fileName),
+            'file_name' => $fileName,
+            'url' => Storage::disk('reviewContent')->url($urlPath.'/'.$fileName),
             'extension' => $extension,
         ];
     }

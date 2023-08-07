@@ -16,8 +16,10 @@ return new class extends Migration
         Schema::create('reviews_content', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->char('file')->default('');
-            $table->char('url')->default('');
+            $table->char('file_name')->default('');
             $table->char('file_extension')->default('');
+            $table->char('url')->default('');
+            $table->char('preview')->default('');
             $table->text('converted_content_info')->default('');
             $table->unsignedInteger('review_id');
             $table->unsignedInteger('message_id')->default(0);
