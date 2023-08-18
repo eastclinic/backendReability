@@ -164,20 +164,15 @@ class ReviewContentController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id) {
-        $review = ReviewContent::find($id);
+        if (!$review = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
 
-        if ($review) {
-            $review->delete();
-            return response()->json(['message' => 'Review deleted successfully']);
-        }
+        $review->delete();
+        return response()->okMessage('Файл удален', 200);
 
-        return response()->json(['message' => 'Review not found'], 404);
     }
 
     /**
@@ -191,17 +186,16 @@ class ReviewContentController extends Controller
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
         $folder = 'upload'.DIRECTORY_SEPARATOR.'reviews'.DIRECTORY_SEPARATOR.$reviewId;
-        $urlPath = 'upload/reviews/'.$reviewId;
 
         $extension = $file->getClientOriginalExtension();
         $fileName = uniqid().'.'.$extension;
         Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
 
         return [ 'fileName' => $fileName,
-            'path' => Storage::disk('reviewContent')->path($folder),
-            'file' => Storage::disk('reviewContent')->path($folder.DIRECTORY_SEPARATOR.$fileName),
+            'path' => $folder,
+            'file' => $folder.DIRECTORY_SEPARATOR.$fileName,
             'file_name' => $fileName,
-            'url' => Storage::disk('reviewContent')->url($urlPath.'/'.$fileName),
+            'url' => Storage::disk('reviewContent')->url('upload/reviews/'.$reviewId.'/'.$fileName),
             'extension' => $extension,
         ];
     }

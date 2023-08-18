@@ -53,14 +53,14 @@ class StoreContentRequest extends FormRequest
      *
      * @return array
      */
-//    public function messages()
-//    {
-//        return [
-//            'reviewable_type.required' => 'Be sure to specify type of review target',
-//            'reviewable_id.required' => 'Be sure to specify id of review target',
-////            'rating.required' => 'Be sure to specify id of review target',
-//        ];
-//    }
+    public function messages()
+    {
+        return [
+            'files.*.mimes' => 'Неправильный тип изображение. Возможно jpg,jpeg,png',
+            'reviewable_id.required' => 'Be sure to specify id of review target',
+//            'rating.required' => 'Be sure to specify id of review target',
+        ];
+    }
 
 //    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
 //    {
