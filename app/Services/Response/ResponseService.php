@@ -35,7 +35,6 @@ class ResponseService extends Response
      *
      *
      * @see \App\Providers\AppServiceProvider::boot()
-     * @param \Illuminate\Database\Eloquent\Builder $modelQuery
      * @static
      */
     public static function apiCollection($modelQuery)

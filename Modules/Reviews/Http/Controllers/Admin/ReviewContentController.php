@@ -37,6 +37,7 @@ use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
+use Modules\Reviews\Services\ReviewContentService;
 
 
 class ReviewContentController extends Controller
@@ -89,9 +90,6 @@ class ReviewContentController extends Controller
     public function store(StoreContentRequest $request)
     {
 
-
-
-
         //run job for
 
         $requestData = $request->validated();
@@ -103,22 +101,10 @@ class ReviewContentController extends Controller
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
 //                $reviewContent->save();
-                $fileInfo = $this->saveFile($file, $reviewContent->review_id);
-                if($fileInfo) {
-                    $reviewContent->update(['file' => $fileInfo['file'],
-                        'url' => $fileInfo['url'],
-                        'file_extension' => $fileInfo['extension'],
-                        'file_name' => $fileInfo['file_name'],
-                        ]);
-                }
+                $contentService = new ReviewContentService();
+                $contentService->saveFileForContent($file, $reviewContent);
 
-                //dont forget to run  Supervisor
-                CreateReviewsPreviewsJob::dispatch($reviewContent);
-
-                if($reviewContent->id){
-                    $fileInfo['id'] = $reviewContent->id;
-                }
-                $filesInfo[] = $fileInfo;
+                $filesInfo[] = $reviewContent->toArray();
             }
         }
         if(!$filesInfo) {
