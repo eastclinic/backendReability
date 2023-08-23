@@ -105,16 +105,14 @@ class ReviewContentController extends Controller
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
 //                $reviewContent->save();
-                $this->contentService->saveFileForContent($file, $reviewContent);
+                $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
 
-                $reviewContent->update(['file' => $this->contentService->getFileFullPath(),
-                    'url' => $this->contentService->getUrl(),
-                    'file_extension' => $this->contentService->getFileExtension(),
-                    'file_name' => $this->contentService->getFileName(),
-                    'path' => $this->contentService->getFolder(),
-                ]);
+                $reviewContent->update($fileInfo->toArray());
                 //dont forget to run  Supervisor  php artisan queue:listen
                 CreateReviewsPreviewsJob::dispatch((new PreviewFileService())->forContentId($reviewContent->id));
+
+                //todo create job for clear "last" content
+
 
                 $filesInfo[] = $reviewContent->toArray();
             }
@@ -167,8 +165,10 @@ class ReviewContentController extends Controller
      */
     public function destroy($id) {
         if (!$review = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
+        $this->contentService->saveFileForContent($file, $reviewContent);
 
         $review->delete();
+
         return response()->okMessage('Файл удален', 200);
 
     }

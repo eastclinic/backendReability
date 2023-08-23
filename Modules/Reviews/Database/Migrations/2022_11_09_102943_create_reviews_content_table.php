@@ -19,7 +19,7 @@ return new class extends Migration
             $table->char('file_name')->default('');
             $table->char('file_extension')->default('');
             $table->char('url')->default('');
-            $table->char('preview')->default('');
+            $table->boolean('preview')->default(false);
             $table->text('converted_content_info')->default('');
             $table->unsignedInteger('review_id');
             $table->unsignedInteger('message_id')->default(0);

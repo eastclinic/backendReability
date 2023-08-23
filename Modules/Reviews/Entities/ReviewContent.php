@@ -20,6 +20,7 @@ class ReviewContent extends Model
         'file_name',
         'review_id',
         'message_id',
+        'preview',
 
 
 
