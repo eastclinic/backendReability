@@ -31,7 +31,7 @@ class CreateReviewsPreviewsJob implements ShouldQueue
      */
     public function handle()
     {
-        $this->previewService->handle();
+        $this->previewService->generatePreviews();
         return;
     }
 

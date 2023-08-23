@@ -52,7 +52,7 @@ class ReviewResourceController extends Controller
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
 //        $reviews->with('content')->with('messages');
         $reviews->with(['content' => function ($query) {
-            $query->where('type', 'original');
+            $query->where('type', 'original')->where('confirm', 1);
         }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())

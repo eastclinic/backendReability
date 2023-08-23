@@ -8,6 +8,7 @@ namespace Modules\Reviews\Services;
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\DataStructures\ContentFileInfoStructure;
 use Modules\Reviews\Entities\ReviewContent;
+use Modules\Reviews\Jobs\ClearUnconfirmedReviewContentJob;
 use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
 use Modules\Reviews\DataStructures\AbstractDataStructure;
 
@@ -22,19 +23,20 @@ class ReviewContentService
         $extension = mb_strtolower($file->getClientOriginalExtension());
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
-        $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder('original');
+        $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
 
-        Storage::disk('reviewContent')->putFileAs((new ReviewContentStorage())->forContent($content)->reviewContentFolder('original'), $file, $fileNameWithExtension);
+        Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
 
         //dont forget to run  Supervisor  php artisan queue:listen
-        CreateReviewsPreviewsJob::dispatch((new ContentPreviewService($content))->generate());
+        CreateReviewsPreviewsJob::dispatch(new ContentPreviewService($content));
+
+        ClearUnconfirmedReviewContentJob::dispatch($content)->delay(now()->addSeconds(10));
 
         //todo create job for clear "last" content
 
         return (new ContentFileInfoStructure([
             'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
-            'url' => (new ReviewContentStorage())->forContent($content)->storageUrl('original/'.$fileNameWithExtension),
-            'path' => $filePath,
+            'url' => (new ReviewContentStorage())->forContent($content)->contentUrl('original/'.$fileNameWithExtension),
             'type' => 'original'
         ]));
 
@@ -49,7 +51,7 @@ class ReviewContentService
         if(!$content->parent_content_id) return true;
         if(!$previews = ReviewContent::where('parent_content_id', $content->parent_content_id)->get())  return true;
         foreach ($previews as $preview){
-            Storage::delete($preview->file);
+            Storage::disk('reviewContent')->delete($preview->file);
         }
 
         return true;
