@@ -34,6 +34,8 @@ use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
+use Modules\Reviews\Services\PreviewFileService;
+use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
@@ -47,16 +49,18 @@ class ReviewContentController extends Controller
 //    private ApiDataTableService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
+    private ReviewContentService $contentService;
 //
-//    public function __construct(
-////        ReviewService $reviewService,
+    public function __construct(
+        ReviewContentService $reviewContentService
 //        ApiDataTableService $apiHandler,
-//        Target $targetEntity)    {
+//        Target $targetEntity
+)    {
 //        $this->QueryBuilderByRequest = $apiHandler;
 //        $this->targetModel = $targetEntity;
 ////        $this->reviewService = $reviewService;
-//
-//    }
+        $this->contentService = $reviewContentService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -101,8 +105,16 @@ class ReviewContentController extends Controller
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
 //                $reviewContent->save();
-                $contentService = new ReviewContentService();
-                $contentService->saveFileForContent($file, $reviewContent);
+                $this->contentService->saveFileForContent($file, $reviewContent);
+
+                $reviewContent->update(['file' => $this->contentService->getFileFullPath(),
+                    'url' => $this->contentService->getUrl(),
+                    'file_extension' => $this->contentService->getFileExtension(),
+                    'file_name' => $this->contentService->getFileName(),
+                    'path' => $this->contentService->getFolder(),
+                ]);
+                //dont forget to run  Supervisor  php artisan queue:listen
+                CreateReviewsPreviewsJob::dispatch((new PreviewFileService())->forContentId($reviewContent->id));
 
                 $filesInfo[] = $reviewContent->toArray();
             }

@@ -57,9 +57,9 @@ return [
         ],
         'reviewContent' => [
             'driver' => 'local',
-            'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'img'),
+            'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'img'.DIRECTORY_SEPARATOR.'reviews'),
             'throw' => false,
-            'url' => '/storage/img',
+            'url' => '/storage/img/reviews',
             'visibility' => 'public',
         ],
 
