@@ -13,33 +13,29 @@ use Modules\Reviews\DataStructures\AbstractDataStructure;
 
 class ReviewContentService
 {
-//    public ?ReviewContent $content = null;
-//    protected string $extension;
-//    protected string $folder;
-//    protected string $fileName;
-//    protected string $url;
-
-
-
 
     public function saveFileForContent($file, ReviewContent $content):AbstractDataStructure {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
 
-        $extension = $file->getClientOriginalExtension();
-        $fileName = uniqid().'.'.$extension;
+        $extension = mb_strtolower($file->getClientOriginalExtension());
+        $fileName = uniqid();
+        $fileNameWithExtension = $fileName.'.'.$extension;
         $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder('original');
 
-        Storage::disk('reviewContent')->putFileAs((new ReviewContentStorage())->forContent($content)->reviewContentFolder('original'), $file, $fileName);
+        Storage::disk('reviewContent')->putFileAs((new ReviewContentStorage())->forContent($content)->reviewContentFolder('original'), $file, $fileNameWithExtension);
 
+        //dont forget to run  Supervisor  php artisan queue:listen
+        CreateReviewsPreviewsJob::dispatch((new ContentPreviewService($content))->generate());
+
+        //todo create job for clear "last" content
 
         return (new ContentFileInfoStructure([
-            'file' => $filePath.DIRECTORY_SEPARATOR.$fileName,
-            'url' => (new ReviewContentStorage())->forContent($content)->storageUrl('original/'.$fileName),
-            'file_extension' => $extension,
-            'file_name' => $fileName,
+            'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
+            'url' => (new ReviewContentStorage())->forContent($content)->storageUrl('original/'.$fileNameWithExtension),
             'path' => $filePath,
+            'type' => 'original'
         ]));
 
         //todo run job with delay for clear not used reviews content data with files
@@ -47,6 +43,11 @@ class ReviewContentService
 
     }
 
+
+    public function removeFilesForContent(ReviewContent $content){
+
+        $contents = ReviewContent::where($content->file_name)->get();
+    }
 
 }
 

@@ -34,7 +34,7 @@ use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
-use Modules\Reviews\Services\PreviewFileService;
+use Modules\Reviews\Services\ContentPreviewService;
 use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
@@ -104,14 +104,10 @@ class ReviewContentController extends Controller
             foreach ($files as $file) {
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
-//                $reviewContent->save();
+
                 $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
 
-                $reviewContent->update($fileInfo->toArray());
-                //dont forget to run  Supervisor  php artisan queue:listen
-                CreateReviewsPreviewsJob::dispatch((new PreviewFileService())->forContentId($reviewContent->id));
-
-                //todo create job for clear "last" content
+                $reviewContent->update( $fileInfo->toArray() );
 
 
                 $filesInfo[] = $reviewContent->toArray();
@@ -164,38 +160,13 @@ class ReviewContentController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id) {
-        if (!$review = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
-        $this->contentService->saveFileForContent($file, $reviewContent);
+        if (!$content = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
+        $this->contentService->removeFilesForContent( $content);
 
-        $review->delete();
+        $content->delete();
 
         return response()->okMessage('Файл удален', 200);
 
-    }
-
-    /**
-     * save one file to specific folder
-     * @param $file
-     * @param int $targetId
-     * @param string $targetType
-     * @return array
-     */
-    protected function saveFile($file, int $reviewId):array {
-        //if isset id, save to folder with name id
-        //if not have id, that save in zero folder
-        $folder = 'upload'.DIRECTORY_SEPARATOR.'reviews'.DIRECTORY_SEPARATOR.$reviewId;
-
-        $extension = $file->getClientOriginalExtension();
-        $fileName = uniqid().'.'.$extension;
-        Storage::disk('reviewContent')->putFileAs($folder, $file, $fileName);
-
-        return [ 'fileName' => $fileName,
-            'path' => $folder,
-            'file' => $folder.DIRECTORY_SEPARATOR.$fileName,
-            'file_name' => $fileName,
-            'url' => Storage::disk('reviewContent')->url('upload/reviews/'.$reviewId.'/'.$fileName),
-            'extension' => $extension,
-        ];
     }
 
 }

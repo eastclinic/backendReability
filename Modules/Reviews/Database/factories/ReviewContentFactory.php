@@ -37,7 +37,7 @@ class ReviewContentFactory extends Factory
             'id' => Uuid::uuid4()->toString(),
             'url' => $this->faker->imageUrl(),
             'file' => 'upload'.DIRECTORY_SEPARATOR .$this->faker->file('storage/img', 'storage/img/upload', false),
-            'file_extension' => $this->faker->randomElement(['jpg', 'avi']),
+//            'file_extension' => $this->faker->randomElement(['jpg', 'avi']),
             'review_id' =>Review::all()->random()->id,
             'message_id' => $this->faker->randomElement([0, 0, 0, 0, ReviewMessage::all()->random()->id])
 

@@ -9,27 +9,51 @@ use Illuminate\Support\Facades\Storage;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Reviews\Entities\ReviewContent;
+use function Symfony\Component\Finder\name;
 
-class PreviewFileService
+class ContentPreviewService
 {
-    public ?string $contentId = null;
+    public ?ReviewContent $content = null;
+    protected bool $isCreate = false;
+    protected bool $isDestroy = false;
+
+    public function __construct( ?ReviewContent $content = null) {
+        $this->content = $content;
+    }
+
+    public function generate():self {
+        $this->isCreate = true;
+        return $this;
+    }
+
+    public function destroy():self {
+        $this->isDestroy = true;
+        return $this;
+    }
+
     public function forContentId($contentId):self {
         $this->contentId = $contentId;
         return $this;
     }
 
     public function handle():bool {
-        if( !$this->contentId )       return false;
-        $content = ReviewContent::find($this->contentId);
+        if($this->isCreate){
+            $this->createPreviews();
+        }
+
+        return false;
+    }
+    protected function createPreviews():bool {
+        if( !$this->content )       return false;
+        //again get content from db, because info possible change
+        $content = ReviewContent::find($this->content->id);
         if( !$content || !file_exists($content->file)) return false;
-
-
-
-
-
+        $fileInfo= pathinfo($content->file);
+        $originalFileName = $fileInfo['filename'];
+        $originalFileExtension = mb_strtolower($fileInfo['extension']);
         try {
 
-            switch ($content->file_extension){
+            switch ($originalFileExtension){
                 case 'jpg': case 'png': case 'jpeg':
 
                 $preview = Image::make($content->file)
@@ -40,7 +64,11 @@ class PreviewFileService
 
                 $storageUrl = (new ReviewContentStorage())->forContent($content)->storageUrl('previews');
                 $previewFolder = (new ReviewContentStorage())->forContent($content)->storageFolder('previews').DIRECTORY_SEPARATOR.'300x300';
-                $previewFilename = str_replace($content->file_extension, '', $content->file_name).'webp';
+
+
+
+                $previewFilename = $fileInfo['filename'].'.webp';
+
                 $previewFile = $previewFolder.DIRECTORY_SEPARATOR.$previewFilename;
                 $previewFileUrl = $storageUrl.'/300x300/'.$previewFilename;
 //                Storage::disk('reviewContent')->putFileAs((new ReviewContentStorage())->forContent($content)->reviewContentFolder('previews'), (string)$preview, $previewFilename);
@@ -52,21 +80,19 @@ class PreviewFileService
                 $reviewContentData  = [
                     'review_id' => $content->review_id,
                     'message_id'=> $content->message_id,
-                    'file_name'=> $previewFilename,
-                    'file_extension'=> 'webp',
+                    'parent_content_id' => $content->id,
                     'file' => $previewFile,
                     'url' => $previewFileUrl,
-                    'preview' => true,
+                    'type' => '300x300',
                 ];
-                error_log(print_r($reviewContentData, 1));
-                $reviewContent = ReviewContent::create($reviewContentData);
+                ReviewContent::create($reviewContentData);
 
                 break;
             }
         }catch (\Exception $e){
             error_log($e->getMessage());
         }
-        return false;
+        return true;
     }
 
 }

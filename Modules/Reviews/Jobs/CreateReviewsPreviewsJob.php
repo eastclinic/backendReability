@@ -7,18 +7,18 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Modules\Reviews\Services\PreviewFileService;
+use Modules\Reviews\Services\ContentPreviewService;
 
 class CreateReviewsPreviewsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected PreviewFileService $previewService;
+    protected ContentPreviewService $previewService;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(PreviewFileService $previewService)
+    public function __construct(ContentPreviewService $previewService)
     {
         $this->previewService = $previewService;
 
