@@ -5,6 +5,7 @@ namespace Modules\Reviews\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
 use App\Services\Response\ResponseService;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Entities\Review;
@@ -49,7 +50,10 @@ class ReviewResourceController extends Controller
 
         //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
-        $reviews->with('content')->with('messages');
+//        $reviews->with('content')->with('messages');
+        $reviews->with(['content' => function ($query) {
+            $query->where('type', 'original');
+        }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource

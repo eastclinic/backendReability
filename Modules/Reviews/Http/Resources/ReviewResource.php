@@ -31,6 +31,7 @@ class ReviewResource extends JsonResource
             'created_at' => $this->created_at->timestamp,
 
             'content' => ReviewContentResource::collection($this->whenLoaded('content')),
+
             'messages' => ReviewMessageResource::collection($this->whenLoaded('messages')),
 
 

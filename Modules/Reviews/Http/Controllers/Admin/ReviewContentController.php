@@ -108,8 +108,6 @@ class ReviewContentController extends Controller
                 $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
 
                 $reviewContent->update( $fileInfo->toArray() );
-
-
                 $filesInfo[] = $reviewContent->toArray();
             }
         }

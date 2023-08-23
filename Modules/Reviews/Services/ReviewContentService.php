@@ -44,9 +44,15 @@ class ReviewContentService
     }
 
 
-    public function removeFilesForContent(ReviewContent $content){
+    public function removeFilesForContent(ReviewContent $content):bool {
+        Storage::delete($content->file);
+        if(!$content->parent_content_id) return true;
+        if(!$previews = ReviewContent::where('parent_content_id', $content->parent_content_id)->get())  return true;
+        foreach ($previews as $preview){
+            Storage::delete($preview->file);
+        }
 
-        $contents = ReviewContent::where($content->file_name)->get();
+        return true;
     }
 
 }
