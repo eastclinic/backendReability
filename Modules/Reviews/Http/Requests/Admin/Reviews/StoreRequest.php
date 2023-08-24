@@ -35,6 +35,7 @@ class StoreRequest extends FormRequest
             'reviewable_type' => ['required', 'checkTarget'],
             'reviewable_id' => 'required',
             'rating' => ['required', 'numeric'],
+            'content' => ['nullable', 'array']
         ];
     }
 

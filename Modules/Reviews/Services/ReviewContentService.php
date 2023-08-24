@@ -72,6 +72,23 @@ class ReviewContentService
 
     public function confirmContentForReview(array $actualContentIds, Review $review):bool{
 
+        //handle content with temp review id
+        //check opposite break in
+        if($temporalContents = ReviewContent::whereIn('id', $actualContentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
+            foreach ($temporalContents as $content){
+                //change folder to review id
+                Storage::disk('reviewContent')->move($content->review_id, $review->id);
+                //change review id to content
+                $content->update(['review_id' =>  $review->id,
+                    'confirm'=>1,
+                    'file' => str_replace($content->review_id, $review->id, $content->file),
+                    'url' => str_replace($content->review_id, $review->id, $content->url),
+                ]);
+
+            }
+        }
+
+
         $actualContentIds = array_combine($actualContentIds, $actualContentIds);
         if(!$contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get())return true;
         foreach ($contents as $content){

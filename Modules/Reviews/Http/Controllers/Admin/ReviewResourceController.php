@@ -70,6 +70,8 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
+
+
         error_log('store-rewiew');
         $requestData = $request->validated();
 
@@ -83,6 +85,11 @@ class ReviewResourceController extends Controller
             //$review->reviewable()->associate($target);
         }
         $review->save();
+        //handle content
+        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
+        (new ReviewContentService())->confirmContentForReview($contentIds, $review);
+
+
 
         return response()->okMessage('Save new review.', 200);
     }
@@ -130,7 +137,7 @@ class ReviewResourceController extends Controller
 
 
         $review = Review::where('id', $id)->first();
-        $review -> update($request->validated());
+        $review -> update($requestData);
         return response()->okMessage('Change data.', 200);
     }
 
