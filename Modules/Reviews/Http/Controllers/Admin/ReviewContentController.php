@@ -159,9 +159,7 @@ class ReviewContentController extends Controller
      */
     public function destroy($id) {
         if (!$content = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
-        $this->contentService->removeFilesForContent( $content);
-
-        $content->delete();
+        $this->contentService->removeContent( $content);
 
         return response()->okMessage('Файл удален', 200);
 

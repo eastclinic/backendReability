@@ -15,6 +15,7 @@ use Modules\Reviews\DataStructures\AbstractDataStructure;
 class ReviewContentService
 {
 
+    protected ?ReviewContent $content = null;
     public function saveFileForContent($file, ReviewContent $content):AbstractDataStructure {
 
         //if isset id, save to folder with name id
@@ -30,7 +31,7 @@ class ReviewContentService
         //dont forget to run  Supervisor  php artisan queue:listen
         CreateReviewsPreviewsJob::dispatch(new ContentPreviewService($content));
 
-        ClearUnconfirmedReviewContentJob::dispatch($content)->delay(now()->addSeconds(10));
+        ClearUnconfirmedReviewContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
 
         //todo create job for clear "last" content
 
@@ -46,15 +47,28 @@ class ReviewContentService
     }
 
 
-    public function removeFilesForContent(ReviewContent $content):bool {
-        Storage::delete($content->file);
-        if(!$content->parent_content_id) return true;
-        if(!$previews = ReviewContent::where('parent_content_id', $content->parent_content_id)->get())  return true;
-        foreach ($previews as $preview){
-            Storage::disk('reviewContent')->delete($preview->file);
-        }
+    public function removeContent(ReviewContent $content):bool {
+
+        //if content already remove return
+        if(!$nowContent = ReviewContent::where('id', $content->id)->where('confirm', 0)->first())return true;
+        //clear original file
+
+        Storage::disk('reviewContent')->delete($nowContent->file);
+        //clear previews files
+        (new ContentPreviewService($nowContent))->removePreviews();
+        $nowContent->delete();
 
         return true;
+    }
+
+    public function remove():bool{
+        if(!$this->content) new \Exception('Not set content');
+        return $this->removeContent($this->content);
+    }
+
+    public function forContent(ReviewContent $content):self {
+        $this->content = $content;
+        return $this;
     }
 
 }

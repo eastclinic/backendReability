@@ -78,8 +78,6 @@ class ContentPreviewService
         if( !$this->content )       return false;
         if(!$previews = ReviewContent::where('parent_content_id', $this->content->id)->get())  return true;
         foreach ($previews as $preview){
-//            File::delete($preview->file);
-            $fd = $preview->file;
             Storage::disk('reviewContent')->delete($preview->file);
             $preview->delete();
         }

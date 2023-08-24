@@ -10,19 +10,20 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Services\ContentPreviewService;
+use Modules\Reviews\Services\ReviewContentService;
 
 class ClearUnconfirmedReviewContentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected ?ReviewContent $content = null;
+    protected ?ReviewContentService $contentService = null;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(ReviewContent $content)
+    public function __construct(ReviewContentService $content)
     {
-        $this->content = $content;
+        $this->contentService = $content;
     }
 
     /**
@@ -33,15 +34,8 @@ class ClearUnconfirmedReviewContentJob implements ShouldQueue
     public function handle()
     {
 
-        if(!$this->content ) return;
-        //if content already remove return
-        if(!$nowContent = ReviewContent::where('id', $this->content->id)->where('confirm', 0)->first())return;
-        //clear original file
+        $this->contentService->remove();
 
-        Storage::disk('reviewContent')->delete($nowContent->file);
-        //clear previews files
-        (new ContentPreviewService($nowContent))->removePreviews();
-        $nowContent->delete();
         //
     }
 }
