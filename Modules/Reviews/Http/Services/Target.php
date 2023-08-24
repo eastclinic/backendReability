@@ -17,7 +17,7 @@ class Target
         if($this->checkTargetName($type)){
             $className = self::TARGET_MAP[$type];
             return $className::query();
-        }
+        }else return null;
     }
 
     public function checkTargetName(string $targetName):bool {

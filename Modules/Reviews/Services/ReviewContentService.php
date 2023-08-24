@@ -7,9 +7,10 @@ namespace Modules\Reviews\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\DataStructures\ContentFileInfoStructure;
+use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewContent;
-use Modules\Reviews\Jobs\ClearUnconfirmedReviewContentJob;
-use Modules\Reviews\Jobs\CreateReviewsPreviewsJob;
+use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
+use Modules\Reviews\Jobs\CreatePreviewJob;
 use Modules\Reviews\DataStructures\AbstractDataStructure;
 
 class ReviewContentService
@@ -28,13 +29,10 @@ class ReviewContentService
 
         Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
 
-        //dont forget to run  Supervisor  php artisan queue:listen
-        CreateReviewsPreviewsJob::dispatch(new ContentPreviewService($content));
+        //create job for clear "forget" content
+        ClearUnconfirmedContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
 
-        ClearUnconfirmedReviewContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
-
-        //todo create job for clear "last" content
-
+        //return data structure for save in db
         return (new ContentFileInfoStructure([
             'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
             'url' => (new ReviewContentStorage())->forContent($content)->contentUrl('original/'.$fileNameWithExtension),
@@ -50,7 +48,7 @@ class ReviewContentService
     public function removeContent(ReviewContent $content):bool {
 
         //if content already remove return
-        if(!$nowContent = ReviewContent::where('id', $content->id)->where('confirm', 0)->first())return true;
+        if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
         //clear original file
 
         Storage::disk('reviewContent')->delete($nowContent->file);
@@ -70,6 +68,27 @@ class ReviewContentService
         $this->content = $content;
         return $this;
     }
+
+
+    public function confirmContentForReview(array $actualContentIds, Review $review):bool{
+
+        $actualContentIds = array_combine($actualContentIds, $actualContentIds);
+        if(!$contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get())return true;
+        foreach ($contents as $content){
+            if(isset($actualContentIds[$content->id])){
+                if(!$content->confirm){
+                    //preview here
+                    //dont forget to run  Supervisor  php artisan queue:listen
+                    CreatePreviewJob::dispatch(new ContentPreviewService($content));
+                    $content->update(['confirm'=>1]);
+                }
+            }else {
+                $this->removeContent($content);
+            }
+        }
+        return true;
+    }
+
 
 }
 

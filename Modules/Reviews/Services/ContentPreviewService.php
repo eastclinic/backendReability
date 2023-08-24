@@ -85,4 +85,12 @@ class ContentPreviewService
         return true;
     }
 
+    public function confirmPreviewsByContentIds(array $contentIds):bool     {
+        if(!$previews = ReviewContent::whereIn('parent_content_id',$contentIds)->get())  return true;
+        foreach ($previews as $preview){
+            $preview->update(['confirm' => 1]);
+        }
+        return true;
+    }
+
 }

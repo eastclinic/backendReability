@@ -19,7 +19,7 @@ class DoctorsDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        config(['database.default' => 'MODX']);
+//        config(['database.default' => 'MODX']);
         Schema::disableForeignKeyConstraints();
 
         DB::table('modx_doc_doctors')->truncate();

@@ -7,21 +7,23 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Storage;
+use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Services\ContentPreviewService;
+use Modules\Reviews\Services\ReviewContentService;
 
-class CreateReviewsPreviewsJob implements ShouldQueue
+class ClearUnconfirmedContentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected ContentPreviewService $previewService;
+    protected ?ReviewContentService $contentService = null;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(ContentPreviewService $previewService)
+    public function __construct(ReviewContentService $content)
     {
-        $this->previewService = $previewService;
-
+        $this->contentService = $content;
     }
 
     /**
@@ -31,8 +33,9 @@ class CreateReviewsPreviewsJob implements ShouldQueue
      */
     public function handle()
     {
-        $this->previewService->generatePreviews();
-        return;
-    }
 
+        $this->contentService->remove();
+
+        //
+    }
 }

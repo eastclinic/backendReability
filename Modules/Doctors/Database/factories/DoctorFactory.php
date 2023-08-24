@@ -7,7 +7,7 @@ use Modules\Doctors\Entities\Doctor;
 
 class DoctorFactory extends Factory
 {
-    protected $connection = 'MODX';
+//    protected $connection = 'MODX';
 
     /**
      * The name of the factory's corresponding model.
