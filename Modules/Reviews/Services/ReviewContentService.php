@@ -90,7 +90,10 @@ class ReviewContentService
 
 
         $actualContentIds = array_combine($actualContentIds, $actualContentIds);
-        if(!$contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get())return true;
+        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
+        if($contents->count() === 0){
+            return true;
+        }
         foreach ($contents as $content){
             if(isset($actualContentIds[$content->id])){
                 if(!$content->confirm){
@@ -102,6 +105,12 @@ class ReviewContentService
             }else {
                 $this->removeContent($content);
             }
+        }
+        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
+        if($contents->count() === 0){
+            //todo debug it
+            Storage::disk('reviewContent')->delete($review->id);
+            return true;
         }
         return true;
     }
