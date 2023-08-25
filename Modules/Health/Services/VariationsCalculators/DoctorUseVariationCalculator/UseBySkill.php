@@ -37,8 +37,6 @@ class UseBySkill
                 if(!$this->filter && !isset($outData[$doctor->id]['variations'][$variation->id])){
                     $outData[$doctor->id]['variations'][$variation->id] = [];
                 }
-$d = $variation->skill ;
-                $d2 = $doctor->info->skill;
                 if($variation->skill && $doctor->info->skill === $variation->skill){
                     if($this->merge){
                         $outData[$doctor->id]['variations'][$variation->id] += ($outData[$doctor->id]['variations'][$variation->id])

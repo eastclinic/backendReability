@@ -28,6 +28,8 @@ class HealthBindsController extends Controller
 
     /**
      * Display a listing of the resource.
+     * @param ApiBindsRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(ApiBindsRequest $request)
     {
@@ -42,20 +44,15 @@ class HealthBindsController extends Controller
 
 
         $baseModel = $request->getBaseModel();
-//        $targetModel = $request->getTargetMethod();
         //вообще построитель запроса будет в QueryBuilderByRequest, но и здесь, или в дочерних классах можно добавить запрос
-//        $relationGraph = new RelationGraph();
         $queryBinds = $baseModel::query()->whereIn('id', [1, 2, 3, 4]);
-
-
 
         //attempt get special handler
         $responseHandlerClass = $this->getResponseHandlerClass($request);
-        $response = [];
         if($responseHandlerClass) {
             $response = ( new $responseHandlerClass )->forRequest($request)->withBindsQuery($queryBinds)->answer();
         }else{
-            //default response
+            //or default response
             $response = [];
         }
 

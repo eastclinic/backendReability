@@ -39,41 +39,10 @@ class DoctorVariationsCalculator
 
         $relationName = $graph->getRelationName($collection->getQueueableClass());
         if(!$relationName) return $this;
-        //$this->collection = collect([$relationName => $collection]);
-        $relations = $collection->getQueueableRelations();
-
-//        $ed = [
-//            2 =>['variations' => [ 3=> ['id' => 3, 'use' => true], 8 => ['id' => 8, 'use' => false]]]
-//        ];
 
         $data = ['doctors' => $this->collection->toArray()];
         $this->doctorsIds = $this->getKeys($data, 'doctors');
         $this->variationsIds = $this->getKeys($data, 'variations');
-
-
-//        Arr::set();
-
-//
-//       //$dde3 = collect(['doctors' => $data]);
-//        //$ter = $dde3->pluck('doctors.*.id');
-//        $fdf  = $collection->getQueueableRelations();
-//
-//
-//
-//        $paths = $graph->getPathOfCollection($collection);
-//        //add base class to paths
-//        $paths = $graph->addBaseToPaths($paths, $collection);
-//        //get variations after doctors paths
-//        $variationsPaths = $graph->getPathsByTargets(['doctors', 'variations'], $paths);
-//        $doctorsPaths = array_unique($graph->getPathsByTargets(['doctors'], $paths));
-//        if(!$variationsPaths || !$doctorsPaths) return $this;
-//        $this->variationsPaths = $variationsPaths = $graph->removeBaseFromPaths( $variationsPaths );
-//        $this->doctorsPaths =$doctorsPaths = $graph->removeBaseFromPaths( $doctorsPaths );
-//
-//        $this->variationsIds = $graph->getIdsByPaths($variationsPaths, $collection);
-//
-//
-//        $this->doctorsIds = $graph->getIdsByPaths($doctorsPaths, $collection);
 
         return $this;
     }
@@ -86,7 +55,7 @@ class DoctorVariationsCalculator
         $doctorsVariationsBinds = $this->getDoctorsVariationsBinds();
 
 
-        $d = $this->updateCollectionByDoctorVariationsBinds($this->collection, $doctorsVariationsBinds);
+        $this->collection = $this->updateCollectionByDoctorVariationsBinds($this->collection, $doctorsVariationsBinds);
 
         $data = ['doctors' => $this->collection->toArray()];
         foreach ($doctorsVariationsBinds as $doctorId => $doctorInfo){
