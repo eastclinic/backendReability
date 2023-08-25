@@ -18,7 +18,7 @@ use Modules\Health\Services\VariationsCalculators\DoctorUseVariationCalculator\U
 class DoctorVariationsCalculator
 {
 
-    protected Collection $collection;
+    protected ?Collection $collection = null;
     protected bool $putData = false;
     protected ?array $variationsIds = null;
     protected ?array $doctorsIds = null;
@@ -34,9 +34,11 @@ class DoctorVariationsCalculator
     public function forCollection($collection):self {
         $graph = new GraphRelations();
         //add wrapper by base class
+        $this->collection = $collection;
+        if($collection->count() === 0)  return $this;
+
         $relationName = $graph->getRelationName($collection->getQueueableClass());
         if(!$relationName) return $this;
-        $this->collection =$collection;
         //$this->collection = collect([$relationName => $collection]);
         $relations = $collection->getQueueableRelations();
 
@@ -76,9 +78,9 @@ class DoctorVariationsCalculator
         return $this;
     }
 
-    public function mergeCalcData():array    {
-
-        if( !$this->collection || !$this->variationsIds || !$this->doctorsIds )return [];
+    public function mergeCalcData()    {
+        if( !$this->collection ) return null;
+        if( !$this->variationsIds || !$this->doctorsIds )return $this->collection;
         $this->merge = true;
         $this->filter = false;
         $doctorsVariationsBinds = $this->getDoctorsVariationsBinds();
@@ -209,20 +211,29 @@ class DoctorVariationsCalculator
     }
 
     protected function updateCollectionByDoctorVariationsBinds($collection, $doctorVariationsBinds, int $doctorId = 0){
-        $idDoctorClass = ($collection->getQueueableClass() === 'Modules\Health\Entities\Doctor');
+        $collectionClass = $collection->getQueueableClass();
+        $isDoctorCollection = ($collectionClass === 'Modules\Health\Entities\Doctor');
+        $isVariationCollection = ($collectionClass === 'Modules\Health\Entities\Variation');
         foreach ($collection as $item){
-            if(!$doctorId && $idDoctorClass){
-                //get relations names
-                $relations = $collection->getQueueableRelations();
-                $doctorId = $item->id;
-                if(array_search('variations', $relations ) !== false){
-                    foreach ($item->variations as $variation){
-                        $gr = 10;
-                    }
-                    continue;
+            if($isVariationCollection && $doctorId
+                && isset($doctorVariationsBinds[$doctorId])
+                && isset($doctorVariationsBinds[$doctorId]['variations'])
+                && isset($doctorVariationsBinds[$doctorId]['variations'][$item->id])){
+                foreach ($doctorVariationsBinds[$doctorId]['variations'][$item->id] as $field => $val){
+//                    if(!$item->$field) {$item->$field = $val;}
+                    if(!$item->$field) {$item->setAttribute($field, $val);}
                 }
+                $fr = $doctorVariationsBinds;
+
             }
-            $collection = $this->updateCollectionByDoctorVariationsBinds($doctorVariationsBinds);
+            //get relations names
+            if( !$relations = $collection->getQueueableRelations()) continue;
+            if($isDoctorCollection)  $doctorId = $item->id;
+            foreach ($relations as $relationName){
+                //optimize
+                if(array_search('variations', $relations ) !== false && $relationName !== 'variations') continue;
+                $item->setRelation($relationName, $this->updateCollectionByDoctorVariationsBinds($item->getRelation($relationName), $doctorVariationsBinds, $doctorId));
+            }
         }
 
 

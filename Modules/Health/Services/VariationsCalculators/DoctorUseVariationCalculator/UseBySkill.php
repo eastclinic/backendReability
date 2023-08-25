@@ -31,11 +31,11 @@ class UseBySkill
 
     public function calculate(Collection $collectionDoctorsVariations, array $outData):array   {
         foreach ( $collectionDoctorsVariations as $doctor ){
-            if(!isset($outData[$doctor->id])) $outData[$doctor->id] = ['id' => $doctor->id, 'variations' => [] ];
+            if(!isset($outData[$doctor->id])) $outData[$doctor->id] = ['variations' => [] ];
             if(!$doctor->info || !$doctor->variations) continue;
             foreach ($doctor->variations as $variation){
                 if(!$this->filter && !isset($outData[$doctor->id]['variations'][$variation->id])){
-                    $outData[$doctor->id]['variations'][$variation->id] = ['id' => $variation->id];
+                    $outData[$doctor->id]['variations'][$variation->id] = [];
                 }
 $d = $variation->skill ;
                 $d2 = $doctor->info->skill;
