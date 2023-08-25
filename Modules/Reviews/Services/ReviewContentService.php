@@ -17,7 +17,7 @@ class ReviewContentService
 {
 
     protected ?ReviewContent $content = null;
-    public function saveFileForContent($file, ReviewContent $content):AbstractDataStructure {
+    public function saveFileForContent($file, ReviewContent $content):?AbstractDataStructure {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
@@ -25,6 +25,7 @@ class ReviewContentService
         $extension = mb_strtolower($file->getClientOriginalExtension());
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
+        if(!$fileType = $this->getFileType($file)) return null;
         $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
 
         Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
@@ -36,7 +37,8 @@ class ReviewContentService
         return (new ContentFileInfoStructure([
             'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
             'url' => (new ReviewContentStorage())->forContent($content)->contentUrl('original/'.$fileNameWithExtension),
-            'type' => 'original'
+            'type' => 'original',
+            'typeFile' => $fileType
         ]));
 
         //todo run job with delay for clear not used reviews content data with files
@@ -115,6 +117,10 @@ class ReviewContentService
         return true;
     }
 
-
+    protected function getFileType($file):?string {
+        if(!$fileMime = $file->getMimeType()) return null;
+        if(!$fileMime = explode('/', $fileMime))return null;
+        return $fileMime[0];
+    }
 }
 

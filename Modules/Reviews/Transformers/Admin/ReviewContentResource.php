@@ -19,6 +19,7 @@ class ReviewContentResource extends JsonResource
             'id' => $this->id,
             'url' => $this->url,
             'confirm' => $this->confirm*1,
+            'typeFile' => $this->typeFile,
         ];
     }
 }

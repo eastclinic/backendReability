@@ -106,9 +106,10 @@ class ReviewContentController extends Controller
                 $reviewContent = ReviewContent::create($reviewContentData);
 
                 $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
+                if(!$fileInfo) return response()->error('Error save upload files');
 
                 $reviewContent->update( $fileInfo->toArray() );
-                $filesInfo[] = $reviewContent->setVisible(['id', 'url'])->toArray() + ['confirm' => 0];
+                $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0];
             }
         }
         if(!$filesInfo) {
