@@ -4,7 +4,9 @@
 /public/storage
 /storage/*.key
 
-!/storage/img/upload
+
+!/storage/app/public/img/upload
+/storage/app/public/img/upload
 /storage/img
 /vendor
 .env

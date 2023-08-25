@@ -5,6 +5,7 @@ namespace Modules\Reviews\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
 use App\Services\Response\ResponseService;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Entities\Review;
@@ -17,6 +18,7 @@ use Modules\Reviews\Http\Resources\ReviewResource;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
 use Illuminate\Support\Facades\Response;
+use Modules\Reviews\Services\ReviewContentService;
 
 class ReviewResourceController extends Controller
 {
@@ -49,7 +51,10 @@ class ReviewResourceController extends Controller
 
         //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
-        $reviews->with('content')->with('messages');
+//        $reviews->with('content')->with('messages');
+        $reviews->with(['content' => function ($query) {
+            $query->where('type', 'original')->where('confirm', 1);
+        }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
@@ -65,6 +70,8 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
+
+
         error_log('store-rewiew');
         $requestData = $request->validated();
 
@@ -78,6 +85,11 @@ class ReviewResourceController extends Controller
             //$review->reviewable()->associate($target);
         }
         $review->save();
+        //handle content
+        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
+        (new ReviewContentService())->confirmContentForReview($contentIds, $review);
+
+
 
         return response()->okMessage('Save new review.', 200);
     }
@@ -91,7 +103,9 @@ class ReviewResourceController extends Controller
     public function show($id)
     {
         $reviews = Review::query()->where('id', $id);
-        $reviews->with('content')->with('messages');
+        $reviews->with(['content' => function ($query) {
+            $query->where('type', 'original')->where('confirm', 1);
+        }])->with('messages');
         return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
@@ -104,9 +118,26 @@ class ReviewResourceController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
-        Log::info(print_r($request->validated(), 1));
+
+        $requestData = $request->validated();
+
+
+        $target = $this->targetModel->getModel($requestData['reviewable_type']);
+        if( !$target || !$targetModel = $target->where('id',  $requestData['reviewable_id']) -> first()){
+            return response()->error('Не задано, на кого отзыв.', 400);
+        }else{
+            // Log::info(print_r(phpinfo(),1));
+            //todo check why not work associate
+            //$review->reviewable()->associate($target);
+        }
+        if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
+        //handle content
+        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
+        (new ReviewContentService())->confirmContentForReview($contentIds, $review);
+
+
         $review = Review::where('id', $id)->first();
-        $review -> update($request->validated());
+        $review -> update($requestData);
         return response()->okMessage('Change data.', 200);
     }
 

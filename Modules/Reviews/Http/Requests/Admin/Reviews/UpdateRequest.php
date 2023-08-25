@@ -36,7 +36,8 @@ class UpdateRequest extends FormRequest
             'reviewable_id' => 'nullable',
             'rating' => ['nullable', 'numeric'],
             'published' => ['nullable', 'boolean'],
-            'is_new' => ['nullable', 'boolean']
+            'is_new' => ['nullable', 'boolean'],
+            'content' => ['nullable', 'array']
         ];
     }
 

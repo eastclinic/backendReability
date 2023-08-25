@@ -6,7 +6,7 @@ use Illuminate\Validation\Factory as ValidationFactory;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Reviews\Http\Services\Target;
 
-class StoreRequest extends FormRequest
+class StoreContentRequest extends FormRequest
 {
 
     public function __construct(ValidationFactory $validationFactory, Target $targetModel) {
@@ -27,16 +27,15 @@ class StoreRequest extends FormRequest
      */
     public function rules()
     {
-        //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
+
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'author' =>'required',
-            'text' =>'nullable',
-            //'author_id' => 'nullable',
-            'reviewable_type' => ['required', 'checkTarget'],
-            'reviewable_id' => 'required',
-            'rating' => ['required', 'numeric'],
-            'content' => ['nullable', 'array']
+            'files.*' => 'required|file|mimes:jpg,jpeg,png|max:4096',
+//            'contentable_type' => ['required', 'in:review,review_message'],
+            'reviewId' => ['required', 'numeric'],
+            'messageId' => [['nullable', 'numeric'],],
+//            'id' => ['integer', 'nullable'],
         ];
+
     }
 
     /**
@@ -57,17 +56,17 @@ class StoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'reviewable_type.required' => 'Be sure to specify type of review target',
+            'files.*.mimes' => 'Неправильный тип изображение. Возможно jpg,jpeg,png',
             'reviewable_id.required' => 'Be sure to specify id of review target',
 //            'rating.required' => 'Be sure to specify id of review target',
         ];
     }
 
-    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
-    {
-        throw new \Illuminate\Validation\ValidationException($validator, response()->json([
-            'errors' => $validator->errors(), 'ok' => false
-        ], 422));
-    }
+//    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+//    {
+//        throw new \Illuminate\Validation\ValidationException($validator, response()->json([
+//            'errors' => $validator->errors(), 'ok' => false
+//        ], 422));
+//    }
 
 }

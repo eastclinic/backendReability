@@ -18,6 +18,7 @@ class ReviewContentResource extends JsonResource
         return [
             'id' => $this->id,
             'url' => $this->url,
+            'confirm' => $this->confirm*1,
         ];
     }
 }

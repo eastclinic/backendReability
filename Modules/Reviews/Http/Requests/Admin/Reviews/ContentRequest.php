@@ -30,10 +30,10 @@ class ContentRequest extends FormRequest
         //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
             'file' =>'required',
-            'contentable_type' => 'required',
+            //'contentable_type' => 'required',
             //'author_id' => 'nullable',
             'url' => 'required',
-            'contentable_id' => 'required',
+            //'contentable_id' => 'required',
         ];
     }
 

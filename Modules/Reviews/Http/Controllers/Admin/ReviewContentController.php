@@ -1,4 +1,22 @@
 <?php
+/**
+ * @file
+ * @author Jan Doe <jandoe@example.com>
+ * @version 1.0
+ *
+ * @section LICENSE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * @section DESCRIPTION
+ *
+ * The time class represents a moment of time.
+ */
+
+
 
 namespace Modules\Reviews\Http\Controllers\Admin;
 
@@ -13,25 +31,36 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
+use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
+use Modules\Reviews\Jobs\CreatePreviewJob;
+use Modules\Reviews\Services\ContentPreviewService;
+use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Bus;
+use Modules\Reviews\Services\ReviewContentService;
+
 
 class ReviewContentController extends Controller
 {
 
+
 //    private ApiDataTableService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
+    private ReviewContentService $contentService;
 //
-//    public function __construct(
-////        ReviewService $reviewService,
+    public function __construct(
+        ReviewContentService $reviewContentService
 //        ApiDataTableService $apiHandler,
-//        Target $targetEntity)    {
+//        Target $targetEntity
+)    {
 //        $this->QueryBuilderByRequest = $apiHandler;
 //        $this->targetModel = $targetEntity;
 ////        $this->reviewService = $reviewService;
-//
-//    }
+        $this->contentService = $reviewContentService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -62,26 +91,32 @@ class ReviewContentController extends Controller
      * @param  ContentRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ContentRequest $request)
+    public function store(StoreContentRequest $request)
     {
-        error_log('store');
+
+        //run job for
+
         $requestData = $request->validated();
-//        Log::info(print_r($request->validated(), 1));
-////        $data = [
-////            'url' => $requestData->
-////        ]
-        $review = new ReviewContent($requestData);
-////        $target = $this->targetModel->getModel($requestData['reviewable_type']);
-////        if( !$target || !$target->where('id',  $requestData['reviewable_id']) -> first()){
-////            return response()->error('Не задано, на кого отзыв.', 400);
-////        }else{
-////           // Log::info(print_r(phpinfo(),1));
-////            //todo check why not work associate
-////            //$review->reviewable()->associate($target);
-////        }
-        $review->save();
-//
-        return response()->okMessage('Save new review.', 200);
+        $filesInfo = [];
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+//save files
+            foreach ($files as $file) {
+                $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
+                $reviewContent = ReviewContent::create($reviewContentData);
+
+                $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
+
+                $reviewContent->update( $fileInfo->toArray() );
+                $filesInfo[] = $reviewContent->setVisible(['id', 'url'])->toArray() + ['confirm' => 0];
+            }
+        }
+        if(!$filesInfo) {
+            return response()->error('Error save upload files');
+        }
+
+            return response()->ok($filesInfo, 200);
+
     }
 
     /**
@@ -119,17 +154,15 @@ class ReviewContentController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id) {
-        if($this->reviewService->delete($id)){
-            return ResponseService::okMessage('Removed review');
-        }else{
-            return  ResponseService::error('Failed to remove review');
-        }
+        if (!$content = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
+        $this->contentService->removeContent( $content);
+
+        return response()->okMessage('Файл удален', 200);
+
     }
 
 }

@@ -24,7 +24,7 @@ class ReviewFactory extends Factory
 
         return [
             'author' => $this->faker->firstName(),
-            'reviewable_type' => 'Modules\Doctors\Entities\Doctor',
+            'reviewable_type' => 'doctor',
             'reviewable_id' => $this->faker->numberBetween(1, 20),
             'text' => $this->faker->realText(),
             'rating' => $this->faker->randomElement([60, 65, 70, 75, 80, 85, 90, 95, 100, 100]),

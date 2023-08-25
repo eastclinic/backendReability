@@ -14,12 +14,19 @@ return new class extends Migration
     public function up()
     {
         Schema::create('reviews_content', function (Blueprint $table) {
-            $table->id();
-            $table->char('file');
-            $table->char('url')->nullable();
-            $table->text('converted_content_info')->nullable();
-            $table->nullableMorphs('contentable');
+            $table->uuid('id')->primary();
+            $table->char('file')->default('');
+//            $table->char('file_name')->default('');
+//            $table->char('file_extension')->default('');
+            $table->char('url')->default('');
+            $table->char('parent_content_id')->default('');
+            $table->char('type')->default('');
+            $table->boolean('confirm')->default(false);
+            $table->unsignedInteger('review_id');
+            $table->unsignedInteger('message_id')->default(0);
+            //$table->nullableMorphs('contentable');
             $table->timestamps();
+
         });
     }
 

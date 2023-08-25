@@ -24,13 +24,15 @@ class ReviewResource extends JsonResource
             'text' => $this->text,
             'rating' => $this->rating * 1,
             'reviewable_id' => $this->reviewable_id,
-            'reviewable_type' => (new Target())->getTargetNameByClass($this->reviewable_type),
+//            'reviewable_type' => (new Target())->getTargetNameByClass($this->reviewable_type),
+            'reviewable_type' => $this->reviewable_type,
             'author' => $this->author,
             'published' => (bool)$this->published,
             'is_new' => (bool)$this->is_new,
             'created_at' => $this->created_at->timestamp,
 
             'content' => ReviewContentResource::collection($this->whenLoaded('content')),
+
             'messages' => ReviewMessageResource::collection($this->whenLoaded('messages')),
 
 
