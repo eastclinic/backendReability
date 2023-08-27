@@ -27,6 +27,7 @@ class ReviewContentService
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
         if(!$fileType = $this->getFileType($file)) return null;
+
         $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
 
         Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
@@ -101,6 +102,7 @@ class ReviewContentService
         foreach ($contents as $content){
             if(isset($actualContentIds[$content->id])){
                 if(!$content->confirm){
+
                     //preview here
                     $fileInfo= pathinfo($content->file);
                     $originalFileExtension = mb_strtolower($fileInfo['extension']);
