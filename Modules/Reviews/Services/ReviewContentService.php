@@ -12,6 +12,7 @@ use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use Modules\Reviews\DataStructures\AbstractDataStructure;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ReviewContentService
 {
@@ -29,6 +30,7 @@ class ReviewContentService
         $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
 
         Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
+
 
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
@@ -55,7 +57,7 @@ class ReviewContentService
 
         Storage::disk('reviewContent')->delete($nowContent->file);
         //clear previews files
-        (new ContentPreviewService($nowContent))->removePreviews();
+        (new ImagePreviewsService($nowContent))->removePreviews();
         $nowContent->delete();
 
         return true;
@@ -100,8 +102,24 @@ class ReviewContentService
             if(isset($actualContentIds[$content->id])){
                 if(!$content->confirm){
                     //preview here
-                    //dont forget to run  Supervisor  php artisan queue:listen
-                    CreatePreviewJob::dispatch(new ContentPreviewService($content));
+                    $fileInfo= pathinfo($content->file);
+                    $originalFileExtension = mb_strtolower($fileInfo['extension']);
+                    switch ($originalFileExtension) {
+                        case 'jpg':
+                        case 'png':
+                        case 'jpeg':
+
+                            //dont forget to run  Supervisor  php artisan queue:listen
+                            CreatePreviewJob::dispatch(new ImagePreviewsService($content));
+                            break;
+
+                        case 'mp4':
+                            CreatePreviewJob::dispatch(new VideoPreviewsService($content));
+                            break;
+                    }
+
+
+
                     $content->update(['confirm'=>1]);
                 }
             }else {

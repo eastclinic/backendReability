@@ -34,7 +34,7 @@ use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Reviews\Services\ContentPreviewService;
+use Modules\Reviews\Services\ImagePreviewsService;
 use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
