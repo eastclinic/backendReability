@@ -109,7 +109,7 @@ class ReviewContentController extends Controller
                 if(!$fileInfo) return response()->error('Error save upload files');
 
                 $reviewContent->update( $fileInfo->toArray() );
-                $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0];
+                $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0, 'published' => 0];
             }
         }
         if(!$filesInfo) {

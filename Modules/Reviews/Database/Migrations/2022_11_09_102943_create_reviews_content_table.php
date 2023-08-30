@@ -23,6 +23,7 @@ return new class extends Migration
             $table->char('type')->default('');
             $table->char('typeFile')->default('');
             $table->boolean('confirm')->default(false);
+            $table->boolean('published')->default(false);
             $table->unsignedInteger('review_id');
             $table->unsignedInteger('message_id')->default(0);
             //$table->nullableMorphs('contentable');
