@@ -75,32 +75,21 @@ class ReviewContentService
     }
 
 
-    public function confirmContentForReview(array $actualContentIds, Review $review):bool{
+    public function updateContentForReview(array $actualContent, Review $review):bool{
 
         //handle content with temp review id
-        //check opposite break in
-        if($temporalContents = ReviewContent::whereIn('id', $actualContentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
-            foreach ($temporalContents as $content){
-                //change folder to review id
-                Storage::disk('reviewContent')->move($content->review_id, $review->id);
-                //change review id to content
-                $content->update(['review_id' =>  $review->id,
-                    'confirm'=>1,
-                    'file' => str_replace($content->review_id, $review->id, $content->file),
-                    'url' => str_replace($content->review_id, $review->id, $content->url),
-                ]);
-
-            }
-        }
+        $contentIds = array_column($actualContent, 'id');
+        $this->saveTemporallyContentForReview($contentIds, $review);
 
 
-        $actualContentIds = array_combine($actualContentIds, $actualContentIds);
+        $actualContent = array_combine($contentIds, $actualContent);
         $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-        if($contents->count() === 0){
-            return true;
-        }
+//        if($contents->count() === 0){
+//            return true;
+//        }
         foreach ($contents as $content){
-            if(isset($actualContentIds[$content->id])){
+
+            if(isset($actualContent[$content->id])){
                 if(!$content->confirm){
 
                     //preview here
@@ -124,6 +113,7 @@ class ReviewContentService
 
                     $content->update(['confirm'=>1]);
                 }
+                $content->update($actualContent[$content->id] + ['confirm'=>1]);
             }else {
                 $this->removeContent($content);
             }
@@ -135,6 +125,24 @@ class ReviewContentService
             return true;
         }
         return true;
+    }
+
+    protected function saveTemporallyContentForReview(array $contentIds, Review $review ){
+        if( $temporalContents = ReviewContent::whereIn('id', $contentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
+            foreach ($temporalContents as $content){
+                if( $content->review_id !== $review->id ){
+                    //change folder to review id
+                    Storage::disk('reviewContent')->move($content->review_id, $review->id);
+                    //change review id to content
+                    $content->update(['review_id' =>  $review->id,
+                        'confirm'=>1,
+                        'file' => str_replace($content->review_id, $review->id, $content->file),
+                        'url' => str_replace($content->review_id, $review->id, $content->url),
+                    ]);
+                }
+            }
+        }
+
     }
 
     protected function getFileType($file):?string {

@@ -24,6 +24,7 @@ class ReviewContent extends Model
         'type',
         'typeFile',
         'confirm',
+        'published',
 
 
 
