@@ -22,7 +22,9 @@ class ReviewContent extends Model
         'message_id',
         'parent_content_id',
         'type',
+        'typeFile',
         'confirm',
+        'published',
 
 
 

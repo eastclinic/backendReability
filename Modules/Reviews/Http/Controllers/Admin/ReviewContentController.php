@@ -34,7 +34,7 @@ use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Reviews\Services\ContentPreviewService;
+use Modules\Reviews\Services\ImagePreviewsService;
 use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
@@ -106,9 +106,10 @@ class ReviewContentController extends Controller
                 $reviewContent = ReviewContent::create($reviewContentData);
 
                 $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
+                if(!$fileInfo) return response()->error('Error save upload files');
 
                 $reviewContent->update( $fileInfo->toArray() );
-                $filesInfo[] = $reviewContent->setVisible(['id', 'url'])->toArray() + ['confirm' => 0];
+                $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0, 'published' => 0];
             }
         }
         if(!$filesInfo) {

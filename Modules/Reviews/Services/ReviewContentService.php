@@ -12,12 +12,13 @@ use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use Modules\Reviews\DataStructures\AbstractDataStructure;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ReviewContentService
 {
 
     protected ?ReviewContent $content = null;
-    public function saveFileForContent($file, ReviewContent $content):AbstractDataStructure {
+    public function saveFileForContent($file, ReviewContent $content):?AbstractDataStructure {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
@@ -25,9 +26,12 @@ class ReviewContentService
         $extension = mb_strtolower($file->getClientOriginalExtension());
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
+        if(!$fileType = $this->getFileType($file)) return null;
+
         $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
 
         Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
+
 
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
@@ -36,7 +40,8 @@ class ReviewContentService
         return (new ContentFileInfoStructure([
             'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
             'url' => (new ReviewContentStorage())->forContent($content)->contentUrl('original/'.$fileNameWithExtension),
-            'type' => 'original'
+            'type' => 'original',
+            'typeFile' => $fileType
         ]));
 
         //todo run job with delay for clear not used reviews content data with files
@@ -53,7 +58,7 @@ class ReviewContentService
 
         Storage::disk('reviewContent')->delete($nowContent->file);
         //clear previews files
-        (new ContentPreviewService($nowContent))->removePreviews();
+        (new ImagePreviewsService($nowContent))->removePreviews();
         $nowContent->delete();
 
         return true;
@@ -70,38 +75,45 @@ class ReviewContentService
     }
 
 
-    public function confirmContentForReview(array $actualContentIds, Review $review):bool{
+    public function updateContentForReview(array $actualContent, Review $review):bool{
 
         //handle content with temp review id
-        //check opposite break in
-        if($temporalContents = ReviewContent::whereIn('id', $actualContentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
-            foreach ($temporalContents as $content){
-                //change folder to review id
-                Storage::disk('reviewContent')->move($content->review_id, $review->id);
-                //change review id to content
-                $content->update(['review_id' =>  $review->id,
-                    'confirm'=>1,
-                    'file' => str_replace($content->review_id, $review->id, $content->file),
-                    'url' => str_replace($content->review_id, $review->id, $content->url),
-                ]);
-
-            }
-        }
+        $contentIds = array_column($actualContent, 'id');
+        $this->saveTemporallyContentForReview($contentIds, $review);
 
 
-        $actualContentIds = array_combine($actualContentIds, $actualContentIds);
+        $actualContent = array_combine($contentIds, $actualContent);
         $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-        if($contents->count() === 0){
-            return true;
-        }
+//        if($contents->count() === 0){
+//            return true;
+//        }
         foreach ($contents as $content){
-            if(isset($actualContentIds[$content->id])){
+
+            if(isset($actualContent[$content->id])){
                 if(!$content->confirm){
+
                     //preview here
-                    //dont forget to run  Supervisor  php artisan queue:listen
-                    CreatePreviewJob::dispatch(new ContentPreviewService($content));
+                    $fileInfo= pathinfo($content->file);
+                    $originalFileExtension = mb_strtolower($fileInfo['extension']);
+                    switch ($originalFileExtension) {
+                        case 'jpg':
+                        case 'png':
+                        case 'jpeg':
+
+                            //dont forget to run  Supervisor  php artisan queue:listen
+                            CreatePreviewJob::dispatch(new ImagePreviewsService($content));
+                            break;
+
+                        case 'mp4':
+                            CreatePreviewJob::dispatch(new VideoPreviewsService($content));
+                            break;
+                    }
+
+
+
                     $content->update(['confirm'=>1]);
                 }
+                $content->update($actualContent[$content->id] + ['confirm'=>1]);
             }else {
                 $this->removeContent($content);
             }
@@ -115,6 +127,28 @@ class ReviewContentService
         return true;
     }
 
+    protected function saveTemporallyContentForReview(array $contentIds, Review $review ){
+        if( $temporalContents = ReviewContent::whereIn('id', $contentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
+            foreach ($temporalContents as $content){
+                if( $content->review_id !== $review->id ){
+                    //change folder to review id
+                    Storage::disk('reviewContent')->move($content->review_id, $review->id);
+                    //change review id to content
+                    $content->update(['review_id' =>  $review->id,
+                        'confirm'=>1,
+                        'file' => str_replace($content->review_id, $review->id, $content->file),
+                        'url' => str_replace($content->review_id, $review->id, $content->url),
+                    ]);
+                }
+            }
+        }
 
+    }
+
+    protected function getFileType($file):?string {
+        if(!$fileMime = $file->getMimeType()) return null;
+        if(!$fileMime = explode('/', $fileMime))return null;
+        return $fileMime[0];
+    }
 }
 

@@ -86,8 +86,8 @@ class ReviewResourceController extends Controller
         }
         $review->save();
         //handle content
-        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->confirmContentForReview($contentIds, $review);
+//        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
+        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
 
 
 
@@ -132,8 +132,8 @@ class ReviewResourceController extends Controller
         }
         if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
         //handle content
-        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->confirmContentForReview($contentIds, $review);
+//        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
+        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
 
 
         $review = Review::where('id', $id)->first();

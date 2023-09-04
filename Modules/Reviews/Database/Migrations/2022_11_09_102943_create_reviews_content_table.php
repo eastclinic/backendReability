@@ -21,7 +21,9 @@ return new class extends Migration
             $table->char('url')->default('');
             $table->char('parent_content_id')->default('');
             $table->char('type')->default('');
+            $table->char('typeFile')->default('');
             $table->boolean('confirm')->default(false);
+            $table->boolean('published')->default(false);
             $table->unsignedInteger('review_id');
             $table->unsignedInteger('message_id')->default(0);
             //$table->nullableMorphs('contentable');
