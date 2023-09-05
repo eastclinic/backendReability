@@ -1,10 +1,9 @@
 <?php
 
-namespace Modules\Doctors\Http\Controllers\Admin;
+namespace Modules\Doctors\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApiAbstractRequest;
-use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
 use App\Services\ApiRequestQueryBuilders\ApiRequestQueryBuilderAbstractService;
 use App\Services\Response\ResponseService;
 
@@ -17,16 +16,16 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\ApiDataTableRequest;
 
-class DoctorResourceController extends Controller
+class DoctorController extends Controller
 {
 
-    private ApiDataTableService $QueryBuilderByRequest;
+    private ApiRequestQueryBuilderAbstractService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
 
     public function __construct(
         //ReviewService $reviewService,
-        ApiDataTableService $apiHandler//,
+        ApiRequestQueryBuilderAbstractService $apiHandler//,
         //Target $targetEntity
     )    {
         $this->QueryBuilderByRequest = $apiHandler;
