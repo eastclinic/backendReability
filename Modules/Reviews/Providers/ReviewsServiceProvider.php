@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
 use Modules\Reviews\Entities\Review;
-use Modules\Reviews\Observers\ReviewAttachObserver;
+use Modules\Reviews\Observers\ReviewObserver;
 
 class ReviewsServiceProvider extends ServiceProvider
 {
@@ -33,7 +33,7 @@ class ReviewsServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
 
-        Review::observe(ReviewAttachObserver::class);
+        Review::observe(ReviewObserver::class);
     }
 
     /**

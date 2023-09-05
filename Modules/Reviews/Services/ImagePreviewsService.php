@@ -22,12 +22,12 @@ class ImagePreviewsService extends PreviewsServiceAbstract
         try {
             //again get content from db, because info possible change
             $content = ReviewContent::find($this->content->id);
-            $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder($content->file);
+            $filePath = (new ReviewContentStorage())->forContent($content)->storageFolderForFile($content->file);
             if( !$content || !file_exists($filePath)) return false;
             $fileInfo= pathinfo($content->file);
             $originalFileName = $fileInfo['filename'];
             $originalFileExtension = mb_strtolower($fileInfo['extension']);
-            if($originalFileExtension !== 'jpg' || 'png' || 'jpeg') return false;
+            if(!in_array($originalFileExtension, ["jpg", "png", "jpeg"])) return false;
 
             $preview = Image::make($filePath)
                 ->fit(300, 300)
@@ -42,7 +42,7 @@ class ImagePreviewsService extends PreviewsServiceAbstract
             $previewFilename = $fileInfo['filename'].'.webp';
 
             $previewFile = $previewFolder.DIRECTORY_SEPARATOR.$previewFilename;
-            $previewFileFullPath = (new ReviewContentStorage())->forContent($content)->storageFolder($previewFolder);
+            $previewFileFullPath = (new ReviewContentStorage())->forContent($content)->storageFolderForFile($previewFolder);
             $previewFileUrl = $storageUrl.'/300x300/'.$previewFilename;
 //                Storage::disk('reviewContent')->putFileAs((new ReviewContentStorage())->forContent($content)->reviewContentFolder('previews'), (string)$preview, $previewFilename);
 

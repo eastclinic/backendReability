@@ -23,13 +23,19 @@ class ReviewContentStorage
 
 
     public function storageFolder(string $addPath = ''):string {
-        if($addPath) $addPath = trim($addPath, '/\\');
+        if(!$this->storageFolderPath) new \Exception('Not set content');
+        if($addPath) $addPath = DIRECTORY_SEPARATOR.trim($addPath, '/\\');
+        return $this->storageFolderPath.$addPath;
         return Storage::disk('reviewContent')->path($addPath);
     }
     public function contentFolder(string $addPath = ''):string {
         if(!$this->contentFolderPath) new \Exception('Not set content');
         if($addPath) $addPath = DIRECTORY_SEPARATOR.trim($addPath, '/\\');
         return $this->contentFolderPath.$addPath;
+    }
+
+    public function storageFolderForFile(string $filePath):string {
+        return Storage::disk('reviewContent')->path(trim($filePath, '/\\'));
     }
 
     public function storageUrl(string $addPath = ''):string {

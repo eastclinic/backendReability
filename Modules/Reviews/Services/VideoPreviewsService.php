@@ -24,7 +24,7 @@ class VideoPreviewsService extends PreviewsServiceAbstract
         if( !$this->content )       return false;
 //again get content from db, because info possible change
         $content = ReviewContent::find($this->content->id);
-        $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder($content->file);
+        $filePath = (new ReviewContentStorage())->forContent($content)->storageFolderForFile($content->file);
         if( !$content || !file_exists($filePath)) return false;
         $fileInfo= pathinfo($content->file);
         $originalFileName = $fileInfo['filename'];
