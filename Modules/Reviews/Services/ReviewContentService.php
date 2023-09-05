@@ -53,13 +53,27 @@ class ReviewContentService
     public function removeContent(ReviewContent $content):bool {
 
         //if content already remove return
-        if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
+        //if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
         //clear original file
 
-        Storage::disk('reviewContent')->delete($nowContent->file);
+        Storage::disk('reviewContent')->delete($content->file);
         //clear previews files
-        (new ImagePreviewsService($nowContent))->removePreviews();
-        $nowContent->delete();
+        if($previewService = $this->getPreviewServiceForContent($content)){
+            $previewService->removePreviews();
+        }
+
+        if($nowContent = ReviewContent::where('id', $content->id)->first()){
+            $nowContent->delete();
+        }
+
+        //check count files, if zero then remove folder
+        $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder('original');
+
+        if((new \GlobIterator($filePath.'/*.*'))->count() === 0){
+            Storage::disk('reviewContent')->deleteDirectory((new ReviewContentStorage())->forContent($content)->contentFolder());
+        }
+
+
 
         return true;
     }
@@ -88,32 +102,15 @@ class ReviewContentService
 //            return true;
 //        }
         foreach ($contents as $content){
-
             if(isset($actualContent[$content->id])){
                 if(!$content->confirm){
-
-                    //preview here
-                    $fileInfo= pathinfo($content->file);
-                    $originalFileExtension = mb_strtolower($fileInfo['extension']);
-                    switch ($originalFileExtension) {
-                        case 'jpg':
-                        case 'png':
-                        case 'jpeg':
-
-                            //dont forget to run  Supervisor  php artisan queue:listen
-                            CreatePreviewJob::dispatch(new ImagePreviewsService($content));
-                            break;
-
-                        case 'mp4':
-                            CreatePreviewJob::dispatch(new VideoPreviewsService($content));
-                            break;
+                    if($previewService = $this->getPreviewServiceForContent($content)){
+                        //dont forget to run  Supervisor  php artisan queue:listen
+                        CreatePreviewJob::dispatch($previewService);
                     }
-
-
-
                     $content->update(['confirm'=>1]);
                 }
-                $content->update($actualContent[$content->id]['published']);
+                $content->update([ 'published'=> $actualContent[$content->id]['published']]);
             }else {
                 $this->removeContent($content);
             }
@@ -149,6 +146,21 @@ class ReviewContentService
         if(!$fileMime = $file->getMimeType()) return null;
         if(!$fileMime = explode('/', $fileMime))return null;
         return $fileMime[0];
+    }
+
+    protected function getPreviewServiceForContent(ReviewContent $content):?PreviewsServiceAbstract {
+        $fileInfo= pathinfo($content->file);
+        $originalFileExtension = mb_strtolower($fileInfo['extension']);
+        switch ($originalFileExtension) {
+            case 'jpg':
+            case 'png':
+            case 'jpeg':
+                return new ImagePreviewsService($content);
+            case 'mp4':
+                return new VideoPreviewsService($content);
+        }
+        return null;
+
     }
 }
 

@@ -148,11 +148,15 @@ class ReviewResourceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        if($this->reviewService->delete($id)){
+        $review = Review::find($id);
+        if(!$review) return  ResponseService::error('Failed to remove review');
+
+        //remove bind messages
+        //$review->message()->delete();
+        if($review->delete()){
             return ResponseService::okMessage('Removed review');
-        }else{
-            return  ResponseService::error('Failed to remove review');
-        }
+        }else return  ResponseService::error('Failed to remove review');
+        
     }
 
 

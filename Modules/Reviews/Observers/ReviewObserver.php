@@ -4,8 +4,9 @@ namespace Modules\Reviews\Observers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\Review;
+use Modules\Reviews\Services\ReviewContentService;
 
-class ReviewAttachObserver
+class ReviewObserver
 {
     /**
      * Handle the User "deleted" event.
@@ -13,20 +14,12 @@ class ReviewAttachObserver
      */
     public function deleting(Review $review)
     {
-
-
-        $reviewFiles = $review->content;
-
         //clear attach files
-        if($reviewFiles){
-            foreach ($reviewFiles as $fileInfo){
-                if( $fileInfo->file ){
-                    Storage::disk(config('reviews.storeDisk'))->delete($fileInfo->file);
-                }
+        if($reviewContent = $review->content){
+            foreach ($reviewContent as $content){
+                (new ReviewContentService())->removeContent($content);
             }
         }
-
-
     }
 
     /**
