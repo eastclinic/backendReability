@@ -113,7 +113,7 @@ class ReviewContentService
 
                     $content->update(['confirm'=>1]);
                 }
-                $content->update(array_merge($actualContent[$content->id],['confirm'=>1]));
+                $content->update($actualContent[$content->id]['published']);
             }else {
                 $this->removeContent($content);
             }
