@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
-        Response::macro('apiCollection', function (\Illuminate\Http\Resources\Json\ResourceCollection $itemsCollection ){
+        Response::macro('apiCollection', function (\Illuminate\Http\Resources\Json\ResourceCollection $itemsCollection, array $data = []){
             return response()->json(['ok' => true, 'items' => $itemsCollection->items(),
                 //'total' => $itemsCollection->count(),
                 'count' => $itemsCollection->total(),
@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
                 //'current_page' => $itemsCollection->currentPage(),
                 'total_pages' => $itemsCollection->lastPage(),
 //                'toSql' => $itemsCollection->toSql(),
-            ]);
+            ]+$data);
         });
         Response::macro('apiEntity', function ( $entity ){
             return response()->json(['ok' => true, 'item' => $entity]);

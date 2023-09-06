@@ -7,7 +7,7 @@ use \App\Services\ApiRequestQueryBuilders\ApiListService;
 
 
 use Modules\Doctors\Http\Controllers\Admin\DoctorResourceController ;
-use Modules\Doctors\Http\Controllers\Front\DoctorController as FrontDoctorController;
+use Modules\Doctors\Http\Controllers\Front\DoctorsListController as DoctorsListFrontController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -28,6 +28,7 @@ Route::group([
         'doctors'=>DoctorResourceController::class
     ]);
 
+
 });
 
 //front
@@ -35,8 +36,10 @@ Route::group([
 Route::group([
     'middleware' => 'api',
 ], function ($router) {
+    Route::get('/doctors-list', [DoctorsListFrontController::class, 'index']);
+//    Route::get('/doctors', function (ApiAbstractRequest $request) {
+//        return (new FrontDoctorController(new ApiListService())) ->index($request);
+//    });
 
-    Route::get('/doctors', function (ApiAbstractRequest $request) {
-        return (new FrontDoctorController(new ApiListService())) ->index($request);
-    });
+
 });
