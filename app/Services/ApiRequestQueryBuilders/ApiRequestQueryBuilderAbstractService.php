@@ -8,7 +8,7 @@ use \Illuminate\Database\Eloquent\Builder;
 abstract class ApiRequestQueryBuilderAbstractService
 {
 
-    protected int $perPage;
+    protected int $perPage = 10;
     //todo add type parameter $query
     abstract public function build(  $query, FormRequest $request ) ;
 

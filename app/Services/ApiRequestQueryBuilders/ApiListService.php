@@ -17,16 +17,21 @@ class ApiListService extends ApiRequestQueryBuilderAbstractService
         if(isset($requestData['ids']) && is_array($requestData['ids'])){
             return $query->whereIn('id', $query['ids']);
         }
+        if(!isset($requestData['all'])){
+            //пагинация
+            $offset = (isset($requestData['page']) && isset($requestData['perPage'])) ? ( $requestData['page'] - 1 ) * $requestData['perPage']: 0;
+            $limit = (isset($requestData['perPage'])) ? $requestData['perPage']: 10;
+            $query->offset($offset)->limit($limit);
+            $countItemsOnPage = (isset($requestData['perPage'])) ? $requestData['perPage']*1 : $this->perPage;
+            $query->getModel()->setPerPage( $countItemsOnPage );
+        }else{
+            $query->getModel()->setPerPage( ($this->perPage) ?? 10000 );
+        }
 
-        //пагинация
-        $offset = (isset($requestData['page']) && isset($requestData['perPage'])) ? ( $requestData['page'] - 1 ) * $requestData['perPage']: 0;
-
-        $limit = (isset($requestData['perPage'])) ? $requestData['perPage']: 10;
-        error_log($offset);
-        error_log($limit);
 
 
-        $query->offset($offset)->limit($limit);
+
+
         //сортировка
         if(isset($requestData['sortBy']) && isset($requestData['sortDesc'])){
             foreach ($requestData['sortBy'] as $f => $field){
@@ -35,8 +40,7 @@ class ApiListService extends ApiRequestQueryBuilderAbstractService
         }
 
 
-        $countItemsOnPage = (isset($requestData['perPage'])) ? $requestData['perPage']*1 : 20;
-        $query->getModel()->setPerPage( $countItemsOnPage );
+
 
 
         return $query;

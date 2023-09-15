@@ -23,7 +23,7 @@ class ReviewResource extends JsonResource
             'id' => $this->id,
             'text' => $this->text,
             'rating' => $this->rating * 1,
-            'reviewable_id' => $this->reviewable_id,
+            'reviewable_id' => $this->reviewable_id* 1,
 //            'reviewable_type' => (new Target())->getTargetNameByClass($this->reviewable_type),
             'reviewable_type' => $this->reviewable_type,
             'author' => $this->author,
