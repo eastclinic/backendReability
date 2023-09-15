@@ -3,7 +3,9 @@
 namespace Modules\Doctors\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApiAbstractRequest;
 use App\Services\ApiRequestQueryBuilders\ApiDataTableService;
+use App\Services\ApiRequestQueryBuilders\ApiRequestQueryBuilderAbstractService;
 use App\Services\Response\ResponseService;
 
 
@@ -35,10 +37,10 @@ class DoctorResourceController extends Controller
 
     /**
      * Display a listing of the resource.
-     * @param ApiDataTableRequest $request
+     * @param ApiAbstractRequest $request
      * @return array|string
      */
-    public function index(ApiDataTableRequest $request)
+    public function index(ApiAbstractRequest $request)
     {
 
         $doctors = Doctor::query();

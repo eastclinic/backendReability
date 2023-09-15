@@ -14,11 +14,6 @@ class ApiDataTableRequest extends ApiAbstractRequest
      */
     public function rules()
     {
-        Log::info(print_r(parent::rules() + [
-                'mustSort' => ['nullable'],
-                'multiSort' => ['nullable'],
-                'sort.*' =>['nullable', 'string'],
-            ],1));
         return parent::rules() + [
             'mustSort' => ['nullable'],
                 'multiSort' => ['nullable'],

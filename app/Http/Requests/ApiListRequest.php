@@ -18,10 +18,40 @@ class ApiListRequest extends ApiAbstractRequest
             'limit' =>'nullable',
             'offset' =>'nullable',
             'page' =>'nullable',
+            'all' =>'boolean|nullable',
             'itemsPerPage' =>'nullable',
             'sortBy.*' =>'string|nullable',
             'sortDesc.*' =>'string|nullable',
+
         ];
+    }
+//use it, because get parameters as string
+    protected function prepareForValidation()
+    {
+        $this->castQueryParameters([
+            'limit' => 'integer',
+            'offset' => 'integer',
+            'page' => 'integer',
+            'all' => 'boolean',
+            'itemsPerPage' => 'integer',
+        ]);
+    }
+
+    protected function castQueryParameters(array $casts)
+    {
+        foreach ($casts as $parameter => $type) {
+            if ($this->has($parameter)) {
+                switch ($type) {
+                    case 'integer':
+                        $this->merge([$parameter => (int)$this->input($parameter)]);
+                        break;
+                    case 'boolean':
+                        $this->merge([$parameter => filter_var($this->input($parameter), FILTER_VALIDATE_BOOLEAN)]);
+                        break;
+                    // Add more cases for other data types as needed
+                }
+            }
+        }
     }
 
     /**

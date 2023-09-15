@@ -37,9 +37,9 @@ class ResponseService extends Response
      * @see \App\Providers\AppServiceProvider::boot()
      * @static
      */
-    public static function apiCollection($modelQuery)
+    public static function apiCollection($modelQuery, array $extraData = [])
     {
-        return \Illuminate\Routing\ResponseFactory::apiCollection($modelQuery);
+        return \Illuminate\Routing\ResponseFactory::apiCollection($modelQuery, $extraData);
     }
 
 //    /**
