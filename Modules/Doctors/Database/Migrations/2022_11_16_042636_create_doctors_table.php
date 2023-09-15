@@ -53,7 +53,7 @@ return new class extends Migration
             $table->mediumText('content')->nullable();
             $table->integer('age_from')->default(0);
             $table->integer('age_to')->default(100);
-            $table->integer('iskill')->default(0);
+            $table->integer('skill')->default(0);
             $table->tinyInteger('is_primary_care')->nullable();
             $table->tinyInteger('is_doctor')->default(1);
             $table->tinyInteger('is_nurse')->default(0);
