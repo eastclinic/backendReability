@@ -22,6 +22,14 @@ use Modules\Reviews\Http\Requests\ApiListReviewsByDoctorRequest;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+//Route::middleware('jwt.auth')->group(function() {
+//    Route::prefix('tasks')->group(function() {
+//        Route::get('/', [TaskListController::class, 'index']);
+//        Route::post('list/store', [TaskListController::class, 'store']);
+//    });
+//});
+
 Route::group([
     'middleware' => 'api',
 ], function ($router) {
