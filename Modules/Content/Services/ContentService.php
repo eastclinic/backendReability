@@ -79,12 +79,14 @@ class ContentService
 
 
     public function saveTempFileForever( string $filePath ):?ContentFileInfoStructure  {
-        if(!file_exists(Storage::disk('content')->path($filePath))) return null;
+        if(!$filePath) throw new \Exception('not have file');
+        $fileFullPath = Storage::disk('content')->path($filePath);
+        if(!file_exists($fileFullPath)) return null;
 
         $fileName = uniqid();
-        $fileInfo = pathinfo($filePath);
+        if(!$fileInfo = pathinfo($filePath)) return null;
         $foreverFilePath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileName.'.'.$fileInfo['extension'];
-        if(!rename(Storage::disk('content')->path($filePath), Storage::disk('content')->path($foreverFilePath))){
+        if(!rename($fileFullPath, Storage::disk('content')->path($foreverFilePath))){
             throw new \Exception('impossible save temporally file forever');
         }
         if(!file_exists(Storage::disk('content')->path($foreverFilePath))) return null;
@@ -154,7 +156,7 @@ class ContentService
         );
         if(!$file = explode('.', $file))    return null; //<<<<<<<<<<<<
         $ext = strtolower(array_pop($file));
-        if (!$fileMime = $mime_types[$ext])     return null; //<<<<<<<<<<<<
+        if (!$fileMime = $mime_types[$ext])   throw new \Exception('not set mime file'); //<<<<<<<<<<<<
         if(!$fileMime = explode('/', $fileMime))    return null; //<<<<<<<<<<<<
         return $fileMime[0];
     }

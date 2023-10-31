@@ -103,7 +103,7 @@ class ReviewContentService
         if( !$contents = ReviewContent::where('review_id', $review->id)->where('confirm', 0)->get()) return $this;//<<<<<<<<<<<<<
         foreach ($contents as $content){
             if( !$fileInfo = (new ContentService())->saveTempFileForever( $content->file )) continue;
-            $content->update( $fileInfo->toArray() + ['confirm' => 1, 'published' => 1, 'fileType' => 1] );
+            $content->update( $fileInfo->toArray() + ['confirm' => 1, 'published' => 1, ] );
         }
         return $this;
     }
