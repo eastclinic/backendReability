@@ -15,15 +15,15 @@ use Modules\Reviews\Services\ReviewContentService;
 class ClearUnconfirmedContentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected ?ReviewContentService $contentService = null;
+    protected ?string $filePath = null;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(ReviewContentService $content)
+    public function __construct(string $filePath)
     {
-        $this->contentService = $content;
+        $this->filePath = $filePath;
     }
 
     /**
@@ -33,9 +33,7 @@ class ClearUnconfirmedContentJob implements ShouldQueue
      */
     public function handle()
     {
-
-        $this->contentService->remove();
-
-        //
+        if(file_exists($this->filePath))
+            unlink($this->filePath);
     }
 }

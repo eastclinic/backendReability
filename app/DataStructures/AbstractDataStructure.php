@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Reviews\DataStructures;
+namespace App\DataStructures;
 
 abstract class AbstractDataStructure
 {

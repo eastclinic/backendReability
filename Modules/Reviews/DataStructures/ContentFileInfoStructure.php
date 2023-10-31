@@ -2,6 +2,7 @@
 
 
 namespace Modules\Reviews\DataStructures;
+use App\DataStructures\AbstractDataStructure;
 
 
 class ContentFileInfoStructure extends AbstractDataStructure

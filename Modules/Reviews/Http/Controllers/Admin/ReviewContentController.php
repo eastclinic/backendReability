@@ -39,7 +39,7 @@ use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
-use Modules\Reviews\Services\ReviewContentService;
+use Modules\Content\Services\ContentService;
 
 
 class ReviewContentController extends Controller
@@ -49,10 +49,10 @@ class ReviewContentController extends Controller
 //    private ApiDataTableService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
-    private ReviewContentService $contentService;
+    private ContentService $contentService;
 //
     public function __construct(
-        ReviewContentService $reviewContentService
+        ContentService $reviewContentService
 //        ApiDataTableService $apiHandler,
 //        Target $targetEntity
 )    {
@@ -105,7 +105,7 @@ class ReviewContentController extends Controller
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
 
-                $fileInfo = $this->contentService->saveFileForContent($file, $reviewContent);
+                $fileInfo = $this->contentService->saveTempFile( $file );
                 if(!$fileInfo) return response()->error('Error save upload files');
 
                 $reviewContent->update( $fileInfo->toArray() );
