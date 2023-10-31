@@ -58,7 +58,8 @@ class ContentService
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
 
-        $filePath =  md5(date('Y-m-d'));
+//        $filePath =  md5(date('Y-m-d'));
+        $filePath =  'tmp';
         Storage::disk('content')->putFileAs($filePath, $fileBlob, $fileNameWithExtension);
         $file = $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension;
         if(!$fileType = $this->getFileType(Storage::disk('content')->path($file))) return null;
@@ -85,7 +86,7 @@ class ContentService
 
         $fileName = uniqid();
         if(!$fileInfo = pathinfo($filePath)) return null;
-        $foreverFilePath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileName.'.'.$fileInfo['extension'];
+        $foreverFilePath = md5(date('Y-m-d')).DIRECTORY_SEPARATOR.$fileName.'.'.$fileInfo['extension'];
         if(!rename($fileFullPath, Storage::disk('content')->path($foreverFilePath))){
             throw new \Exception('impossible save temporally file forever');
         }
