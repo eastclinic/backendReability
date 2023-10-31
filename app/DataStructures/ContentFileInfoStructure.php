@@ -1,14 +1,12 @@
 <?php
 
 
-namespace Modules\Reviews\DataStructures;
-use App\DataStructures\AbstractDataStructure;
-
+namespace App\DataStructures;
 
 class ContentFileInfoStructure extends AbstractDataStructure
 {
     public ?string $file = null;
     public ?string $url = null;
     public string $type = '';
-    public ?string $typeFile = null;
+    public string $typeFile = '';
 }

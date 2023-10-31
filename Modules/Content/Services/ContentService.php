@@ -6,7 +6,7 @@ namespace Modules\Content\Services;
 
 
 use Illuminate\Support\Facades\Storage;
-use Modules\Reviews\DataStructures\ContentFileInfoStructure;
+use App\DataStructures\ContentFileInfoStructure;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
@@ -16,10 +16,34 @@ use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ContentService
 {
+//с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
+    /**
+     * с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
+     * в ReviewContentService сохраняем временные файлы, через ContentService::saveTempFile(blob файл)
+     * в цикле
+     * сохраняем сначала временный файл с методом saveTempFile(blob файл)
+     * запускаем крон который через время удалит этот файл из временных, если он есть
+     *
+     *
+     *
+     * когда от фронта приходит сохранение отзыва в ReviewResourceController::store()
+     * вызывается ReviewContentService::updateContentForReview($review)
+     * тут обходим контент в цикле для данного отзыва
+     * если контент не подтвержденный то сохраняем его постоянно(переименовываем файл)
+     * запускаем в кроне PreviewsServices с настройками
+     * PreviewsServices генерирует превью и сохраняет файл при помощи ContentService
+     *
+     *
+     *
+     *
+     *
+     *
+     */
+
 
     //сохраняем временный файл
-    //запускаем крон который через время удалит этот файл из временных, если он есть
-    //когда от фронта приходит подтверждение на файл, переносим его в папку date('Y-m-d');
+    //
+    //
     //там где вызывается (в контроллере к примеру), настраиваем превью сервисы и передаем в крон
 
 
@@ -33,135 +57,109 @@ class ContentService
         $extension = mb_strtolower($fileBlob->getClientOriginalExtension());
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
-        if(!$fileType = $this->getFileType($fileBlob)) return null;
-        $filePath =  date('Y-m-d');
+
+        $filePath =  md5(date('Y-m-d'));
         Storage::disk('content')->putFileAs($filePath, $fileBlob, $fileNameWithExtension);
         $file = $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension;
-
+        if(!$fileType = $this->getFileType(Storage::disk('content')->path($file))) return null;
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($file)->delay(now()->addHours(2));
 
         //return data structure for save in db
         return (new ContentFileInfoStructure([
             'file' => $file,
-            'url' => Storage::disk('content')->url($filePath),
-            'type' => 'original',
+            'url' => Storage::disk('content')->url($file),
+            'type' => 'temp',
             'typeFile' => $fileType
         ]));
     }
 
 
-    public function removeContent(ReviewContent $content):bool {
 
-        //if content already remove return
-        //if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
-        //clear original file
 
-        Storage::disk('reviewContent')->delete($content->file);
-        //clear previews files
-        if($previewService = $this->getPreviewServiceForContent($content)){
-            $previewService->removePreviews();
+
+    public function saveTempFileForever( string $filePath ):?ContentFileInfoStructure  {
+        if(!file_exists(Storage::disk('content')->path($filePath))) return null;
+
+        $fileName = uniqid();
+        $fileInfo = pathinfo($filePath);
+        $foreverFilePath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileName.'.'.$fileInfo['extension'];
+        if(!rename(Storage::disk('content')->path($filePath), Storage::disk('content')->path($foreverFilePath))){
+            throw new \Exception('impossible save temporally file forever');
         }
-
-        if($nowContent = ReviewContent::where('id', $content->id)->first()){
-            $nowContent->delete();
-        }
-
-        //check count files, if zero then remove folder
-        $filePath = (new ReviewContentStorage())->forContent($content)->storageFolder('original');
-
-        if((new \GlobIterator($filePath.'/*.*'))->count() === 0){
-            Storage::disk('reviewContent')->deleteDirectory((new ReviewContentStorage())->forContent($content)->contentFolder());
-        }
-
-
-
-        return true;
+        if(!file_exists(Storage::disk('content')->path($foreverFilePath))) return null;
+        if(!$fileType = $this->getFileType(Storage::disk('content')->path($foreverFilePath))) return null;
+        return (new ContentFileInfoStructure([
+            'file' => $foreverFilePath,
+            'url' => Storage::disk('content')->url($foreverFilePath),
+            'type' => 'origin',
+            'typeFile' => $fileType,
+        ]));
     }
 
-    public function remove():bool{
-        if(!$this->content) new \Exception('Not set content');
-        return $this->removeContent($this->content);
-    }
+    protected function getFileType(string $file):?string {
+        $mime_types = array(
+            'txt' => 'text/plain',
+            'htm' => 'text/html',
+            'html' => 'text/html',
+            'php' => 'text/html',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'swf' => 'application/x-shockwave-flash',
+            'flv' => 'video/x-flv',
 
-    public function forContent(ReviewContent $content):self {
-        $this->content = $content;
-        return $this;
-    }
+            // images
+            'png' => 'image/png',
+            'jpe' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'jpg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/vnd.microsoft.icon',
+            'tiff' => 'image/tiff',
+            'tif' => 'image/tiff',
+            'svg' => 'image/svg+xml',
+            'svgz' => 'image/svg+xml',
 
+            // archives
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+            'exe' => 'application/x-msdownload',
+            'msi' => 'application/x-msdownload',
+            'cab' => 'application/vnd.ms-cab-compressed',
 
-    public function updateContentForReview(array $actualContent, Review $review):bool{
+            // audio/video
+            'mp3' => 'audio/mpeg',
+            'qt' => 'video/quicktime',
+            'mov' => 'video/quicktime',
 
-        //handle content with temp review id
-        $contentIds = array_column($actualContent, 'id');
-        $this->saveTemporallyContentForReview($contentIds, $review);
+            // adobe
+            'pdf' => 'application/pdf',
+            'psd' => 'image/vnd.adobe.photoshop',
+            'ai' => 'application/postscript',
+            'eps' => 'application/postscript',
+            'ps' => 'application/postscript',
 
+            // ms office
+            'doc' => 'application/msword',
+            'rtf' => 'application/rtf',
+            'xls' => 'application/vnd.ms-excel',
+            'ppt' => 'application/vnd.ms-powerpoint',
 
-        $actualContent = array_combine($contentIds, $actualContent);
-        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-//        if($contents->count() === 0){
-//            return true;
-//        }
-        foreach ($contents as $content){
-            if(isset($actualContent[$content->id])){
-                if(!$content->confirm){
-                    if($previewService = $this->getPreviewServiceForContent($content)){
-                        //dont forget to run  Supervisor  php artisan queue:listen
-                        CreatePreviewJob::dispatch($previewService);
-                    }
-                    $content->update(['confirm'=>1]);
-                }
-                $content->update([ 'published'=> $actualContent[$content->id]['published']]);
-            }else {
-                $this->removeContent($content);
-            }
-        }
-        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-        if($contents->count() === 0){
-            //todo debug it
-            Storage::disk('reviewContent')->delete($review->id);
-            return true;
-        }
-        return true;
-    }
-
-    protected function saveTemporallyContentForReview(array $contentIds, Review $review ){
-        if( $temporalContents = ReviewContent::whereIn('id', $contentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
-            foreach ($temporalContents as $content){
-                if( $content->review_id !== $review->id ){
-                    //change folder to review id
-                    Storage::disk('reviewContent')->move($content->review_id, $review->id);
-                    //change review id to content
-                    $content->update(['review_id' =>  $review->id,
-                        'confirm'=>1,
-                        'file' => str_replace($content->review_id, $review->id, $content->file),
-                        'url' => str_replace($content->review_id, $review->id, $content->url),
-                    ]);
-                }
-            }
-        }
-
-    }
-
-    protected function getFileType($file):?string {
-        if(!$fileMime = $file->getMimeType()) return null;
-        if(!$fileMime = explode('/', $fileMime))return null;
+            // open office
+            'odt' => 'application/vnd.oasis.opendocument.text',
+            'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+        );
+        if(!$file = explode('.', $file))    return null; //<<<<<<<<<<<<
+        $ext = strtolower(array_pop($file));
+        if (!$fileMime = $mime_types[$ext])     return null; //<<<<<<<<<<<<
+        if(!$fileMime = explode('/', $fileMime))    return null; //<<<<<<<<<<<<
         return $fileMime[0];
     }
 
-    protected function getPreviewServiceForContent(ReviewContent $content):?PreviewsServiceAbstract {
-        $fileInfo= pathinfo($content->file);
-        $originalFileExtension = mb_strtolower($fileInfo['extension']);
-        switch ($originalFileExtension) {
-            case 'jpg':
-            case 'png':
-            case 'jpeg':
-                return new ImagePreviewsService($content);
-            case 'mp4':
-                return new VideoPreviewsService($content);
-        }
-        return null;
 
-    }
+
 }
 

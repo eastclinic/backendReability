@@ -33,7 +33,8 @@ class ClearUnconfirmedContentJob implements ShouldQueue
      */
     public function handle()
     {
-        if(file_exists($this->filePath))
-            unlink($this->filePath);
+        if(file_exists($this->filePath))     unlink($this->filePath);
+        //todo if folder is empty, remove folder
+
     }
 }

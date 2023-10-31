@@ -26,14 +26,17 @@ class ReviewResourceController extends Controller
     private ApiDataTableService $QueryBuilderByRequest;
     private Target $targetModel;
     private ReviewService $reviewService;
+    private ReviewContentService $reviewContentService;
 
     public function __construct(
         ReviewService $reviewService,
         ApiDataTableService $apiHandler,
-        Target $targetEntity)    {
+        Target $targetEntity,
+        ReviewContentService $reviewContentService)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
         $this->reviewService = $reviewService;
+        $this->reviewContentService = $reviewContentService;
 
     }
 
@@ -70,8 +73,6 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
-
-
         error_log('store-rewiew');
         $requestData = $request->validated();
 
@@ -86,10 +87,7 @@ class ReviewResourceController extends Controller
         }
         $review->save();
         //handle content
-//        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
-
-
+        $this->reviewContentService->updateContentForReview( $review );
 
         return response()->okMessage('Save new review.', 200);
     }
@@ -133,7 +131,7 @@ class ReviewResourceController extends Controller
         if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
         //handle content
 //        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
+        (new ReviewContentService())->updateContentForReview( $review );
 
 
         $review = Review::where('id', $id)->first();
@@ -156,7 +154,7 @@ class ReviewResourceController extends Controller
         if($review->delete()){
             return ResponseService::okMessage('Removed review');
         }else return  ResponseService::error('Failed to remove review');
-        
+
     }
 
 

@@ -40,6 +40,7 @@ use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
 use Modules\Content\Services\ContentService;
+use Modules\Reviews\Services\ReviewContentService;
 
 
 class ReviewContentController extends Controller
@@ -49,17 +50,17 @@ class ReviewContentController extends Controller
 //    private ApiDataTableService $QueryBuilderByRequest;
 //    private Target $targetModel;
 //    private ReviewService $reviewService;
-    private ContentService $contentService;
+    private ReviewContentService $reviewContentService;
 //
     public function __construct(
-        ContentService $reviewContentService
+        ReviewContentService $reviewContentService
 //        ApiDataTableService $apiHandler,
 //        Target $targetEntity
 )    {
 //        $this->QueryBuilderByRequest = $apiHandler;
 //        $this->targetModel = $targetEntity;
 ////        $this->reviewService = $reviewService;
-        $this->contentService = $reviewContentService;
+        $this->reviewContentService = $reviewContentService;
     }
 
     /**
@@ -91,8 +92,7 @@ class ReviewContentController extends Controller
      * @param  ContentRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreContentRequest $request)
-    {
+    public function store(StoreContentRequest $request)   {
 
         //run job for
 
@@ -105,9 +105,9 @@ class ReviewContentController extends Controller
                 $reviewContentData  = ['review_id' => $requestData['reviewId'], 'message_id'=> ( $requestData['messageId'] ) ?? 0 ];
                 $reviewContent = ReviewContent::create($reviewContentData);
 
-                $fileInfo = $this->contentService->saveTempFile( $file );
-                if(!$fileInfo) return response()->error('Error save upload files');
+                $fileInfo = $this->reviewContentService->saveTempFile( $file );
 
+                if(!$fileInfo) return response()->error('Error save upload files');
                 $reviewContent->update( $fileInfo->toArray() );
                 $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0, 'published' => 0];
             }
@@ -160,7 +160,7 @@ class ReviewContentController extends Controller
      */
     public function destroy($id) {
         if (!$content = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
-        $this->contentService->removeContent( $content);
+        $this->reviewContentService->removeContent( $content);
 
         return response()->okMessage('Файл удален', 200);
 

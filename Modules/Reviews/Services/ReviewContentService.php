@@ -11,42 +11,20 @@ use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Reviews\DataStructures\AbstractDataStructure;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use Modules\Content\Services\ContentService;
+use App\DataStructures\AbstractDataStructure;
 
 class ReviewContentService
 {
 
+    private ContentService $contentService;
+//    public function __construct( ContentService $contentService )    {
+//        $this->contentService = $contentService;
+//    }
     protected ?ReviewContent $content = null;
-    public function saveFileForContent($file, ReviewContent $content):?AbstractDataStructure {
 
-        //if isset id, save to folder with name id
-        //if not have id, that save in zero folder
-
-        $extension = mb_strtolower($file->getClientOriginalExtension());
-        $fileName = uniqid();
-        $fileNameWithExtension = $fileName.'.'.$extension;
-        if(!$fileType = $this->getFileType($file)) return null;
-
-        $filePath = (new ReviewContentStorage())->forContent($content)->contentFolder('original');
-
-        Storage::disk('reviewContent')->putFileAs($filePath, $file, $fileNameWithExtension);
-
-
-        //create job for clear "forget" content
-        ClearUnconfirmedContentJob::dispatch($this->forContent($content))->delay(now()->addHours(2));
-
-        //return data structure for save in db
-        return (new ContentFileInfoStructure([
-            'file' => $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension,
-            'url' => (new ReviewContentStorage())->forContent($content)->contentUrl('original/'.$fileNameWithExtension),
-            'type' => 'original',
-            'typeFile' => $fileType
-        ]));
-
-        //todo run job with delay for clear not used reviews content data with files
-
-
+    public function saveTempFile( $fileBlob ):?AbstractDataStructure {
+        return (new ContentService())->saveTempFile( $fileBlob );
     }
 
 
@@ -89,57 +67,45 @@ class ReviewContentService
     }
 
 
-    public function updateContentForReview(array $actualContent, Review $review):bool{
+    public function updateContentForReview(Review $review):bool{
 
-        //handle content with temp review id
-        $contentIds = array_column($actualContent, 'id');
-        $this->saveTemporallyContentForReview($contentIds, $review);
+        $this->saveTemporallyContentForReview( $review );
 
-
-        $actualContent = array_combine($contentIds, $actualContent);
-        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
+//        $actualContent = array_combine($contentIds, $actualContent);
+//        $contentsTemp = ReviewContent::where('review_id', $review->id)->where('confirm', 1)->get();
+////        if($contents->count() === 0){
+////            return true;
+////        }
+//        foreach ($contents as $content){
+//            if(isset($actualContent[$content->id])){
+//                if(!$content->confirm){
+//                    if($previewService = $this->getPreviewServiceForContent($content)){
+//                        //dont forget to run  Supervisor  php artisan queue:listen
+//                        CreatePreviewJob::dispatch($previewService);
+//                    }
+//                    $content->update(['confirm'=>1]);
+//                }
+//                $content->update([ 'published'=> $actualContent[$content->id]['published']]);
+//            }else {
+//                $this->removeContent($content);
+//            }
+//        }
+//        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
 //        if($contents->count() === 0){
+//            //todo debug it
+//            Storage::disk('reviewContent')->delete($review->id);
 //            return true;
 //        }
-        foreach ($contents as $content){
-            if(isset($actualContent[$content->id])){
-                if(!$content->confirm){
-                    if($previewService = $this->getPreviewServiceForContent($content)){
-                        //dont forget to run  Supervisor  php artisan queue:listen
-                        CreatePreviewJob::dispatch($previewService);
-                    }
-                    $content->update(['confirm'=>1]);
-                }
-                $content->update([ 'published'=> $actualContent[$content->id]['published']]);
-            }else {
-                $this->removeContent($content);
-            }
-        }
-        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-        if($contents->count() === 0){
-            //todo debug it
-            Storage::disk('reviewContent')->delete($review->id);
-            return true;
-        }
         return true;
     }
 
-    protected function saveTemporallyContentForReview(array $contentIds, Review $review ){
-        if( $temporalContents = ReviewContent::whereIn('id', $contentIds)->where('review_id','!=',  $review->id)->where('type', 'original')->get()){
-            foreach ($temporalContents as $content){
-                if( $content->review_id !== $review->id ){
-                    //change folder to review id
-                    Storage::disk('reviewContent')->move($content->review_id, $review->id);
-                    //change review id to content
-                    $content->update(['review_id' =>  $review->id,
-                        'confirm'=>1,
-                        'file' => str_replace($content->review_id, $review->id, $content->file),
-                        'url' => str_replace($content->review_id, $review->id, $content->url),
-                    ]);
-                }
-            }
+    protected function saveTemporallyContentForReview( Review $review ):self {
+        if( !$contents = ReviewContent::where('review_id', $review->id)->where('confirm', 0)->get()) return $this;//<<<<<<<<<<<<<
+        foreach ($contents as $content){
+            if( !$fileInfo = (new ContentService())->saveTempFileForever( $content->file )) continue;
+            $content->update( $fileInfo->toArray() + ['confirm' => 1, 'published' => 1, 'fileType' => 1] );
         }
-
+        return $this;
     }
 
     protected function getFileType($file):?string {
