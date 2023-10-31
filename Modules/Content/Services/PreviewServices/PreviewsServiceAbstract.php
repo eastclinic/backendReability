@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Reviews\Services;
+namespace Modules\Content\Services\PreviewServices;
 
 
 use Illuminate\Support\Facades\Storage;

@@ -6,13 +6,14 @@ namespace Modules\Reviews\Services;
 
 
 use Illuminate\Support\Facades\Storage;
-use Modules\Reviews\DataStructures\ContentFileInfoStructure;
 use Modules\Reviews\Entities\Review;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Content\Services\ContentService;
+
 use App\DataStructures\AbstractDataStructure;
+use Modules\Content\Services\ContentService;
+use Modules\Content\Services\PreviewServices\ImagePreviewsService;
 
 class ReviewContentService
 {
@@ -114,14 +115,17 @@ class ReviewContentService
             case 'jpg':
             case 'png':
             case 'jpeg':
+            case 'webp':
                 return [(new ImagePreviewsService($content))
                     ->forFileOriginal($content->file)
-                    ->forModelClass(ReviewContent::class)
-                    ->withStorage(Storage::disk('content'))
+                    ->forModel(new ReviewContent([
+                        'review_id' => $content->review_id,
+                        'message_id'=> $content->message_id,
+                        'parent_content_id' => $content->id,
+                        'type' => '300x300',]))
+                    ->forStorage(Storage::disk('content'))
                     ->withExtension('webp')
-                    ->withType('300x300')
-                    ->withWidth(300)
-                    ->withHeight(300)
+                    ->withSize(300, 300)
                 ];
             case 'mp4':
                 return [new VideoPreviewsService($content)];

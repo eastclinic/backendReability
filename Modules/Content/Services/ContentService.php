@@ -163,6 +163,9 @@ class ContentService
     }
 
 
+    public function getPath():string    {
+        return '';
+    }
 
 }
 
