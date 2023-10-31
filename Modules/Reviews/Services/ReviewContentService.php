@@ -96,6 +96,9 @@ class ReviewContentService
             Storage::disk('reviewContent')->delete($review->id);
             return true;
         }
+
+        //todo published/unpublished setting save original and previews content
+
         return true;
     }
 
@@ -116,7 +119,8 @@ class ReviewContentService
             case 'png':
             case 'jpeg':
             case 'webp':
-                return [(new ImagePreviewsService($content))
+                return [
+                    (new ImagePreviewsService())
                     ->forFileOriginal($content->file)
                     ->forModel(new ReviewContent([
                         'review_id' => $content->review_id,
@@ -128,7 +132,8 @@ class ReviewContentService
                     ->withSize(300, 300)
                 ];
             case 'mp4':
-                return [new VideoPreviewsService($content)];
+//                return [new VideoPreviewsService($content)];
+                return null;
         }
         return null;
 

@@ -27,7 +27,7 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     public function generatePreviews():bool {
         if( !$this->modelContent || !$this->fileOriginal || !$this->storage)       return false;
         try {
-            //again get content from db, because info possible change
+
             $fileOriginalFullPath = $this->storage->path($this->fileOriginal);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
