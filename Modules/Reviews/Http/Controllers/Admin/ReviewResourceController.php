@@ -60,8 +60,6 @@ class ReviewResourceController extends Controller
         }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
-        //ReviewResource
-//        return response()->apiCollection( $reviews );
         return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
@@ -129,13 +127,11 @@ class ReviewResourceController extends Controller
             //$review->reviewable()->associate($target);
         }
         if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
+        $review -> update($requestData);
         //handle content
 //        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
         (new ReviewContentService())->updateContentForReview( $review );
 
-
-        $review = Review::where('id', $id)->first();
-        $review -> update($requestData);
         return response()->okMessage('Change data.', 200);
     }
 

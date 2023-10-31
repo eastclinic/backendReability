@@ -95,7 +95,7 @@ class ContentService
         return (new ContentFileInfoStructure([
             'file' => $foreverFilePath,
             'url' => Storage::disk('content')->url($foreverFilePath),
-            'type' => 'origin',
+            'type' => 'original',
             'typeFile' => $fileType,
         ]));
     }

@@ -108,12 +108,6 @@ class ReviewContentService
         return $this;
     }
 
-    protected function getFileType($file):?string {
-        if(!$fileMime = $file->getMimeType()) return null;
-        if(!$fileMime = explode('/', $fileMime))return null;
-        return $fileMime[0];
-    }
-
     protected function getPreviewServiceForContent(ReviewContent $content):?PreviewsServiceAbstract {
         $fileInfo= pathinfo($content->file);
         $originalFileExtension = mb_strtolower($fileInfo['extension']);
