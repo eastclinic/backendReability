@@ -25,7 +25,7 @@ class ReviewContent extends Model
         'typeFile',
         'confirm',
         'published',
-
+        'handlePreviews'
 
 
 //        'contentable_id',

@@ -5,20 +5,29 @@ namespace Modules\Reviews\Services;
 
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Reviews\Entities\ReviewContent;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
+use Illuminate\Database\Eloquent\Model;
 
 class ImagePreviewsService extends PreviewsServiceAbstract
 {
     public ?ReviewContent $content = null;
+    protected ?string $modelContent = null;
+    protected string $extension = '';
+    protected string $type = '';
+    protected ?string $fileOriginal = '';
+    protected ?int $width = null;
+    protected ?int $height = null;
+    protected ?Filesystem $storage = null;
 
 
     public function generatePreviews():bool {
-        if( !$this->content )       return false;
+        if( !$this->modelContent )       return false;
         try {
             //again get content from db, because info possible change
             $content = ReviewContent::find($this->content->id);
@@ -64,6 +73,38 @@ class ImagePreviewsService extends PreviewsServiceAbstract
             error_log($e->getMessage());
         }
         return true;
+    }
+
+
+    public function forModelClass( string $modelContent ):self     {
+        $this->modelContent = $modelContent;
+        return $this;
+    }
+
+    public function withExtension( string $extension):self     {
+        $this->extension = $extension;
+        return $this;
+    }
+
+    public function withType( string $type ):self     {
+        $this->type = $type;
+        return $this;
+    }
+    public function withWidth( int $width ):self     {
+        $this->width = $width;
+        return $this;
+    }
+    public function withHeight( int $height ):self     {
+        $this->height = $height;
+        return $this;
+    }
+    public function withStorage( Filesystem $storage ):self     {
+        $this->storage = $storage;
+        return $this;
+    }
+    public function forFileOriginal( string $fileOriginal ):self     {
+        $this->fileOriginal = $fileOriginal;
+        return $this;
     }
 
 }

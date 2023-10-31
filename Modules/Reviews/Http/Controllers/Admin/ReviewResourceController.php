@@ -47,8 +47,6 @@ class ReviewResourceController extends Controller
      */
     public function index(ApiDataTableRequest $request)
     {
-
-
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
@@ -85,7 +83,9 @@ class ReviewResourceController extends Controller
         }
         $review->save();
         //handle content
-        $this->reviewContentService->updateContentForReview( $review );
+        if($requestData['content']) {
+            (new ReviewContentService())->updateContentForReview( $requestData['content'], $review );
+        }
 
         return response()->okMessage('Save new review.', 200);
     }
@@ -129,8 +129,10 @@ class ReviewResourceController extends Controller
         if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
         $review -> update($requestData);
         //handle content
-//        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->updateContentForReview( $review );
+        if($requestData['content']) {
+            (new ReviewContentService())->updateContentForReview( $requestData['content'], $review );
+        }
+
 
         return response()->okMessage('Change data.', 200);
     }

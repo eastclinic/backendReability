@@ -67,35 +67,34 @@ class ReviewContentService
     }
 
 
-    public function updateContentForReview(Review $review):bool{
+    public function updateContentForReview( array $actualContentsInfo, Review $review):bool{
 
         $this->saveTemporallyContentForReview( $review );
+        $actualContentsInfo = array_combine(array_column($actualContentsInfo, 'id'), $actualContentsInfo);
 
-//        $actualContent = array_combine($contentIds, $actualContent);
-//        $contentsTemp = ReviewContent::where('review_id', $review->id)->where('confirm', 1)->get();
-////        if($contents->count() === 0){
-////            return true;
-////        }
-//        foreach ($contents as $content){
-//            if(isset($actualContent[$content->id])){
-//                if(!$content->confirm){
-//                    if($previewService = $this->getPreviewServiceForContent($content)){
-//                        //dont forget to run  Supervisor  php artisan queue:listen
-//                        CreatePreviewJob::dispatch($previewService);
-//                    }
-//                    $content->update(['confirm'=>1]);
-//                }
-//                $content->update([ 'published'=> $actualContent[$content->id]['published']]);
-//            }else {
-//                $this->removeContent($content);
-//            }
-//        }
-//        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-//        if($contents->count() === 0){
-//            //todo debug it
-//            Storage::disk('reviewContent')->delete($review->id);
-//            return true;
-//        }
+        $contentsForPreviews = ReviewContent::where('review_id', $review->id)->where('confirm', 0)->whereIn('id', array_keys($actualContentsInfo))->get();
+        if($contentsForPreviews->count() === 0){
+            return true;
+        }
+        foreach ($contentsForPreviews as $content){
+            if(!$content->confirm){
+                if($previewServices = $this->getPreviewServiceForContent($content)){
+                    foreach ($previewServices as $previewService){
+                        //dont forget to run  Supervisor  php artisan queue:listen
+                        CreatePreviewJob::dispatch($previewService);
+                    }
+                }
+                $content->update(['confirm'=>1]);
+            }
+            $content->update([ 'published'=> (int)($actualContentsInfo[$content->id]['published'])]);
+
+        }
+        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
+        if($contents->count() === 0){
+            //todo debug it
+            Storage::disk('reviewContent')->delete($review->id);
+            return true;
+        }
         return true;
     }
 
@@ -103,21 +102,29 @@ class ReviewContentService
         if( !$contents = ReviewContent::where('review_id', $review->id)->where('confirm', 0)->get()) return $this;//<<<<<<<<<<<<<
         foreach ($contents as $content){
             if( !$fileInfo = (new ContentService())->saveTempFileForever( $content->file )) continue;
-            $content->update( $fileInfo->toArray() + ['confirm' => 1, 'published' => 1, ] );
+            $content->update( $fileInfo->toArray() );
         }
         return $this;
     }
 
-    protected function getPreviewServiceForContent(ReviewContent $content):?PreviewsServiceAbstract {
+    protected function getPreviewServiceForContent(ReviewContent $content):?array {
         $fileInfo= pathinfo($content->file);
         $originalFileExtension = mb_strtolower($fileInfo['extension']);
         switch ($originalFileExtension) {
             case 'jpg':
             case 'png':
             case 'jpeg':
-                return new ImagePreviewsService($content);
+                return [(new ImagePreviewsService($content))
+                    ->forFileOriginal($content->file)
+                    ->forModelClass(ReviewContent::class)
+                    ->withStorage(Storage::disk('content'))
+                    ->withExtension('webp')
+                    ->withType('300x300')
+                    ->withWidth(300)
+                    ->withHeight(300)
+                ];
             case 'mp4':
-                return new VideoPreviewsService($content);
+                return [new VideoPreviewsService($content)];
         }
         return null;
 
