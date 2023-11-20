@@ -47,19 +47,11 @@ class ContentController extends Controller
 {
 
 
-//    private Target $targetModel;
-//    private ReviewService $reviewService;
-    private ContentService $reviewContentService;
+    private ContentService $contentService;
 //
-    public function __construct(
-        ContentService $reviewContentService
-//        ApiDataTableService $apiHandler,
-//        Target $targetEntity
-    )    {
-//        $this->QueryBuilderByRequest = $apiHandler;
-//        $this->targetModel = $targetEntity;
-////        $this->reviewService = $reviewService;
-        $this->reviewContentService = $reviewContentService;
+    public function __construct(    ContentService $contentService    )    {
+
+        $this->contentService = $contentService;
     }
 
     /**
@@ -82,13 +74,12 @@ class ContentController extends Controller
      */
     public function store(StoreContentRequest $request)   {
 
-        $requestData = $request->validated();
         $filesInfo = [];
         if ($request->hasFile('files')) {
             $files = $request->file('files');
 //save files
             foreach ($files as $file) {
-                $fileInfo = $this->reviewContentService->saveTempFile( $file );
+                $fileInfo = $this->contentService->saveTempFile( $file );
 
                 if(!$fileInfo) return response()->error('Error save upload files');
                 $reviewContent->update( $fileInfo->toArray() );

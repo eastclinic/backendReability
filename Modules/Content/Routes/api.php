@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Http\Request;
-use \Modules\Content\Http\Controllers\ContentController;
+use Illuminate\Support\Facades\Route;
+use Modules\Content\Http\Controllers\ContentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,11 +19,12 @@ use \Modules\Content\Http\Controllers\ContentController;
 //});
 
 Route::group([
-    'middleware' => 'auth:api',
+    'middleware' => 'api',
 ], function ($router) {
+error_log('api');
 
     Route::apiResources([
-        '/content'=>ContentController::class
+        'content'=>ContentController::class
     ]);
 
 });

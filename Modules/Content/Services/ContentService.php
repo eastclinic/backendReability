@@ -7,7 +7,7 @@ namespace Modules\Content\Services;
 
 use Illuminate\Support\Facades\Storage;
 use App\DataStructures\ContentFileInfoStructure;
-use Modules\Reviews\Entities\Review;
+use Modules\Content\Entities\Content;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
@@ -48,8 +48,8 @@ class ContentService
 
 
 
-    protected ?ReviewContent $content = null;
-    public function saveTempFile( $fileBlob ):?AbstractDataStructure {
+    protected ?Content $content = null;
+    public function saveTempFile( $fileBlob ):?ContentFileInfoStructure {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
@@ -58,22 +58,34 @@ class ContentService
         $fileName = uniqid();
         $fileNameWithExtension = $fileName.'.'.$extension;
 
-//        $filePath =  md5(date('Y-m-d'));
-        $filePath =  'tmp';
+        $filePath =  md5(date('Y-m-d'));
+//        $filePath =  'tmp';
         Storage::disk('content')->putFileAs($filePath, $fileBlob, $fileNameWithExtension);
         $file = $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension;
         if(!$fileType = $this->getFileType(Storage::disk('content')->path($file))) return null;
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($file)->delay(now()->addHours(2));
+        $fileStructure = new ContentFileInfoStructure([
+            'file' => $file,
+            'url' => Storage::disk('content')->url($file),
+            'type' => 'original',
+            'typeFile' => $fileType,
+
+        ]);
+        Content::create($fileStructure->toArray());
+
 
         //return data structure for save in db
         return (new ContentFileInfoStructure([
             'file' => $file,
             'url' => Storage::disk('content')->url($file),
-            'type' => 'temp',
-            'typeFile' => $fileType
+            'type' => 'original',
+            'typeFile' => $fileType,
+
         ]));
     }
+
+
 
 
 

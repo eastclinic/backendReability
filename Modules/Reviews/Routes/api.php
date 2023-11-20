@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-use Modules\Reviews\Http\Controllers\Admin\ReviewContentController;
 use Modules\Reviews\Http\Controllers\Admin\ReviewResourceController;
 use Modules\Reviews\Http\Controllers\Admin\TargetTypeController;
 use Modules\Reviews\Http\Controllers\DoctorReviewController;
@@ -42,9 +41,6 @@ Route::group([
         return $doctorReviewController->getReviews($request);
     });
 //    Route::get('reviews/content',[ReviewContentController::class]);
-    Route::apiResources([
-        'reviews/content'=>ReviewContentController::class
-    ]);
     Route::apiResources([
         'reviews'=>ReviewResourceController::class
     ]);
