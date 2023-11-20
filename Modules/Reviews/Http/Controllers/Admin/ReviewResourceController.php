@@ -8,17 +8,20 @@ use App\Services\Response\ResponseService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Modules\Content\Services\PreviewServices\ImagePreviewsService;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
 use App\Http\Requests\ApiDataTableRequest;
+use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Http\Resources\ReviewResource;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
 use Illuminate\Support\Facades\Response;
-use Modules\Reviews\Services\ReviewContentService;
+use Modules\Content\Services\ContentService;
 
 class ReviewResourceController extends Controller
 {
@@ -26,17 +29,18 @@ class ReviewResourceController extends Controller
     private ApiDataTableService $QueryBuilderByRequest;
     private Target $targetModel;
     private ReviewService $reviewService;
-    private ReviewContentService $reviewContentService;
+    private ContentService $contentService;
 
     public function __construct(
         ReviewService $reviewService,
         ApiDataTableService $apiHandler,
         Target $targetEntity,
-        ReviewContentService $reviewContentService)    {
+        ContentService $contentService)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
+        $this->contentService = $contentService;
         $this->reviewService = $reviewService;
-        $this->reviewContentService = $reviewContentService;
+
 
     }
 
@@ -69,7 +73,6 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
-        error_log('store-rewiew');
         $requestData = $request->validated();
 
         $review = new Review($requestData);
@@ -84,7 +87,8 @@ class ReviewResourceController extends Controller
         $review->save();
         //handle content
         if($requestData['content']) {
-            (new ReviewContentService())->updateContentForReview( $requestData['content'], $review );
+
+            $this->contentService->updateFromArray( $requestData['content'] );
         }
 
         return response()->okMessage('Save new review.', 200);
@@ -130,7 +134,7 @@ class ReviewResourceController extends Controller
         $review -> update($requestData);
         //handle content
         if($requestData['content']) {
-            (new ReviewContentService())->updateContentForReview( $requestData['content'], $review );
+            $this->contentService->updateFromArrayForContentable( $requestData['content'], Review::class, $id );
         }
 
 
@@ -170,5 +174,11 @@ class ReviewResourceController extends Controller
 
     }
 
+
+    protected function addPreviewServiceForContent( ContentService $contentService ){
+        $contentService->addPreviewService('300x300', (new ImagePreviewsService())
+            ->withExtension('webp')
+            ->withSize(300, 300));
+    }
 
 }

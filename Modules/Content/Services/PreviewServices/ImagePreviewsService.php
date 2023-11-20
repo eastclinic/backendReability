@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ImagePreviewsService extends PreviewsServiceAbstract
 {
-    protected ?Model $modelContent = null;
-    protected string $extension = '';
-    protected ?string $fileOriginal = '';
+    protected ?string $originalContent = null;
+    protected string $extensionPreview = '';
+//    protected ?string $fileOriginal = '';
     protected ?int $width = null;
     protected ?int $height = null;
     protected int $quality = 100;
@@ -25,18 +25,17 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
 
     public function generatePreviews():bool {
-        if( !$this->modelContent || !$this->fileOriginal || !$this->storage)       return false;
+        if( !$this->originalContent || !$this->storage)       return false;
         try {
-
-            $fileOriginalFullPath = $this->storage->path($this->fileOriginal);
+            $fileOriginalFullPath = $this->storage->path($this->originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
-            $fileInfo= pathinfo($this->fileOriginal);
+            $fileInfo= pathinfo($this->originalContent->file);
             $originalFileExtension = mb_strtolower($fileInfo['extension']);
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, ["jpg", "png", "jpeg", 'webp'])) return false;
-            $extension = ($this->extension && in_array($this->extension, ["jpg", "png", "jpeg", 'webp'])) ? $this->extension : $originalFileExtension;
+            $extension = ($this->extensionPreview && in_array($this->extensionPreview, ["jpg", "png", "jpeg", 'webp'])) ? $this->extensionPreview : $originalFileExtension;
             $previewFilename = md5_file($fileOriginalFullPath).'.'.$extension;
 
             $preview = Image::make($fileOriginalFullPath);
@@ -65,13 +64,13 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     }
 
 
-    public function forModel( Model $modelContent ):self     {
+    public function forContent( string $modelContent ):self     {
         $this->modelContent = $modelContent;
         return $this;
     }
 
     public function withExtension( string $extension):self     {
-        $this->extension = $extension;
+        $this->extensionPreview = $extension;
         return $this;
     }
 
@@ -85,10 +84,10 @@ class ImagePreviewsService extends PreviewsServiceAbstract
         $this->storage = $storage;
         return $this;
     }
-    public function forFileOriginal( string $fileOriginal ):self     {
-        $this->fileOriginal = $fileOriginal;
-        return $this;
-    }
+//    public function forFileOriginal( string $fileOriginal ):self     {
+//        $this->fileOriginal = $fileOriginal;
+//        return $this;
+//    }
     public function withQuality( int $quality = 100 ):self     {
         if($quality < 3) return $this; //<<<<<<<<<<<<<
         $this->quality = $quality;

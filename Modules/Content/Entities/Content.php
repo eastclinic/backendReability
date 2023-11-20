@@ -21,6 +21,8 @@ class Content extends Model
         'typeFile',
         'confirm',
         'published',
+        'contentable_type',
+        'contentable_id',
     ];
 
     protected static function newFactory()

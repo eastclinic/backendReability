@@ -1,9 +1,9 @@
 <?php
 
 
-namespace App\DataStructures;
+namespace App\DataStructures\Content;
 
-class ContentFileInfoStructure extends AbstractDataStructure
+class ContentFileInfoStructure extends \App\DataStructures\AbstractDataStructure
 {
     public ?string $file = null;
     public ?string $url = null;
@@ -12,6 +12,7 @@ class ContentFileInfoStructure extends AbstractDataStructure
     public bool $confirm = false;
     public bool $published = false;
 
-
+    public string $contentable_type = '';
+    public int $contentable_id = 0;
 
 }

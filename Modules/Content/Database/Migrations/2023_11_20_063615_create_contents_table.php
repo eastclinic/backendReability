@@ -19,8 +19,11 @@ return new class extends Migration
 //            $table->char('file_name')->default('');
 //            $table->char('file_extension')->default('');
             $table->char('url')->default('');
+            $table->char('parent_id')->default('');
             $table->char('type')->default('');
             $table->char('typeFile')->default('');
+            $table->char('mime')->default('');
+            $table->nullableMorphs('contentable');
             $table->boolean('confirm')->default(false);
             $table->boolean('published')->default(false);
             $table->timestamps();
