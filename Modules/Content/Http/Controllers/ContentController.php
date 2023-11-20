@@ -79,11 +79,10 @@ class ContentController extends Controller
             $files = $request->file('files');
 //save files
             foreach ($files as $file) {
-                $fileInfo = $this->contentService->saveTempFile( $file );
-
-                if(!$fileInfo) return response()->error('Error save upload files');
-                $reviewContent->update( $fileInfo->toArray() );
-                $filesInfo[] = $reviewContent->setVisible(['id', 'url', 'typeFile'])->toArray() + ['confirm' => 0, 'published' => 0];
+                if(!$content = $this->contentService->saveTempFile( $file )){
+                    return response()->error('Error save upload files');
+                }
+                $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();
             }
         }
         if(!$filesInfo) {

@@ -23,7 +23,6 @@ return new class extends Migration
             $table->char('typeFile')->default('');
             $table->boolean('confirm')->default(false);
             $table->boolean('published')->default(false);
-            //$table->nullableMorphs('contentable');
             $table->timestamps();
 
         });

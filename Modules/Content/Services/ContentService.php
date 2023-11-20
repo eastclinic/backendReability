@@ -49,7 +49,7 @@ class ContentService
 
 
     protected ?Content $content = null;
-    public function saveTempFile( $fileBlob ):?ContentFileInfoStructure {
+    public function saveTempFile( $fileBlob ):?Content {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
@@ -65,24 +65,20 @@ class ContentService
         if(!$fileType = $this->getFileType(Storage::disk('content')->path($file))) return null;
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($file)->delay(now()->addHours(2));
-        $fileStructure = new ContentFileInfoStructure([
+//        $fileStructure = new ContentFileInfoStructure([
+//            'file' => $file,
+//            'url' => Storage::disk('content')->url($file),
+//            'type' => 'original',
+//            'typeFile' => $fileType,
+//
+//        ]);
+        return Content::create([
             'file' => $file,
             'url' => Storage::disk('content')->url($file),
             'type' => 'original',
             'typeFile' => $fileType,
 
         ]);
-        Content::create($fileStructure->toArray());
-
-
-        //return data structure for save in db
-        return (new ContentFileInfoStructure([
-            'file' => $file,
-            'url' => Storage::disk('content')->url($file),
-            'type' => 'original',
-            'typeFile' => $fileType,
-
-        ]));
     }
 
 
