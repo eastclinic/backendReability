@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-
+use \Modules\Content\Http\Controllers\ContentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,6 +13,16 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/content', function (Request $request) {
-    return $request->user();
+//Route::middleware('auth:api')->get('/content', function (Request $request) {
+//    return $request->user();
+//});
+
+Route::group([
+    'middleware' => 'auth:api',
+], function ($router) {
+
+    Route::apiResources([
+        '/content'=>ContentController::class
+    ]);
+
 });
