@@ -72,6 +72,8 @@ class ContentService
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',];
 
+    const IMAGE = 'image';
+
 //с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
     /**
      * с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
@@ -182,24 +184,23 @@ class ContentService
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
         $contentIds = $this->getContentIds($contentInfoForUpdate);
         //check generate previews
-        $contentsForPreviews = Content::where('contentable_type', $contentable_type)
+        $originalContents = Content::where('contentable_type', $contentable_type)
             ->where('type', 'original')
             ->where('confirm', 0)
             ->whereIn('id', $contentIds)
             ->get();
-        if($contentsForPreviews->count() === 0){
+        if($originalContents->count() === 0){
             return $this;
         }
-        foreach ($contentsForPreviews as $content){
-            if(!$content->confirm){
-                if($previewServices = $this->getPreviewServiceForContent($content)){
-                    foreach ($previewServices as $previewService){
-                        //dont forget to run  Supervisor  php artisan queue:listen
-                        CreatePreviewJob::dispatch($previewService);
-                    }
+        foreach ($originalContents as $content){
+
+            if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
+                foreach ($previewServices as $previewService){
+                    //dont forget to run  Supervisor  php artisan queue:listen
+                    CreatePreviewJob::dispatch($previewService);
                 }
-                $content->update(['confirm'=>1]);
             }
+            $content->update(['confirm'=>1]);
             $content->update([ 'published'=> (int)($actualContentsInfo[$content->id]['published'])]);
 
         }
@@ -270,9 +271,14 @@ class ContentService
         return array_unique($contentIds);
     }
 
-    public function addPreviewService( string $type, PreviewsServiceAbstract $previewService):self    {
-        $this->previewServices[$type] = $previewService->forContent(Content::class);
+    public function addPreviewService( PreviewsServiceAbstract $previewService, $originalTypeFile):self    {
+        if(!isset($this->previewServices[$originalTypeFile])) $this->previewServices[$originalTypeFile] = [];
+        $this->previewServices[$originalTypeFile] += $previewService->forContent(Content::class);
         return $this;
+    }
+
+    protected function getPreviewServicesByTypeFile(string $typeFile ):?array{
+        return (isset($this->previewService[$typeFile])) ? $this->previewService[$typeFile] : null;
     }
 
 }

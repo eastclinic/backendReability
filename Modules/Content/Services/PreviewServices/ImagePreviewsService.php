@@ -12,11 +12,13 @@ use Intervention\Image\ImageManagerStatic as Image;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Content\Services\ContentService;
 
 class ImagePreviewsService extends PreviewsServiceAbstract
 {
-    protected ?string $originalContent = null;
+    protected ?ContentService $originalContent = null;
     protected string $extensionPreview = '';
+    protected string $key = '';
 //    protected ?string $fileOriginal = '';
     protected ?int $width = null;
     protected ?int $height = null;
@@ -25,7 +27,7 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
 
     public function generatePreviews():bool {
-        if( !$this->originalContent || !$this->storage)       return false;
+        if( !$this->originalContent || !$this->storage || !$this->key)       return false;
         try {
             $fileOriginalFullPath = $this->storage->path($this->originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
@@ -91,6 +93,11 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     public function withQuality( int $quality = 100 ):self     {
         if($quality < 3) return $this; //<<<<<<<<<<<<<
         $this->quality = $quality;
+        return $this;
+    }
+
+    public function withKey( string $key ):self     {
+        $this->key = $key;
         return $this;
     }
 

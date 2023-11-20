@@ -38,6 +38,7 @@ class ReviewResourceController extends Controller
         ContentService $contentService)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
+        $contentService = $this->addPreviewServiceForContent($contentService);
         $this->contentService = $contentService;
         $this->reviewService = $reviewService;
 
@@ -175,10 +176,14 @@ class ReviewResourceController extends Controller
     }
 
 
-    protected function addPreviewServiceForContent( ContentService $contentService ){
-        $contentService->addPreviewService('300x300', (new ImagePreviewsService())
+    protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('300x300')
             ->withExtension('webp')
-            ->withSize(300, 300));
+            ->withSize(300, 300), ContentService::IMAGE);
+
+
+        return $contentService;
     }
 
 }
