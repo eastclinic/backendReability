@@ -64,4 +64,10 @@ class Content extends Model
     }
 
 
+    public function contentable()
+    {
+        return $this->morphTo();
+    }
+
+
 }

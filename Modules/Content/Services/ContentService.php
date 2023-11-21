@@ -108,7 +108,7 @@ class ContentService
 
     protected ?Content $content = null;
     protected ?array $previewServices = null;
-    public function saveTempFile( $fileBlob ):?Content {
+    public function saveTempFile( $fileBlob , string $contentableType, int $contentableId):?Content {
 
         //if isset id, save to folder with name id
         //if not have id, that save in zero folder
@@ -132,6 +132,8 @@ class ContentService
             'type' => 'original',
             'typeFile' => $fileType,
             'mime' => $this->getMimeByExtension($extension),
+            'contentable_type' => $contentableType,
+            'contentable_id' => $contentableId,
 
         ]);
     }
@@ -184,60 +186,36 @@ class ContentService
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
         $contentIds = $this->getContentIds($contentInfoForUpdate);
         //check generate previews
-        $originalContents = Content::where('contentable_type', $contentable_type)
-            ->where('type', 'original')
+        $originalContents = Content::where('type', 'original')
             ->where('confirm', 0)
             ->whereIn('id', $contentIds)
             ->get();
-        if($originalContents->count() === 0){
-            return $this;
-        }
-        foreach ($originalContents as $content){
 
-            if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
-                foreach ($previewServices as $previewService){
-                    //dont forget to run  Supervisor  php artisan queue:listen
-                    CreatePreviewJob::dispatch($previewService);
+        if($originalContents->count() > 0){
+            foreach ($originalContents as $content){
+                //possible contentable_id is not defined, thats contentable object is new
+                if( $content->contentable_id != $contentable_id ){
+                    $content->update(['contentable_id'=>$contentable_id]);
+                }
+                if($this->handlePreviews($content)){
+                    $content->update(['confirm'=>1]);
+                    $content->update([ 'published'=> $content->published]);
                 }
             }
-            $content->update(['confirm'=>1]);
-            $content->update([ 'published'=> (int)($actualContentsInfo[$content->id]['published'])]);
-
         }
+
         return $this;
     }
-    public function update( ContentFileInfoStructure $contentInfo):bool{
 
-
-
-        $actualContentsInfo = array_combine(array_column($actualContentsInfo, 'id'), $actualContentsInfo);
-
-        $contentsForPreviews = ReviewContent::where('review_id', $review->id)->where('confirm', 0)->whereIn('id', array_keys($actualContentsInfo))->get();
-        if($contentsForPreviews->count() === 0){
-            return true;
-        }
-        foreach ($contentsForPreviews as $content){
-            if(!$content->confirm){
-                if($previewServices = $this->getPreviewServiceForContent($content)){
-                    foreach ($previewServices as $previewService){
-                        //dont forget to run  Supervisor  php artisan queue:listen
-                        CreatePreviewJob::dispatch($previewService);
-                    }
-                }
-                $content->update(['confirm'=>1]);
+    protected function handlePreviews(Content $content):bool {
+        /**@var ContentUpdateStructure $content*/
+        if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
+            foreach ($previewServices as $previewService){
+                /**@var PreviewsServiceAbstract $previewService*/
+                //dont forget to run  Supervisor  php artisan queue:listen
+                CreatePreviewJob::dispatch($previewService->forOriginalContent($content));
             }
-            $content->update([ 'published'=> (int)($actualContentsInfo[$content->id]['published'])]);
-
         }
-        $contents = ReviewContent::where('review_id', $review->id)->where('type', 'original')->get();
-        if($contents->count() === 0){
-            //todo debug it
-            Storage::disk('reviewContent')->delete($review->id);
-            return true;
-        }
-
-        //todo published/unpublished setting save original and previews content
-
         return true;
     }
 
@@ -274,7 +252,7 @@ class ContentService
     public function addPreviewService( PreviewsServiceAbstract $previewService, string $originalTypeFile = '' ):self    {
         if(!$originalTypeFile) $originalTypeFile = $previewService->getPossibleOriginalType();
         if(!isset($this->previewServices[$originalTypeFile])) $this->previewServices[$originalTypeFile] = [];
-        $this->previewServices[$originalTypeFile] += [$previewService->forContent(Content::class)];
+        $this->previewServices[$originalTypeFile][] = $previewService;
         return $this;
     }
 

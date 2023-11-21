@@ -59,7 +59,11 @@ class ReviewResourceController extends Controller
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
 //        $reviews->with('content')->with('messages');
         $reviews->with(['content' => function ($query) {
-            $query->where('type', 'original')->where('confirm', 1);
+            $query->where('type', 'original')
+                ->where('confirm', 1);
+            $e = $query->toSql();
+            $fwf = Review::class;
+            $few = 123;
         }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
@@ -168,6 +172,7 @@ class ReviewResourceController extends Controller
         return response()->json([ 'data' => array_values(array_intersect_key( $accessList, Relation::$morphMap )), 'code' => 200, 'ok' => true],200);
 
     }
+
 
 
 

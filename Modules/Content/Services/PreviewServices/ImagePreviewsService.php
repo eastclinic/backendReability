@@ -9,14 +9,14 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
+use Modules\Content\Entities\Content;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Content\Services\ContentService;
 
 class ImagePreviewsService extends PreviewsServiceAbstract
 {
-    protected ?ContentService $originalContent = null;
+    protected ?Content $originalContent = null;
     protected string $extensionPreview = '';
     protected string $key = '';
 //    protected ?string $fileOriginal = '';
@@ -27,6 +27,9 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
 
     public function generatePreviews():bool {
+
+        $f = get_class($this->originalContent);
+        error_log(print_r($f, 1));
         if( !$this->originalContent || !$this->storage || !$this->key)       return false;
         try {
             $fileOriginalFullPath = $this->storage->path($this->originalContent->file);
@@ -52,12 +55,13 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
             $preview->save( $previewFileFullPath );
 
-            $this->modelContent
-                ->fill([
-                    'file' => $previewFile,
-                    'url' => $this->storage->url($previewFile),
-                    ])
-                ->save();
+
+//            $this->originalContent
+//                ->fill([
+//                    'file' => $previewFile,
+//                    'url' => $this->storage->url($previewFile),
+//                    ])
+//                ->save();
 
         }catch (\Exception $e){
             error_log($e->getMessage());
@@ -66,8 +70,8 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     }
 
 
-    public function forContent( string $modelContent ):self     {
-        $this->modelContent = $modelContent;
+    public function forOriginalContent( Content $originalContent ):self     {
+        $this->originalContent = $originalContent;
         return $this;
     }
 

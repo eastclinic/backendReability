@@ -79,7 +79,7 @@ class ContentController extends Controller
             $files = $request->file('files');
 //save files
             foreach ($files as $file) {
-                if(!$content = $this->contentService->saveTempFile( $file )){
+                if(!$content = $this->contentService->saveTempFile( $file, $request->contentable_type, $request->contentable_id )){
                     return response()->error('Error save upload files');
                 }
                 $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();

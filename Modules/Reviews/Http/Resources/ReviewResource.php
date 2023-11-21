@@ -5,7 +5,7 @@ namespace Modules\Reviews\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Reviews\Entities\ReviewMessage;
 use Modules\Reviews\Http\Services\Target;
-use Modules\Reviews\Transformers\Admin\ReviewContentResource;
+use Modules\Content\Transformers\ContentResource;
 use Modules\Reviews\Transformers\Admin\ReviewMessageResource;
 
 class ReviewResource extends JsonResource
@@ -31,7 +31,7 @@ class ReviewResource extends JsonResource
             'is_new' => (bool)$this->is_new,
             'created_at' => $this->created_at->timestamp,
 
-            'content' => ReviewContentResource::collection($this->whenLoaded('content')),
+            'content' => ContentResource::collection($this->whenLoaded('content')),
 
             'messages' => ReviewMessageResource::collection($this->whenLoaded('messages')),
 

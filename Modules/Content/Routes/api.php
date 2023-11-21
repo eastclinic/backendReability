@@ -21,7 +21,7 @@ use Modules\Content\Http\Controllers\ContentController;
 Route::group([
     'middleware' => 'api',
 ], function ($router) {
-error_log('api');
+error_log('api2');
 
     Route::apiResources([
         'content'=>ContentController::class
