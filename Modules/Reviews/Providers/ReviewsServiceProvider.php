@@ -2,6 +2,7 @@
 
 namespace Modules\Reviews\Providers;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
@@ -34,6 +35,11 @@ class ReviewsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
 
         Review::observe(ReviewObserver::class);
+
+        Relation::enforceMorphMap([
+            'review' => Review::class
+        ]);
+
     }
 
     /**

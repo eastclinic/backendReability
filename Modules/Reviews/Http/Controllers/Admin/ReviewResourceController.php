@@ -55,6 +55,7 @@ class ReviewResourceController extends Controller
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
+        $review = Review::find(1);
         //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
 //        $reviews->with('content')->with('messages');
@@ -66,6 +67,8 @@ class ReviewResourceController extends Controller
             $few = 123;
         }])->with('messages');
 
+        $fre = $review->content()->toSql();
+        $eee = $review->content()->getBindings();
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }

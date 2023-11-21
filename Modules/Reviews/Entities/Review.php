@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
 use Modules\Reviews\Database\factories\ReviewFactory;
 use Modules\Content\Entities\Content;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Review extends Model
 {
@@ -30,6 +31,7 @@ class Review extends Model
 
     public function content(){
 //        return $this->hasMany(ReviewContent::class);
+
         return $this->morphMany(Content::class, 'contentable');
     }
 
