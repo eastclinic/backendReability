@@ -20,6 +20,7 @@ abstract class PreviewsServiceAbstract
         $this->content = $content;
     }
     abstract public function generatePreviews();
+    abstract public function getPossibleOriginalType();
 
 
     public function removePreviews():bool {

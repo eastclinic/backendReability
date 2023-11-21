@@ -101,4 +101,8 @@ class ImagePreviewsService extends PreviewsServiceAbstract
         return $this;
     }
 
+    public function getPossibleOriginalType():string  {
+        return 'image';
+    }
+
 }

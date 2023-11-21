@@ -271,9 +271,10 @@ class ContentService
         return array_unique($contentIds);
     }
 
-    public function addPreviewService( PreviewsServiceAbstract $previewService, $originalTypeFile):self    {
+    public function addPreviewService( PreviewsServiceAbstract $previewService, string $originalTypeFile = '' ):self    {
+        if(!$originalTypeFile) $originalTypeFile = $previewService->getPossibleOriginalType();
         if(!isset($this->previewServices[$originalTypeFile])) $this->previewServices[$originalTypeFile] = [];
-        $this->previewServices[$originalTypeFile] += $previewService->forContent(Content::class);
+        $this->previewServices[$originalTypeFile] += [$previewService->forContent(Content::class)];
         return $this;
     }
 

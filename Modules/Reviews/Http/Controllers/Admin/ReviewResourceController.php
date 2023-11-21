@@ -89,7 +89,7 @@ class ReviewResourceController extends Controller
         //handle content
         if($requestData['content']) {
 
-            $this->contentService->updateFromArray( $requestData['content'] );
+            $this->contentService->updateFromArrayForContentable( $requestData['content'],Review::class, $review->id  );
         }
 
         return response()->okMessage('Save new review.', 200);
@@ -180,7 +180,7 @@ class ReviewResourceController extends Controller
         $contentService->addPreviewService( (new ImagePreviewsService())
             ->withKey('300x300')
             ->withExtension('webp')
-            ->withSize(300, 300), ContentService::IMAGE);
+            ->withSize(300, 300));
 
 
         return $contentService;
