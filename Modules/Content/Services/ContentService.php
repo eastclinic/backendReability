@@ -182,6 +182,14 @@ class ContentService
         return '';
     }
 
+    public function store(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
+        return $this->updateFromArrayForContentable($contentInfoAsArray, $contentable_type, $contentable_id);
+    }
+
+    public function update(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
+        return $this->updateFromArrayForContentable($contentInfoAsArray, $contentable_type, $contentable_id);
+    }
+
     public function updateFromArrayForContentable( array $contentInfoAsArray, string $contentable_type, string $contentable_id ):self    {
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
         $contentIds = $this->getContentIds($contentInfoForUpdate);
@@ -193,7 +201,7 @@ class ContentService
 
         if($originalContents->count() > 0){
             foreach ($originalContents as $content){
-                //possible contentable_id is not defined, thats contentable object is new
+                //possible contentable_id is not defined(for temp, new files), thats contentable object is new
                 if( $content->contentable_id != $contentable_id ){
                     $content->update(['contentable_id'=>$contentable_id]);
                 }
@@ -257,7 +265,7 @@ class ContentService
     }
 
     protected function getPreviewServicesByTypeFile(string $typeFile ):?array{
-        return (isset($this->previewService[$typeFile])) ? $this->previewService[$typeFile] : null;
+        return (isset($this->previewServices[$typeFile])) ? $this->previewServices[$typeFile] : null;
     }
 
 }

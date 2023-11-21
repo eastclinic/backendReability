@@ -55,20 +55,13 @@ class ReviewResourceController extends Controller
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
-        $review = Review::find(1);
         //Log::info('ReviewResourceController index!');
         $reviews = $this->QueryBuilderByRequest->build( $reviews, $request );
 //        $reviews->with('content')->with('messages');
         $reviews->with(['content' => function ($query) {
-            $query->where('type', 'original')
-                ->where('confirm', 1);
-            $e = $query->toSql();
-            $fwf = Review::class;
-            $few = 123;
+            $query->where('type', 'original')->where('confirm', 1);
         }])->with('messages');
 
-        $fre = $review->content()->toSql();
-        $eee = $review->content()->getBindings();
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
@@ -96,7 +89,7 @@ class ReviewResourceController extends Controller
         //handle content
         if($requestData['content']) {
 
-            $this->contentService->updateFromArrayForContentable( $requestData['content'],Review::class, $review->id  );
+            $this->contentService->store( $requestData['content'],Review::class, $review->id  );
         }
 
         return response()->okMessage('Save new review.', 200);
@@ -142,7 +135,7 @@ class ReviewResourceController extends Controller
         $review -> update($requestData);
         //handle content
         if($requestData['content']) {
-            $this->contentService->updateFromArrayForContentable( $requestData['content'], Review::class, $id );
+            $this->contentService->update( $requestData['content'], Review::class, $id );
         }
 
 
@@ -175,7 +168,6 @@ class ReviewResourceController extends Controller
         return response()->json([ 'data' => array_values(array_intersect_key( $accessList, Relation::$morphMap )), 'code' => 200, 'ok' => true],200);
 
     }
-
 
 
 

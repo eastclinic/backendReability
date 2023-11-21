@@ -4,12 +4,14 @@
 namespace Modules\Content\Services\PreviewServices;
 
 
+use App\DataStructures\Content\ContentFileInfoStructure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Content\Entities\Content;
+use Modules\Content\Services\ContentService;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
@@ -26,10 +28,17 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     protected ?Filesystem $storage = null;
 
 
+    protected ?ContentService $contentService = null;
+
+    public function __construct(ContentService $contentService)    {
+        $this->contentService = $contentService;
+    }
+
+
     public function generatePreviews():bool {
 
-        $f = get_class($this->originalContent);
-        error_log(print_r($f, 1));
+
+
         if( !$this->originalContent || !$this->storage || !$this->key)       return false;
         try {
             $fileOriginalFullPath = $this->storage->path($this->originalContent->file);
@@ -55,6 +64,17 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
             $preview->save( $previewFileFullPath );
 
+            $previewFileInfo = new ContentFileInfoStructure(
+                [
+                    'file' => $previewFile,
+                    'url' => $this->storage::disk('content')->url($previewFile),
+                    'type' =>$this->key,
+                    'typeFile' => $fileType,
+                ]
+            );
+            $model = get_class($this->originalContent);
+            /**@var Model $model*/
+            $model::create([]);
 
 //            $this->originalContent
 //                ->fill([
