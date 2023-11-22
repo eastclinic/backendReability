@@ -180,7 +180,7 @@ class ReviewResourceController extends Controller
         $contentService->addPreviewService( (new ImagePreviewsService())
             ->withKey('300x300')
             ->withExtension('webp')
-            ->withSize(300, 300));
+            ->withSize(300, 300)) ;
 
 
         return $contentService;

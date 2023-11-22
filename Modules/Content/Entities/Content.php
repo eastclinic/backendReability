@@ -23,7 +23,11 @@ class Content extends Model
         'published',
         'contentable_type',
         'contentable_id',
+        'parent_id',
+        'mime',
     ];
+
+    public bool $published = false;
 
     protected static function newFactory()
     {

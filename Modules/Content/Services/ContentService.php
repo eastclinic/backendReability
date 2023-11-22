@@ -5,6 +5,7 @@ namespace Modules\Content\Services;
 
 
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use App\DataStructures\Content\ContentFileInfoStructure;
 use App\DataStructures\Content\ContentUpdateStructure;
@@ -15,6 +16,7 @@ use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use App\DataStructures\AbstractDataStructure;
+
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ContentService
@@ -42,6 +44,7 @@ class ContentService
         'tif' => 'image/tiff',
         'svg' => 'image/svg+xml',
         'svgz' => 'image/svg+xml',
+        'webp' => 'image/webp',
 
         // archives
         'zip' => 'application/zip',
@@ -71,7 +74,7 @@ class ContentService
         // open office
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',];
-
+    const STORAGE_DISK = 'content';
     const IMAGE = 'image';
 
 //с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
@@ -131,7 +134,7 @@ class ContentService
             'url' => Storage::disk('content')->url($file),
             'type' => 'original',
             'typeFile' => $fileType,
-            'mime' => $this->getMimeByExtension($extension),
+            'mime' => $this->getMime($file),
             'contentable_type' => $contentableType,
             'contentable_id' => $contentableId,
 
@@ -165,16 +168,17 @@ class ContentService
         ]));
     }
 
-    protected function getFileType(string $file):?string {
-        if(!$file = explode('.', $file))    return null; //<<<<<<<<<<<<
-        $ext = strtolower(array_pop($file));
-        if (!$fileMime = self::MIME_TYPES[$ext])   throw new \Exception('not set mime file'); //<<<<<<<<<<<<
+    public function getFileType(string $file):?string {
+        if (!$fileMime = $this->getMime($file))   return null; //<<<<<<<<<<<<
         if(!$fileMime = explode('/', $fileMime))    return null; //<<<<<<<<<<<<
         return $fileMime[0];
     }
 
-    public function getMimeByExtension( string $ext):string    {
-        return (isset(self::MIME_TYPES[$ext])) ? self::MIME_TYPES[$ext] : '';
+    public function getMime( string $file):?string    {
+        if(!$file = explode('.', $file))    return null; //<<<<<<<<<<<<
+        $ext = strtolower(array_pop($file));
+        if (!$fileMime = self::MIME_TYPES[$ext])   throw new \Exception('not set mime file'); //<<<<<<<<<<<<
+        return $fileMime;
     }
 
 
@@ -267,6 +271,16 @@ class ContentService
     protected function getPreviewServicesByTypeFile(string $typeFile ):?array{
         return (isset($this->previewServices[$typeFile])) ? $this->previewServices[$typeFile] : null;
     }
+
+    public function getStorageDiskNameDefault():string{
+        return self::STORAGE_DISK;
+    }
+
+    public function getStorageDisk():Filesystem   {
+        return Storage::disk(self::STORAGE_DISK);
+    }
+
+
 
 }
 

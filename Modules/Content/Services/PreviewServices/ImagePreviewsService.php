@@ -5,6 +5,7 @@ namespace Modules\Content\Services\PreviewServices;
 
 
 use App\DataStructures\Content\ContentFileInfoStructure;
+use App\DataStructures\Content\CreatePreviewContentStructure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
@@ -25,23 +26,24 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     protected ?int $width = null;
     protected ?int $height = null;
     protected int $quality = 100;
-    protected ?Filesystem $storage = null;
 
 
-    protected ?ContentService $contentService = null;
-
-    public function __construct(ContentService $contentService)    {
-        $this->contentService = $contentService;
-    }
+//    protected ?ContentService $contentService = null;
+//
+//    public function __construct(ContentService $contentService)    {
+//        $this->contentService = $contentService;
+//    }
 
 
     public function generatePreviews():bool {
 
 
 
-        if( !$this->originalContent || !$this->storage || !$this->key)       return false;
+        if( !$this->originalContent || !$this->key)       return false;
         try {
-            $fileOriginalFullPath = $this->storage->path($this->originalContent->file);
+            $contentService = new ContentService();
+            $disk = $contentService->getStorageDisk();
+            $fileOriginalFullPath = $disk->path($this->originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
@@ -60,30 +62,42 @@ class ImagePreviewsService extends PreviewsServiceAbstract
             $preview ->encode($extension, $this->quality);
 
             $previewFile = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
-            $previewFileFullPath = $this->storage->path($previewFile);
+            $previewFileFullPath = $disk->path($previewFile);
 
             $preview->save( $previewFileFullPath );
 
-            $previewFileInfo = new ContentFileInfoStructure(
+
+            $fe = $disk->url($previewFile);
+            $fes = $contentService->getFileType($previewFile);
+            $wefdsf = $contentService->getMime($previewFile);
+
+            $previewFileInfo = new CreatePreviewContentStructure(
                 [
                     'file' => $previewFile,
-                    'url' => $this->storage::disk('content')->url($previewFile),
+                    'url' => $disk->url($previewFile),
                     'type' =>$this->key,
-                    'typeFile' => $fileType,
+                    'typeFile' => $contentService->getFileType($previewFile),
+                    'confirm' => 1,
+                    'published' => $this->originalContent->published,
+                    'contentable_type' => $this->originalContent->contentable_type,
+                    'contentable_id' => $this->originalContent->contentable_id,
+                    'parent_id' => $this->originalContent->id,
+                    'mime' => $contentService->getMime($previewFile),
+
                 ]
             );
-            $model = get_class($this->originalContent);
-            /**@var Model $model*/
-            $model::create([]);
+            $fwsdw = 1;
+
+            Content::create($previewFileInfo->toArray());
 
 //            $this->originalContent
 //                ->fill([
 //                    'file' => $previewFile,
-//                    'url' => $this->storage->url($previewFile),
+//                    'url' => $disk->url($previewFile),
 //                    ])
 //                ->save();
 
-        }catch (\Exception $e){
+        }catch (\Throwable $e){
             error_log($e->getMessage());
         }
         return true;
@@ -106,10 +120,7 @@ class ImagePreviewsService extends PreviewsServiceAbstract
         $this->height = $height;
         return $this;
     }
-    public function forStorage( Filesystem $storage ):self     {
-        $this->storage = $storage;
-        return $this;
-    }
+
 //    public function forFileOriginal( string $fileOriginal ):self     {
 //        $this->fileOriginal = $fileOriginal;
 //        return $this;
