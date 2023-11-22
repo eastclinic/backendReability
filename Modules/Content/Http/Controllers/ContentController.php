@@ -25,6 +25,8 @@ use App\Services\Response\ResponseService;
 use http\Env\Response;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
+use Modules\Content\Http\Requests\SaveContentRequest;
+use Modules\Content\Http\Requests\UpdateRequest;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
@@ -32,15 +34,15 @@ use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
-use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Reviews\Services\ImagePreviewsService;
 use Modules\Reviews\Services\ReviewContentStorage;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
 use Modules\Content\Services\ContentService;
 use Modules\Reviews\Services\ReviewContentService;
+use Illuminate\Http\Request;
+
 
 
 class ContentController extends Controller
@@ -137,6 +139,12 @@ class ContentController extends Controller
 
         return response()->okMessage('Файл удален', 200);
 
+    }
+
+    public function save(SaveContentRequest $request){
+
+
+        return response()->okMessage('saved', 200);
     }
 
 }

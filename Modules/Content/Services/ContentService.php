@@ -197,7 +197,7 @@ class ContentService
     public function updateFromArrayForContentable( array $contentInfoAsArray, string $contentable_type, string $contentable_id ):self    {
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
         $contentIds = $this->getContentIds($contentInfoForUpdate);
-        //check generate previews
+
         $originalContents = Content::where('type', 'original')
             ->where('confirm', 0)
             ->whereIn('id', $contentIds)
@@ -209,6 +209,7 @@ class ContentService
                 if( $content->contentable_id != $contentable_id ){
                     $content->update(['contentable_id'=>$contentable_id]);
                 }
+                //handle generate previews
                 if($this->handlePreviews($content)){
                     $content->update(['confirm'=>1]);
                     $content->update([ 'published'=> $content->published]);
