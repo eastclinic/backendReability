@@ -142,7 +142,9 @@ class ContentController extends Controller
     }
 
     public function save(SaveContentRequest $request){
-
+        if($request->attachContent) {
+            (new ContentService())->update( $request->attachContent, $request->targetType, $request->targetId);
+        }
 
         return response()->okMessage('saved', 200);
     }

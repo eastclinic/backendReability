@@ -135,7 +135,7 @@ class ReviewResourceController extends Controller
         $review -> update($requestData);
         //handle content
         if($requestData['content']) {
-            $this->contentService->update( $requestData['content'], Review::class, $id );
+            //$this->contentService->update( $requestData['content'], Review::class, $id );
         }
 
 

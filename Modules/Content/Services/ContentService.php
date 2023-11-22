@@ -205,6 +205,7 @@ class ContentService
 
         if($originalContents->count() > 0){
             foreach ($originalContents as $content){
+                if(!$contentInfoFromServer = $contentInfoForUpdate[$content->id] ) continue;
                 //possible contentable_id is not defined(for temp, new files), thats contentable object is new
                 if( $content->contentable_id != $contentable_id ){
                     $content->update(['contentable_id'=>$contentable_id]);
@@ -212,10 +213,15 @@ class ContentService
                 //handle generate previews
                 if($this->handlePreviews($content)){
                     $content->update(['confirm'=>1]);
-                    $content->update([ 'published'=> $content->published]);
+
                 }
+                //todo set published 1 to origin and all previews content
+                if($contentInfoFromServer->published !== $content->published) $content->update([ 'published'=> $contentInfoFromServer->published]);
+
+
             }
         }
+
 
         return $this;
     }
@@ -237,14 +243,14 @@ class ContentService
         $contentInfoStructures = [];
         if(isset($contentInfoAsArray['id']) && $contentInfoAsArray['id']){
             $contentInfo = ['contentable_type' => $contentable_type, 'contentable_id' => $contentable_id];
-            $contentInfoStructures[] = $contentInfo = new ContentUpdateStructure($contentInfoAsArray + $contentInfo);
+            $contentInfoStructures[$contentInfoAsArray['id']] = $contentInfo = new ContentUpdateStructure($contentInfoAsArray + $contentInfo);
             if(!$contentInfo->contentable_id || !$contentInfo->contentable_type){
                 throw  new \Exception('not set contentable_id or contentable_type');
             }
         }else{
             foreach ($contentInfoAsArray as $info){
                 $contentInfo = ['contentable_type' => $contentable_type, 'contentable_id' => $contentable_id];
-                $contentInfoStructures[] = $contentInfo = new ContentUpdateStructure($info + $contentInfo);
+                $contentInfoStructures[$info['id']] = $contentInfo = new ContentUpdateStructure($info + $contentInfo);
                 if(!$contentInfo->contentable_id || !$contentInfo->contentable_type){
                     throw  new \Exception('not set contentable_id or contentable_type');
                 }

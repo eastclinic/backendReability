@@ -21,7 +21,7 @@ class SaveContentRequest extends FormRequest
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
             'targetId' => ['required'],
             'targetType' => ['required', 'string'],
-            'content' => ['nullable', 'array']
+            'attachContent' => ['nullable', 'array']
         ];
 
     }
