@@ -21,18 +21,18 @@
 namespace Modules\Content\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\ApiRequestQueryBuilders\ApiListService;
 use App\Services\Response\ResponseService;
 use http\Env\Response;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
+use Modules\Content\Entities\Content;
+use Modules\Content\Http\Requests\ListContentRequest;
 use Modules\Content\Http\Requests\SaveContentRequest;
 use Modules\Content\Http\Requests\UpdateRequest;
-use Modules\Reviews\Entities\Review;
+use Modules\Content\Transformers\ContentResource;
 use Illuminate\Database\Eloquent\Relations\Relation;
-//use Modules\Reviews\Http\Requests\Admin\IndexRequest;
-use App\Http\Requests\ApiDataTableRequest;
 use Modules\Reviews\Entities\ReviewContent;
-use Modules\Reviews\Http\Requests\Admin\Reviews\ContentRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use Modules\Reviews\Services\ReviewContentStorage;
@@ -50,10 +50,14 @@ class ContentController extends Controller
 
 
     private ContentService $contentService;
+    private ApiListService $queryBuilderByRequest;
 //
-    public function __construct(    ContentService $contentService    )    {
+    public function __construct(    ContentService $contentService,
+                                    ApiListService $apiHandler,
+    )    {
 
         $this->contentService = $contentService;
+        $this->queryBuilderByRequest = $apiHandler;
     }
 
     /**
@@ -61,11 +65,14 @@ class ContentController extends Controller
      * @param  $request
      * @return array|string
      */
-    public function index( $request)
+    public function index( ListContentRequest $request)
     {
 
-
-        return response()->ok(['data' => []], 200);
+        $content = Content::where('contentable_type', $request->targetType)
+            ->where('contentable_id', $request->targetId)
+            ->where('type', 'original');
+        $content = $this->queryBuilderByRequest->build( $content, $request );
+        return ResponseService::apiCollection( ContentResource::collection($content->paginate()) );
     }
 
     /**
@@ -116,17 +123,17 @@ class ContentController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
-        $requestData = $request->validated();
-        error_log('update');
-        error_log('id - ' . $id);
-        error_log(print_r($requestData, 1));
-        if(!$requestData['id']) {
-            $content = new Review($requestData);
-            $content->save();
-        }
-//        $review = ReviewContent::where('id', $id)->first();
-//        $review -> update($request->validated());
-        return response()->okMessage('update', 200);
+//        $requestData = $request->validated();
+//        error_log('update');
+//        error_log('id - ' . $id);
+//        error_log(print_r($requestData, 1));
+//        if(!$requestData['id']) {
+//            $content = new Review($requestData);
+//            $content->save();
+//        }
+////        $review = ReviewContent::where('id', $id)->first();
+////        $review -> update($request->validated());
+//        return response()->okMessage('update', 200);
     }
 
     /**

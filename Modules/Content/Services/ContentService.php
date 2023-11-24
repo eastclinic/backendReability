@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use App\DataStructures\Content\ContentFileInfoStructure;
 use App\DataStructures\Content\ContentUpdateStructure;
 use Modules\Content\Entities\Content;
+use Modules\Content\Services\PreviewServices\ImagePreviewsService;
 use Modules\Content\Services\PreviewServices\PreviewsServiceAbstract;
-use Modules\Reviews\Entities\Review;
-use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use App\DataStructures\AbstractDataStructure;
@@ -129,7 +128,7 @@ class ContentService
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($file)->delay(now()->addHours(2));
 
-        return Content::create([
+        $originalContent = Content::create([
             'file' => $file,
             'url' => Storage::disk('content')->url($file),
             'type' => 'original',
@@ -139,6 +138,14 @@ class ContentService
             'contentable_id' => $contentableId,
 
         ]);
+        //create job preview for admin panel
+        CreatePreviewJob::dispatch((new ImagePreviewsService())
+            ->withKey('adminPanel')
+            ->withExtension('webp')
+            ->withSize(100, 100)
+            ->forOriginalContent($originalContent));
+
+        return $originalContent;
     }
 
 
