@@ -32,7 +32,6 @@ class StoreContentRequest extends FormRequest
             'files.*' => 'required|file|mimes:jpg,jpeg,png,mp4,mov,quicktime,webm|max:409600000',
             'contentable_id' => ['required', 'numeric'],
             'contentable_type' => ['required', 'string'],
-            'reviewId' => ['required', 'numeric'],
             'messageId' => [['nullable', 'numeric'],],
 //            'id' => ['integer', 'nullable'],
         ];
@@ -58,7 +57,6 @@ class StoreContentRequest extends FormRequest
     {
         return [
             'files.*.mimes' => 'Неправильный тип изображение. Возможно jpg,jpeg,png',
-            'reviewable_id.required' => 'Be sure to specify id of review target',
 //            'rating.required' => 'Be sure to specify id of review target',
         ];
     }
