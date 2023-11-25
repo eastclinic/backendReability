@@ -53,7 +53,7 @@ class ContentController extends Controller
     private ApiListService $queryBuilderByRequest;
 //
     public function __construct(    ContentService $contentService,
-                                    ApiListService $apiHandler,
+                                    ApiListService $apiHandler
     )    {
 
         $this->contentService = $contentService;
@@ -141,8 +141,7 @@ class ContentController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id) {
-        if (!$content = ReviewContent::find($id))    return response()->json(['message' => 'Review not found'], 404);
-        $this->reviewContentService->removeContent( $content);
+        $this->contentService->removeContentById( $id);
 
         return response()->okMessage('Файл удален', 200);
 

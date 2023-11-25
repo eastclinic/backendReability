@@ -291,7 +291,27 @@ class ContentService
     }
 
     public function getStorageDisk():Filesystem   {
+        return $this->storageDisk();
+    }
+
+    protected function storageDisk():Filesystem {
         return Storage::disk(self::STORAGE_DISK);
+    }
+
+    public function removeContentById(int $contentId):bool {
+
+        //if content already remove return
+        //if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
+        //clear original file
+
+        if (!$content = Content::find($contentId)) {
+            throw new \Exception('Review not found');
+        }
+        $this->storageDisk()->delete($content->file);
+        //clear previews files
+
+
+        return true;
     }
 
 
