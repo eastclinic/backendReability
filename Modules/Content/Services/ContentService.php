@@ -54,6 +54,7 @@ class ContentService
 
         // audio/video
         'mp3' => 'audio/mpeg',
+        'mp4' => 'video/mp4',
         'qt' => 'video/quicktime',
         'mov' => 'video/quicktime',
 
@@ -79,15 +80,13 @@ class ContentService
 //с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
     /**
      * с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
-     * в ReviewContentService сохраняем временные файлы, через ContentService::saveTempFile(blob файл)
-     * в цикле
+      * в цикле
      * сохраняем сначала временный файл с методом saveTempFile(blob файл)
      * запускаем крон который через время удалит этот файл из временных, если он есть
      *
      *
      *
      * когда от фронта приходит сохранение отзыва в ReviewResourceController::store()
-     * вызывается ReviewContentService::updateContentForReview($review)
      * тут обходим контент в цикле для данного отзыва
      * если контент не подтвержденный то сохраняем его постоянно(переименовываем файл)
      * запускаем в кроне PreviewsServices с настройками
@@ -263,6 +262,9 @@ class ContentService
         return (isset($this->previewServices[$typeFile])) ? $this->previewServices[$typeFile] : null;
     }
 
+    public function diskName():string    {
+        return self::STORAGE_DISK;
+    }
     public function getStorageDiskNameDefault():string{
         return self::STORAGE_DISK;
     }

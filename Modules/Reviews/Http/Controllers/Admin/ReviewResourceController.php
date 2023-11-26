@@ -10,6 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Content\Services\PreviewServices\ImagePreviewsService;
+use Modules\Content\Services\PreviewServices\VideoPreviewsService;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
@@ -184,6 +185,11 @@ class ReviewResourceController extends Controller
             ->withExtension('webp')
             ->withSize(300, 300)) ;
 
+
+        $contentService->addPreviewService( (new VideoPreviewsService())
+            ->withKey('300x300')
+            ->withExtension('webm')
+            ->withSize(300, 300)) ;
 
         return $contentService;
     }

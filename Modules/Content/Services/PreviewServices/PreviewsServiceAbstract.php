@@ -8,17 +8,21 @@ use Illuminate\Support\Facades\Storage;
 //use Intervention\Image\Image;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
+use Modules\Content\Entities\Content;
 use Modules\Reviews\Entities\ReviewContent;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
 abstract class PreviewsServiceAbstract
 {
-    public ?ReviewContent $content = null;
+    protected ?Content $originalContent = null;
+    protected string $extensionPreview = '';
+    protected string $key = '';
+//    protected ?string $fileOriginal = '';
+    protected ?int $width = null;
+    protected ?int $height = null;
+    protected int $quality = 100;
 
-    public function __construct( ?ReviewContent $content = null) {
-        $this->content = $content;
-    }
     abstract public function generatePreviews();
     abstract public function getPossibleOriginalType();
 
@@ -42,4 +46,38 @@ abstract class PreviewsServiceAbstract
         return true;
     }
 
+
+
+
+    public function forOriginalContent( Content $originalContent ):self     {
+        $this->originalContent = $originalContent;
+        return $this;
+    }
+
+    public function withExtension( string $extension):self     {
+        $this->extensionPreview = $extension;
+        return $this;
+    }
+
+
+    public function withSize( int $width, int $height ):self     {
+        $this->width = $width;
+        $this->height = $height;
+        return $this;
+    }
+
+//    public function forFileOriginal( string $fileOriginal ):self     {
+//        $this->fileOriginal = $fileOriginal;
+//        return $this;
+//    }
+    public function withQuality( int $quality = 100 ):self     {
+        if($quality < 3) return $this; //<<<<<<<<<<<<<
+        $this->quality = $quality;
+        return $this;
+    }
+
+    public function withKey( string $key ):self     {
+        $this->key = $key;
+        return $this;
+    }
 }

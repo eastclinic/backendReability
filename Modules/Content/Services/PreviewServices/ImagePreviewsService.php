@@ -19,25 +19,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ImagePreviewsService extends PreviewsServiceAbstract
 {
-    protected ?Content $originalContent = null;
-    protected string $extensionPreview = '';
-    protected string $key = '';
-//    protected ?string $fileOriginal = '';
-    protected ?int $width = null;
-    protected ?int $height = null;
-    protected int $quality = 100;
-
-
-//    protected ?ContentService $contentService = null;
-//
-//    public function __construct(ContentService $contentService)    {
-//        $this->contentService = $contentService;
-//    }
 
 
     public function generatePreviews():bool {
-
-
 
         if( !$this->originalContent || !$this->key)       return false;
         try {
@@ -67,9 +51,6 @@ class ImagePreviewsService extends PreviewsServiceAbstract
             $preview->save( $previewFileFullPath );
 
 
-            $fe = $disk->url($previewFile);
-            $fes = $contentService->getFileType($previewFile);
-            $wefdsf = $contentService->getMime($previewFile);
 
             $previewFileInfo = new CreatePreviewContentStructure(
                 [
@@ -104,37 +85,6 @@ class ImagePreviewsService extends PreviewsServiceAbstract
     }
 
 
-    public function forOriginalContent( Content $originalContent ):self     {
-        $this->originalContent = $originalContent;
-        return $this;
-    }
-
-    public function withExtension( string $extension):self     {
-        $this->extensionPreview = $extension;
-        return $this;
-    }
-
-
-    public function withSize( int $width, int $height ):self     {
-        $this->width = $width;
-        $this->height = $height;
-        return $this;
-    }
-
-//    public function forFileOriginal( string $fileOriginal ):self     {
-//        $this->fileOriginal = $fileOriginal;
-//        return $this;
-//    }
-    public function withQuality( int $quality = 100 ):self     {
-        if($quality < 3) return $this; //<<<<<<<<<<<<<
-        $this->quality = $quality;
-        return $this;
-    }
-
-    public function withKey( string $key ):self     {
-        $this->key = $key;
-        return $this;
-    }
 
     public function getPossibleOriginalType():string  {
         return 'image';

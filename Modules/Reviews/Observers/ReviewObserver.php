@@ -4,7 +4,7 @@ namespace Modules\Reviews\Observers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Reviews\Entities\Review;
-use Modules\Reviews\Services\ReviewContentService;
+
 
 class ReviewObserver
 {
@@ -17,7 +17,7 @@ class ReviewObserver
         //clear attach files
         if($reviewContent = $review->content){
             foreach ($reviewContent as $content){
-                (new ReviewContentService())->removeContent($content);
+                //(new ReviewContentService())->removeContent($content);
             }
         }
     }

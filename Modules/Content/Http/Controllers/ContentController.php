@@ -40,7 +40,6 @@ use Modules\Reviews\Transformers\Admin\ReviewContentResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Bus;
 use Modules\Content\Services\ContentService;
-use Modules\Reviews\Services\ReviewContentService;
 use Illuminate\Http\Request;
 
 
