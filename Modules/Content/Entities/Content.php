@@ -27,7 +27,6 @@ class Content extends Model
         'mime',
     ];
 
-    public bool $published = false;
 
     protected static function newFactory()
     {

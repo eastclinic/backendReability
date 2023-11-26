@@ -149,32 +149,6 @@ class ContentService
     }
 
 
-
-
-
-
-
-    public function saveTempFileForever( string $filePath ):?ContentFileInfoStructure  {
-        if(!$filePath) throw new \Exception('not have file');
-        $fileFullPath = Storage::disk('content')->path($filePath);
-        if(!file_exists($fileFullPath)) return null;
-
-        $fileName = uniqid();
-        if(!$fileInfo = pathinfo($filePath)) return null;
-        $foreverFilePath = md5(date('Y-m-d')).DIRECTORY_SEPARATOR.$fileName.'.'.$fileInfo['extension'];
-        if(!rename($fileFullPath, Storage::disk('content')->path($foreverFilePath))){
-            throw new \Exception('impossible save temporally file forever');
-        }
-        if(!file_exists(Storage::disk('content')->path($foreverFilePath))) return null;
-        if(!$fileType = $this->getFileType(Storage::disk('content')->path($foreverFilePath))) return null;
-        return (new ContentFileInfoStructure([
-            'file' => $foreverFilePath,
-            'url' => Storage::disk('content')->url($foreverFilePath),
-            'type' => 'original',
-            'typeFile' => $fileType,
-        ]));
-    }
-
     public function getFileType(string $file):?string {
         if (!$fileMime = $this->getMime($file))   return null; //<<<<<<<<<<<<
         if(!$fileMime = explode('/', $fileMime))    return null; //<<<<<<<<<<<<

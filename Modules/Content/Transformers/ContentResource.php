@@ -14,6 +14,17 @@ class ContentResource extends JsonResource
      */
     public function toArray($request)
     {
+        $re = [
+            'id' => $this->id,
+            'url' => $this->url,
+            'confirm' => (bool)$this->confirm,
+            'published' => (bool)$this->published,
+            'typeFile' => $this->typeFile,
+
+
+
+
+        ];
         return [
             'id' => $this->id,
             'url' => $this->url,
