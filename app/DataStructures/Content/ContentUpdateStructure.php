@@ -13,8 +13,9 @@ class ContentUpdateStructure extends \App\DataStructures\AbstractDataStructure
     public string $url = '';
     public string $type = '';
     public string $typeFile = '';
-    public bool $confirm = false;
+    public int $confirm = 0;
     public bool $published = false;
+    public int $isDeleted = 0;
 
 
 }

@@ -9,6 +9,9 @@ use Modules\Reviews\Http\Services\Target;
 class SaveContentRequest extends FormRequest
 {
 
+//public array $attachContent = [];
+//public string $targetType = '';
+//public string $targetId = '';
 
     /**
      * Get the validation rules that apply to the request.

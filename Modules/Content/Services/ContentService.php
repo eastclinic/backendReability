@@ -194,37 +194,38 @@ class ContentService
     }
 
     public function store(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
-        return $this->updateFromArrayForContentable($contentInfoAsArray, $contentable_type, $contentable_id);
+        if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
+        return $this->updateFromArrayStructures( $contentInfoForUpdate );
     }
 
     public function update(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
-        return $this->updateFromArrayForContentable($contentInfoAsArray, $contentable_type, $contentable_id);
+
+        if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
+        return $this->updateFromArrayStructures( $contentInfoForUpdate );
     }
 
-    public function updateFromArrayForContentable( array $contentInfoAsArray, string $contentable_type, string $contentable_id ):self    {
-        if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
+    public function updateFromArrayStructures( array $contentInfoForUpdate ):self    {
+
         $contentIds = $this->getContentIds($contentInfoForUpdate);
 
         $originalContents = Content::where('type', 'original')
-            ->where('confirm', 0)
             ->whereIn('id', $contentIds)
             ->get();
 
         if($originalContents->count() > 0){
             foreach ($originalContents as $content){
                 if(!$contentInfoFromServer = $contentInfoForUpdate[$content->id] ) continue;
-                //possible contentable_id is not defined(for temp, new files), thats contentable object is new
-                if( $content->contentable_id != $contentable_id ){
-                    $content->update(['contentable_id'=>$contentable_id]);
-                }
+                /**@var ContentUpdateStructure $contentInfoFromServer*/
                 //handle generate previews
-                if($this->handlePreviews($content)){
+                if(!$content->confirm && $this->handlePreviews($content)){
                     $content->update(['confirm'=>1]);
-
                 }
                 //todo set published 1 to origin and all previews content
                 if($contentInfoFromServer->published !== $content->published) $content->update([ 'published'=> $contentInfoFromServer->published]);
-
+                if($contentInfoFromServer->isDeleted) {
+                    $this->removeContentById($content->id);
+                    continue;
+                }
 
             }
         }
@@ -232,6 +233,8 @@ class ContentService
 
         return $this;
     }
+
+
 
     protected function handlePreviews(Content $content):bool {
         /**@var ContentUpdateStructure $content*/
@@ -298,19 +301,22 @@ class ContentService
         return Storage::disk(self::STORAGE_DISK);
     }
 
-    public function removeContentById(int $contentId):bool {
+    public function removeContentById(string $contentId):bool {
 
         //if content already remove return
-        //if(!$nowContent = ReviewContent::where('id', $content->id)->first())return true;
         //clear original file
 
         if (!$content = Content::find($contentId)) {
             throw new \Exception('Review not found');
         }
         $this->storageDisk()->delete($content->file);
-        //clear previews files
-
-
+        //clear previews files recursive
+        if($previews = Content::where('parent_id', $contentId)->get()){
+            foreach ($previews as $preview){
+                $this->removeContentById($preview->id);
+            }
+        }
+        $content->delete();
         return true;
     }
 
