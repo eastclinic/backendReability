@@ -57,6 +57,7 @@ class ContentService
         'mp4' => 'video/mp4',
         'qt' => 'video/quicktime',
         'mov' => 'video/quicktime',
+        'webm' => 'video/webm',
 
         // adobe
         'pdf' => 'application/pdf',
@@ -138,11 +139,11 @@ class ContentService
 
         ]);
         //create job preview for admin panel
-        CreatePreviewJob::dispatch((new ImagePreviewsService())
-            ->withKey('adminPanel')
-            ->withExtension('webp')
-            ->withSize(100, 100)
-            ->forOriginalContent($originalContent));
+//        CreatePreviewJob::dispatch((new ImagePreviewsService())
+//            ->withKey('adminPanel')
+//            ->withExtension('webp')
+//            ->withSize(100, 100)
+//            ->forOriginalContent($originalContent));
 
         return $originalContent;
     }

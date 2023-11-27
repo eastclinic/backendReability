@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\File;
 class VideoPreviewsService extends PreviewsServiceAbstract
 {
     public ?ReviewContent $content = null;
-    protected array $possibleExtensions = ["mp4", "mov"];
+    protected array $possibleExtensions = ["mp4", "mov", 'webm'];
     protected string $extensionPreview = 'webm';
     const EXTENSION_FFMPEG = ['webm' => \FFMpeg\Format\Video\WebM::class];
 
@@ -42,8 +42,9 @@ class VideoPreviewsService extends PreviewsServiceAbstract
             if(!in_array($originalFileExtension, $this->possibleExtensions)) return false;
             $extension = ($this->extensionPreview && in_array($this->extensionPreview, $this->possibleExtensions)) ? $this->extensionPreview : $originalFileExtension;
             $previewFilename = md5_file($fileOriginalFullPath).'.'.$extension;
-            $previewFile = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
-            $previewFileFullPath = $disk->path($previewFile);
+            $previewFileFullPath = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
+            $previewFileFullUrl = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
+//            $previewFileFullPath = $disk->path($previewFile);
 //https://github.com/protonemedia/laravel-ffmpeg
             $ffmpeg = FFMpeg::fromDisk($contentService->diskName())
                 ->open($this->originalContent->file)
@@ -61,16 +62,16 @@ class VideoPreviewsService extends PreviewsServiceAbstract
 
             $previewFileInfo = new CreatePreviewContentStructure(
                 [
-                    'file' => $previewFile,
-                    'url' => $disk->url($previewFile),
+                    'file' => $previewFileFullPath,
+                    'url' => $disk->url($previewFileFullUrl),
                     'type' =>$this->key,
-                    'typeFile' => $contentService->getFileType($previewFile),
+                    'typeFile' => $contentService->getFileType($previewFilename),
                     'confirm' => 1,
                     'published' => $this->originalContent->published,
                     'contentable_type' => $this->originalContent->contentable_type,
                     'contentable_id' => $this->originalContent->contentable_id,
                     'parent_id' => $this->originalContent->id,
-                    'mime' => $contentService->getMime($previewFile),
+                    'mime' => $contentService->getMime($previewFilename),
 
                 ]
             );
@@ -84,7 +85,7 @@ class VideoPreviewsService extends PreviewsServiceAbstract
 
 
     public function getPossibleOriginalType():string  {
-        return 'image';
+        return 'video';
     }
 
 
