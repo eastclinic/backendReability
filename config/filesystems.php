@@ -62,6 +62,13 @@ return [
             'url' => '/storage/img/reviews',
             'visibility' => 'public',
         ],
+        'content' => [
+            'driver' => 'local',
+            'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'content'),
+            'throw' => false,
+            'url' => '/storage/content',
+            'visibility' => 'public',
+        ],
 
     ],
 

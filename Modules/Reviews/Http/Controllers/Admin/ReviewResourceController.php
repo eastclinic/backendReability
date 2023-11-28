@@ -8,17 +8,21 @@ use App\Services\Response\ResponseService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Modules\Content\Services\PreviewServices\ImagePreviewsService;
+use Modules\Content\Services\PreviewServices\VideoPreviewsService;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
 use App\Http\Requests\ApiDataTableRequest;
+use Modules\Reviews\Entities\ReviewContent;
 use Modules\Reviews\Http\Requests\Admin\Reviews\StoreRequest;
 use Modules\Reviews\Http\Requests\Admin\Reviews\UpdateRequest;
 use Modules\Reviews\Http\Resources\ReviewResource;
 use Modules\Reviews\Http\Services\ReviewService;
 use Modules\Reviews\Http\Services\Target;
 use Illuminate\Support\Facades\Response;
-use Modules\Reviews\Services\ReviewContentService;
+use Modules\Content\Services\ContentService;
 
 class ReviewResourceController extends Controller
 {
@@ -26,14 +30,19 @@ class ReviewResourceController extends Controller
     private ApiDataTableService $QueryBuilderByRequest;
     private Target $targetModel;
     private ReviewService $reviewService;
+    private ContentService $contentService;
 
     public function __construct(
         ReviewService $reviewService,
         ApiDataTableService $apiHandler,
-        Target $targetEntity)    {
+        Target $targetEntity,
+        ContentService $contentService)    {
         $this->QueryBuilderByRequest = $apiHandler;
         $this->targetModel = $targetEntity;
+        $contentService = $this->addPreviewServiceForContent($contentService);
+        $this->contentService = $contentService;
         $this->reviewService = $reviewService;
+
 
     }
 
@@ -44,8 +53,6 @@ class ReviewResourceController extends Controller
      */
     public function index(ApiDataTableRequest $request)
     {
-
-
 //      $reviews = Review::where('id', '>', 10); // another init query
         $reviews = Review::query();
 
@@ -57,8 +64,6 @@ class ReviewResourceController extends Controller
         }])->with('messages');
 
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
-        //ReviewResource
-//        return response()->apiCollection( $reviews );
         return ResponseService::apiCollection( ReviewResource::collection($reviews->paginate()) );
     }
 
@@ -70,9 +75,6 @@ class ReviewResourceController extends Controller
      */
     public function store(StoreRequest $request)
     {
-
-
-        error_log('store-rewiew');
         $requestData = $request->validated();
 
         $review = new Review($requestData);
@@ -86,10 +88,10 @@ class ReviewResourceController extends Controller
         }
         $review->save();
         //handle content
-//        $contentIds = (isset($requestData['content'])) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
+        if($requestData['content']) {
 
-
+            $this->contentService->store( $requestData['content'],Review::class, $review->id  );
+        }
 
         return response()->okMessage('Save new review.', 200);
     }
@@ -131,13 +133,13 @@ class ReviewResourceController extends Controller
             //$review->reviewable()->associate($target);
         }
         if(!$review = Review::where('id', $id)->first()) return response()->error('Не найден отзыв.', 400);
-        //handle content
-//        $contentIds = ($requestData['content']) ? array_column($requestData['content'], 'id') : [];
-        (new ReviewContentService())->updateContentForReview($requestData['content'], $review);
-
-
-        $review = Review::where('id', $id)->first();
         $review -> update($requestData);
+        //handle content
+        if($requestData['content']) {
+            $this->contentService->update( $requestData['content'], Review::class, $id );
+        }
+
+
         return response()->okMessage('Change data.', 200);
     }
 
@@ -156,7 +158,9 @@ class ReviewResourceController extends Controller
         if($review->delete()){
             return ResponseService::okMessage('Removed review');
         }else return  ResponseService::error('Failed to remove review');
-        
+
+
+
     }
 
 
@@ -174,5 +178,20 @@ class ReviewResourceController extends Controller
 
     }
 
+
+    protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('300x300')
+            ->withExtension('webp')
+            ->withSize(300, 300)) ;
+
+
+        $contentService->addPreviewService( (new VideoPreviewsService())
+            ->withKey('300x300')
+            ->withExtension('webm')
+            ->withSize(300, 300)) ;
+
+        return $contentService;
+    }
 
 }

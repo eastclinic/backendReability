@@ -1,24 +1,17 @@
 <?php
 
-namespace Modules\Reviews\Http\Requests\Admin\Reviews;
+namespace Modules\Content\Http\Requests;
 
 use Illuminate\Validation\Factory as ValidationFactory;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Reviews\Http\Services\Target;
 
-class StoreContentRequest extends FormRequest
+class SaveContentRequest extends FormRequest
 {
 
-    public function __construct(ValidationFactory $validationFactory, Target $targetModel) {
-        $validationFactory->extend(
-            'checkTarget',
-            function ($attribute, $value, $parameters) use ($targetModel){
-                return $targetModel->checkTargetName($value);
-            },
-            'Not have target'
-        );
-
-    }
+//public array $attachContent = [];
+//public string $targetType = '';
+//public string $targetId = '';
 
     /**
      * Get the validation rules that apply to the request.
@@ -29,11 +22,9 @@ class StoreContentRequest extends FormRequest
     {
 
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'files.*' => 'required|file|mimes:jpg,jpeg,png,mp4,mov,quicktime,webm|max:409600000',
-            'contentable_id' => ['required', 'numeric'],
-            'contentable_type' => ['required', 'string'],
-            'messageId' => [['nullable', 'numeric'],],
-//            'id' => ['integer', 'nullable'],
+            'targetId' => ['required'],
+            'targetType' => ['required', 'string'],
+            'attachContent' => ['nullable', 'array']
         ];
 
     }
@@ -57,7 +48,6 @@ class StoreContentRequest extends FormRequest
     {
         return [
             'files.*.mimes' => 'Неправильный тип изображение. Возможно jpg,jpeg,png',
-//            'rating.required' => 'Be sure to specify id of review target',
         ];
     }
 

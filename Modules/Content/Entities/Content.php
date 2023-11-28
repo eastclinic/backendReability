@@ -1,50 +1,38 @@
 <?php
 
-namespace Modules\Reviews\Entities;
+namespace Modules\Content\Entities;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Ramsey\Uuid\Uuid;
 
-class ReviewContent extends Model
+class Content extends Model
 {
     use HasFactory;
     use HasUuids;
-    protected $table = 'reviews_content';
-    protected $fillable = ['file',
+    protected $fillable = [
+        'file',
         'url',
 //        'file_extension',
 //        'file_name',
-        'review_id',
-        'message_id',
-        'parent_content_id',
         'type',
         'typeFile',
         'confirm',
         'published',
-        'handlePreviews'
-
-
-//        'contentable_id',
-//    'contentable_type',
+        'contentable_type',
+        'contentable_id',
+        'parent_id',
+        'mime',
     ];
-    public const STORAGE_DISK = 'reviewContent';
+
 
     protected static function newFactory()
     {
-        return \Modules\Reviews\Database\factories\ReviewContentFactory::new();
+        return \Modules\Content\Database\factories\ContentFactory::new();
     }
 
-//    /**
-//     * Get the parent contentable model (review or message).
-//     */
-//    public function contentable()
-//    {
-//        return $this->morphTo();
-//    }
 
     /**
      * The "booted" method of the model.
@@ -77,5 +65,12 @@ class ReviewContent extends Model
     {
         return ['id'];
     }
+
+
+    public function contentable()
+    {
+        return $this->morphTo();
+    }
+
 
 }
