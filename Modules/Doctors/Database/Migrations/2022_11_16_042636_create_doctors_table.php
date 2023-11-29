@@ -50,7 +50,7 @@ return new class extends Migration
             $table->text('longtitle')->nullable();
             $table->text('description')->nullable();
             $table->text('introtext')->nullable();
-            $table->mediumText('content')->nullable();
+            $table->mediumText('description_full')->nullable();
             $table->integer('age_from')->default(0);
             $table->integer('age_to')->default(100);
             $table->integer('skill')->default(0);

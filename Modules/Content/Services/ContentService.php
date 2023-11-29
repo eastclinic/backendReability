@@ -297,6 +297,11 @@ class ContentService
         return true;
     }
 
+    public function destroy():self     {
+
+        return $this;
+    }
+
 
 
 }
