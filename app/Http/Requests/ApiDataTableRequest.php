@@ -18,6 +18,7 @@ class ApiDataTableRequest extends ApiAbstractRequest
             'mustSort' => ['nullable'],
                 'multiSort' => ['nullable'],
                 'sort.*' =>['nullable', 'string'],
+                'filters.*' =>['nullable', 'array'],
                 ];
     }
 

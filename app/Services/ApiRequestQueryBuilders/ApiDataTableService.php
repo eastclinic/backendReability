@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
 {
+
+    protected array $searchFieldsGlobal = ['id'];
     public function build( $query, FormRequest $request )  {
 
 
@@ -37,6 +39,18 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
             }
         }
 
+        if($request->filters ){
+            if($request->filters['global'] && $this->searchFieldsGlobal ){
+
+                $query->where(function (Builder $query) {
+                    foreach ($this->searchFieldsGlobal as $field){
+                        $query->orWhere($field, 'like', 100)
+                            ->orWhere('title', '=', 'Admin');
+                    }
+
+                });
+            }
+        }
 
         //if(isset($requestData['sort']) && isset($requestData['sortDesc'])){
 
@@ -53,6 +67,11 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
 
 
         return $query;
+    }
+
+    public function withGlobalSearchByFields(array $searchFieldsGlobal):self    {
+        $this->searchFieldsGlobal = $searchFieldsGlobal;
+        return $this;
     }
 
 }
