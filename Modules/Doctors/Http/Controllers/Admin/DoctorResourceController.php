@@ -10,7 +10,12 @@ use App\Services\Response\ResponseService;
 
 
 use Illuminate\Support\Facades\Log;
+use Modules\Content\Services\ContentService;
+use Modules\Content\Services\PreviewServices\ImagePreviewsService;
+use Modules\Content\Services\PreviewServices\VideoPreviewsService;
 use Modules\Doctors\Entities\Doctor;
+use Modules\Doctors\Http\Requests\DoctorInfo\CreateRequest;
+use Modules\Doctors\Http\Requests\DoctorInfo\UpdateRequest;
 use Modules\Doctors\Http\Resources\DoctorResource;
 use Illuminate\Support\Facades\DB;
 
@@ -21,17 +26,15 @@ class DoctorResourceController extends Controller
 {
 
     private ApiDataTableService $QueryBuilderByRequest;
-//    private Target $targetModel;
-//    private ReviewService $reviewService;
+    private ContentService $contentService;
 
     public function __construct(
         //ReviewService $reviewService,
-        ApiDataTableService $apiHandler//,
-        //Target $targetEntity
+        ApiDataTableService $apiHandler,//,
+        ContentService $contentService
     )    {
         $this->QueryBuilderByRequest = $apiHandler;
-//        $this->targetModel = $targetEntity;
-//        $this->reviewService = $reviewService;
+        $this->contentService = $this->addPreviewServiceForContent($contentService);
 
     }
 
@@ -46,7 +49,9 @@ class DoctorResourceController extends Controller
         $doctors = Doctor::query();
         Log::info('ReviewResourceController index!');
         $doctors = $this->QueryBuilderByRequest->build( $doctors, $request );
-//        $doctors->with('content')->with('messages');
+        $doctors->with(['content' => function ($query) {
+            $query->where('type', 'original')->where('confirm', 1);
+        }]);
 //        $dbconnect = DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
 //        dd($dbname);
@@ -59,35 +64,22 @@ class DoctorResourceController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  StoreRequest  $request
+     * @param  CreateRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreRequest $request)
+    public function store(CreateRequest $request)
     {
-        return response()->okMessage('Save new review.', 200);
+
         $requestData = $request->validated();
-        $review = new Review($requestData);
-        $target = $this->targetModel->getModel($requestData['reviewable_type']);
-        if( $target && $target->where('id',  $requestData['reviewable_id']) -> first()){
-            $review->reviewable()->associate($target);
-        }else{
-            return response()->error('Не задано, на кого отзыв.', 400);
-        }
-        $review->save();
+        $doctor = Doctor::create($requestData);
 
+        if($requestData['content']) {
+            $this->contentService->store( $requestData['content'], Doctor::class, $doctor->id  );
+        }
         return response()->okMessage('Save new review.', 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.
@@ -98,10 +90,22 @@ class DoctorResourceController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
-        return response()->okMessage('Save new review.', 200);
-        $review = Review::where('id', $id)->first();
-        $review -> update($request->validated());
-        return response()->okMessage('Change data.', 200);
+        $requestData = $request->validated();
+
+
+        if($doctor = Doctor::where('id', $id)->first()){
+            $doctor -> update($requestData);
+            if($requestData['content']) {
+                $this->contentService->store( $requestData['content'], Doctor::class, $id  );
+            }
+            return response()->okMessage('Change data.', 200);
+        }
+
+
+
+        ResponseService::error('Do not find doctor');
+
+
     }
 
     /**
@@ -111,12 +115,28 @@ class DoctorResourceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        return response()->okMessage('Save new review.', 200);
+
         if($this->reviewService->delete($id)){
             return ResponseService::okMessage('Removed review');
         }else{
             return  ResponseService::error('Failed to remove review');
         }
+    }
+
+
+    protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('300x300')
+            ->withExtension('webp')
+            ->withSize(300, 300)) ;
+
+
+        $contentService->addPreviewService( (new VideoPreviewsService())
+            ->withKey('300x300')
+            ->withExtension('webm')
+            ->withSize(300, 300)) ;
+
+        return $contentService;
     }
 
 
