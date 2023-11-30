@@ -91,6 +91,8 @@ class DoctorResourceController extends Controller
     public function update(UpdateRequest $request, $id)
     {
         $requestData = $request->validated();
+
+
         if($doctor = Doctor::where('id', $id)->first()){
             $doctor -> update($requestData);
             if($requestData['content']) {

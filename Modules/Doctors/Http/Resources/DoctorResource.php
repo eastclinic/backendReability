@@ -20,7 +20,10 @@ class DoctorResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'fullname' => $this->fullname,
+            'surname' => $this->surname,
+            'name' => $this->name,
+            'middlename' => $this->middlename,
+            'fullname' => $this->surname.' '.$this->name.' '.$this->middlename,
             'content' => ContentResource::collection($this->whenLoaded('content')),
         ];
 

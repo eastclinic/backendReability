@@ -15,7 +15,7 @@ class Doctor extends Model
 
     protected $table = 'modx_doc_doctors';
     //todo permission
-    protected $fillable = ['fullname'];
+    protected $fillable = ['surname', 'name', 'middlename', ];
 
     protected $perPage = 10;
 //    protected static function newFactory()
