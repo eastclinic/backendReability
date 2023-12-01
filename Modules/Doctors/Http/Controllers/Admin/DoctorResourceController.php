@@ -48,7 +48,7 @@ class DoctorResourceController extends Controller
 
         $doctors = Doctor::query();
         Log::info('ReviewResourceController index!');
-        $doctors = $this->QueryBuilderByRequest->build( $doctors, $request );
+        $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
         $doctors->with(['content' => function ($query) {
             $query->where('type', 'original')->where('confirm', 1);
         }]);

@@ -40,12 +40,12 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
         }
 
         if($request->filters ){
-            if($request->filters['global'] && $this->searchFieldsGlobal ){
-
-                $query->where(function (Builder $query) {
-                    foreach ($this->searchFieldsGlobal as $field){
-                        $query->orWhere($field, 'like', 100)
-                            ->orWhere('title', '=', 'Admin');
+            if(isset($request->filters['global']) && $request->filters['global'] && $request->filters['global']['value'] && $this->searchFieldsGlobal ){
+                $value = $request->filters['global']['value'];
+                $searchFields = $this->searchFieldsGlobal;
+                $query->where(function (Builder $query) use ($value, $searchFields) {
+                    foreach ($searchFields as $field){
+                        $query->orWhere("LOWER($field)", 'like', '%'.strtolower($value).'%');
                     }
 
                 });
