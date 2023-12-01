@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 
 class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
 {
+
+    protected array $searchFieldsGlobal = ['id'];
     public function build( $query, FormRequest $request )  {
 
 
@@ -37,6 +39,18 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
             }
         }
 
+        if($request->filters ){
+            if(isset($request->filters['global']) && $request->filters['global'] && $request->filters['global']['value'] && $this->searchFieldsGlobal ){
+                $value = $request->filters['global']['value'];
+                $searchFields = $this->searchFieldsGlobal;
+                $query->where(function (Builder $query) use ($value, $searchFields) {
+                    foreach ($searchFields as $field){
+                        $query->orWhere("LOWER($field)", 'like', '%'.strtolower($value).'%');
+                    }
+
+                });
+            }
+        }
 
         //if(isset($requestData['sort']) && isset($requestData['sortDesc'])){
 
@@ -53,6 +67,11 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
 
 
         return $query;
+    }
+
+    public function withGlobalSearchByFields(array $searchFieldsGlobal):self    {
+        $this->searchFieldsGlobal = $searchFieldsGlobal;
+        return $this;
     }
 
 }
