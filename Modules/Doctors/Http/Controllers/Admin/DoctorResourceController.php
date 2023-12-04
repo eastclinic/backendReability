@@ -76,7 +76,7 @@ class DoctorResourceController extends Controller
         if($requestData['content']) {
             $this->contentService->store( $requestData['content'], Doctor::class, $doctor->id  );
         }
-        return response()->okMessage('Save new review.', 200);
+        return response()->okMessage('Create new doctor', 200);
     }
 
 
