@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('doctor_diplom', function (Blueprint $table) {
+        Schema::create('doctor_diploms', function (Blueprint $table) {
             $table->id();
             $table->string('title')->default('');
+            $table->boolean('published')->default(false);
             $table->foreignId('doctor_id')
-                ->constrained()
+                ->references('id')->on('modx_doc_doctors')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
 
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('doctor_diplom');
+        Schema::dropIfExists('doctor_diploms');
     }
 };

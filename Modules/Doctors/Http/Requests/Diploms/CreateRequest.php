@@ -14,7 +14,9 @@ class CreateRequest extends FormRequest
     public function rules()
     {
         return [
-            'title'
+            'title' =>'required',
+            'doctor_id' =>'required',
+            'content' => ['nullable', 'array']
         ];
     }
 

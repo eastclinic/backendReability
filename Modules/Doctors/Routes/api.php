@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Doctors\Http\Controllers\Admin\DoctorDiplomResourceController;
+use Modules\Doctors\Http\Controllers\Admin\DoctorDiplomsResourceController;
 use Modules\Doctors\Http\Controllers\Admin\DoctorResourceController;
 use Modules\Doctors\Http\Controllers\Front\DoctorsListController as DoctorsListFrontController;
 
@@ -26,7 +26,7 @@ Route::group([
         'doctors'=>DoctorResourceController::class
     ]);
     Route::apiResources([
-        'doctor-diploms'=>DoctorDiplomResourceController::class
+        'doctor-diploms'=>DoctorDiplomsResourceController::class
     ]);
 
 });

@@ -49,9 +49,13 @@ class DoctorResourceController extends Controller
         $doctors = Doctor::query();
         Log::info('ReviewResourceController index!');
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
-        $doctors->with(['content' => function ($query) {
-            $query->where('type', 'original')->where('confirm', 1);
-        }]);
+        $doctors->with('diploms')->with([
+            'content' => function ($query) {
+                $query->where('type', 'original')->where('confirm', 1);
+            }])  ;
+
+        $d = $doctors->paginate();
+
 //        $dbconnect = DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
 //        dd($dbname);

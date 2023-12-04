@@ -4,9 +4,6 @@ namespace Modules\Doctors\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Content\Transformers\ContentResource;
-use Modules\Reviews\Entities\ReviewMessage;
-use Modules\Reviews\Transformers\Admin\ReviewContentResource;
-use Modules\Reviews\Transformers\Admin\ReviewMessageResource;
 
 class DoctorResource extends JsonResource
 {
@@ -25,6 +22,7 @@ class DoctorResource extends JsonResource
             'middlename' => $this->middlename,
             'fullname' => $this->surname.' '.$this->name.' '.$this->middlename,
             'content' => ContentResource::collection($this->whenLoaded('content')),
+            'diploms' => DiplomResource::collection($this->whenLoaded('diploms')),
         ];
 
     }

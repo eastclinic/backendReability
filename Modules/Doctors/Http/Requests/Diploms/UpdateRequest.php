@@ -15,6 +15,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'title',
+            'doctor_id' =>'required',
             'content' => ['nullable', 'array']
         ];
     }

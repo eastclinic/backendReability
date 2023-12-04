@@ -5,7 +5,7 @@ namespace Modules\Doctors\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Content\Transformers\ContentResource;
 
-class DiplomResourse extends JsonResource
+class DiplomResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,11 @@ class DiplomResourse extends JsonResource
      */
     public function toArray($request)
     {
-//        return parent::toArray($request);
         return [
             'id' => $this->id,
-            'title' => $this->surname,
-            'content' => ContentResource::collection($this->whenLoaded('content')),
+            'title' => $this->title,
+            'published' => (int)$this->published,
+            //'content' => ContentResource::collection($this->whenLoaded('content')),
         ];
     }
 }

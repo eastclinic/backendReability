@@ -4,12 +4,13 @@ namespace Modules\Doctors\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Content\Entities\Content;
 
 class DoctorDiplom extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title'];
+    protected $fillable = ['title', 'doctor_id', 'published'];
 
     protected $perPage = 10;
 
@@ -18,5 +19,20 @@ class DoctorDiplom extends Model
         return \Modules\Doctors\Database\factories\DoctorDiplomFactory::new();
     }
 
+    public function content(){
+        return $this->morphMany(Content::class, 'contentable');
+    }
 
+    public function getMorphClass()
+    {
+        return 'doctorDiplom';
+    }
+
+    /**
+     * Get the review that owns the message.
+     */
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class);
+    }
 }

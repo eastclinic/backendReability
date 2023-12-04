@@ -13,9 +13,9 @@ use Modules\Content\Services\PreviewServices\VideoPreviewsService;
 use Modules\Doctors\Entities\DoctorDiplom;
 use Modules\Doctors\Http\Requests\Diploms\CreateRequest;
 use Modules\Doctors\Http\Requests\Diploms\UpdateRequest;
-use Modules\Doctors\Http\Resources\DiplomResourse;
+use Modules\Doctors\Http\Resources\DiplomResource;
 
-class DoctorDiplomResourceController extends Controller
+class DoctorDiplomsResourceController extends Controller
 {
 
 //    private ApiDataTableService $QueryBuilderByRequest;
@@ -34,9 +34,19 @@ class DoctorDiplomResourceController extends Controller
      * Display a listing of the resource.
      * @return Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('doctors::index');
+        $diploms = DoctorDiplom::query();
+        $diploms->with(['content' => function ($query) {
+            $query->where('type', 'original')->where('confirm', 1);
+        }]);
+//        $dbconnect = DB::connection('MODX')->getPDO();
+//        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
+//        dd($dbname);
+        //necessarily models to collection must get with pagination data:  collection($model->paginate())
+        //ReviewResource
+//        return response()->apiCollection( $reviews );
+        return ResponseService::apiCollection( DiplomResourse::collection($diploms->paginate()) );
     }
 
     /**
@@ -58,10 +68,10 @@ class DoctorDiplomResourceController extends Controller
         $requestData = $request->validated();
         $diplom = DoctorDiplom::create($requestData);
 
-        if($requestData['content']) {
+        if(isset($requestData['content']) && $requestData['content']) {
             $this->contentService->store( $requestData['content'], DoctorDiplom::class, $diplom->id  );
         }
-        return response()->ok( new DiplomResourse($diplom), ['message' => 'Diplom created'], 200 );
+        return response()->ok( (new DiplomResource($diplom))->jsonSerialize(), ['message' => 'Diplom created'], 200 );
     }
 
 

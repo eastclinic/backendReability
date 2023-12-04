@@ -17,6 +17,7 @@ class ContentResource extends JsonResource
         return [
             'id' => $this->id,
             'url' => $this->url,
+            'title' => $this->title,
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,
             'typeFile' => $this->typeFile,

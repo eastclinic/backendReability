@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Content\Entities\Content;
 use Modules\Doctors\Database\factories\DoctorFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Doctor extends Model
 {
@@ -32,10 +33,13 @@ class Doctor extends Model
 
 
     public function content(){
-
         return $this->morphMany(Content::class, 'contentable');
     }
 
+
+    public function diploms():HasMany   {
+        return $this->hasMany(DoctorDiplom::class);
+    }
     public function getMorphClass()
     {
         return 'doctor';
