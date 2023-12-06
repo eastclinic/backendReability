@@ -92,7 +92,7 @@ class DoctorDiplomsResourceController extends Controller
             if($requestData['content']) {
                 $this->contentService->store( $requestData['content'], DoctorDiplom::class, $id  );
             }
-            return response()->ok( new DiplomResourse($diplom), ['message' => 'Diplom created'], 200 );
+            return response()->ok( new DiplomResource($diplom), ['message' => 'Diplom updated'], 200 );
         }
 
         ResponseService::error('Do not find doctor');

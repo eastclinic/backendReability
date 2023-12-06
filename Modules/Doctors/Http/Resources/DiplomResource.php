@@ -19,7 +19,7 @@ class DiplomResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'published' => (int)$this->published,
-            //'content' => ContentResource::collection($this->whenLoaded('content')),
+            'content' => ContentResource::collection($this->whenLoaded('content')),
         ];
     }
 }
