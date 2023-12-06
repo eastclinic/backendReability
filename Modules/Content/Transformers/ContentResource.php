@@ -14,9 +14,9 @@ class ContentResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+         return [
             'id' => $this->id,
-            'url' => $this->url,
+            'url' => (empty($_SERVER['HTTPS']) ? 'http' : 'https').'://'.$_SERVER['HTTP_HOST'].$this->url,
             'title' => $this->title,
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,
