@@ -28,12 +28,16 @@ class AppServiceProvider extends ServiceProvider
     {
 
         Response::macro('ok', function ($data, $extraData = [], $statusCode = 200){
+            $res = ['ok' => true,];
             if (is_array($data) || is_object($data)){
+                $res['data'] = $data;
                 if(is_array($extraData)){
-                    $data += $extraData;
+                    $res += $extraData;
                 }
-                elseif (is_int($extraData)) $statusCode = $extraData;
-                return response()->json(['ok' => true, 'data' => $data], $statusCode );
+                elseif (is_int($extraData)) {
+                    $statusCode = $extraData;
+                }
+                return response()->json($res, $statusCode );
             }else{
                 return response()->json(['ok' => true, 'message' => $data], $statusCode );
             }
@@ -45,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
 
 
         Response::macro('apiCollection', function (\Illuminate\Http\Resources\Json\ResourceCollection $itemsCollection, array $data = []){
+
             return response()->json(['ok' => true, 'items' => $itemsCollection->items(),
                 //'total' => $itemsCollection->count(),
                 'count' => $itemsCollection->total(),

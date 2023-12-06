@@ -96,8 +96,12 @@ class ContentController extends Controller
         if(!$filesInfo) {
             return response()->error('Error save upload files');
         }
-
-        return response()->ok($filesInfo, 200);
+        if(!$contentIds = array_column($filesInfo, 'id')){
+            return response()->error('Error save upload files');
+        }
+        $contentCollection = Content::whereIN('id', $contentIds);
+        return ResponseService::apiCollection( ContentResource::collection($contentCollection->paginate()) );
+//        return response()->ok($filesInfo, 200);
 
     }
 

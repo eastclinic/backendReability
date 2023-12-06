@@ -5,7 +5,7 @@ namespace Modules\Doctors\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Content\Transformers\ContentResource;
 
-class DoctorResource extends JsonResource
+class DiplomResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,13 +17,9 @@ class DoctorResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'surname' => $this->surname,
-            'name' => $this->name,
-            'middlename' => $this->middlename,
-            'fullname' => $this->surname.' '.$this->name.' '.$this->middlename,
+            'title' => $this->title,
+            'published' => (int)$this->published,
             'content' => ContentResource::collection($this->whenLoaded('content')),
-            'diploms' => DiplomResource::collection($this->whenLoaded('diploms')),
         ];
-
     }
 }

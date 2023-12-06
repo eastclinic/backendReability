@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Requests\ApiAbstractRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use \App\Services\ApiRequestQueryBuilders\ApiListService;
-
-
-use Modules\Doctors\Http\Controllers\Admin\DoctorResourceController ;
+use Modules\Doctors\Http\Controllers\Admin\DoctorDiplomsResourceController;
+use Modules\Doctors\Http\Controllers\Admin\DoctorResourceController;
 use Modules\Doctors\Http\Controllers\Front\DoctorsListController as DoctorsListFrontController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,7 +25,9 @@ Route::group([
     Route::apiResources([
         'doctors'=>DoctorResourceController::class
     ]);
-
+    Route::apiResources([
+        'doctor-diploms'=>DoctorDiplomsResourceController::class
+    ]);
 
 });
 

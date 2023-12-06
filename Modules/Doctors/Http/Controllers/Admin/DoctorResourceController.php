@@ -45,13 +45,20 @@ class DoctorResourceController extends Controller
      */
     public function index(ApiDataTableRequest $request)
     {
-
+//        DB::enableQueryLog();
         $doctors = Doctor::query();
-        Log::info('ReviewResourceController index!');
+
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
-        $doctors->with(['content' => function ($query) {
-            $query->where('type', 'original')->where('confirm', 1);
-        }]);
+        $doctors->with('diploms.content')
+            ->with([
+            'content' => function ($query) {
+                $query->where('type', 'original')->where('confirm', 1);
+            }])  ;
+
+//        $results = $doctors->get();
+//// Get the executed queries from the query log
+//        $queries = DB::getQueryLog();
+
 //        $dbconnect = DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
 //        dd($dbname);
@@ -76,7 +83,7 @@ class DoctorResourceController extends Controller
         if($requestData['content']) {
             $this->contentService->store( $requestData['content'], Doctor::class, $doctor->id  );
         }
-        return response()->okMessage('Save new review.', 200);
+        return response()->okMessage('Create new doctor', 200);
     }
 
 
