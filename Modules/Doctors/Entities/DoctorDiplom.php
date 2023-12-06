@@ -12,6 +12,8 @@ class DoctorDiplom extends Model
 
     protected $fillable = ['title', 'doctor_id', 'published'];
 
+    protected $table = 'doctor_diploms';
+
     protected $perPage = 10;
 
     protected static function newFactory()
