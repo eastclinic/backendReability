@@ -104,6 +104,31 @@ class DoctorResourceController extends Controller
             $doctor -> update($requestData);
             if($requestData['content']) {
                 $this->contentService->store( $requestData['content'], Doctor::class, $id  );
+                //update legacy content data
+                $doctorForUpdateContent = Doctor::where('id', $id)->with([
+                    'content' => function ($query) {
+                        $query->where('type', '!=', 'original')
+                           // ->where('published', 1) //todo uncomment when will work published
+                        ;
+                    }])->first();
+
+                if($doctorForUpdateContent->content){
+                    $contentLegacy = [];
+                    foreach ($doctorForUpdateContent->content as $content){
+                        $contentLegacy[] = [
+                            "id" => $content->id,
+                            "size" => $content->type,
+                            "type" => $content->typeFile,
+                            "image" => $content->url,
+
+                        ];
+                    }
+                    $doctorForUpdateContent->content_cache = json_encode($contentLegacy);
+                    $doctorForUpdateContent->save();
+                }
+
+
+
             }
             return response()->okMessage('Change data.', 200);
         }
@@ -133,15 +158,30 @@ class DoctorResourceController extends Controller
 
     protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
         $contentService->addPreviewService( (new ImagePreviewsService())
-            ->withKey('300x300')
+            ->withKey('120x120')
             ->withExtension('webp')
-            ->withSize(300, 300)) ;
+            ->withSize(120, 120)) ;
+
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('232x269')
+            ->withExtension('webp')
+            ->withSize(232, 269)) ;
+
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('576x576')
+            ->withExtension('webp')
+            ->withSize(576, 576)) ;
+
+        $contentService->addPreviewService( (new ImagePreviewsService())
+            ->withKey('compress')
+            ->withExtension('webp')
+            ->withSize(1980, 1080)) ;
 
 
         $contentService->addPreviewService( (new VideoPreviewsService())
-            ->withKey('300x300')
+            ->withKey('576x576')
             ->withExtension('webm')
-            ->withSize(300, 300)) ;
+            ->withSize(576, 576)) ;
 
         return $contentService;
     }
