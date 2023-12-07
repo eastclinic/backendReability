@@ -11,6 +11,7 @@ class ContentUpdateStructure extends \App\DataStructures\AbstractDataStructure
 
     public string $file = '';
     public string $url = '';
+    public string $preview_id = '';
     public string $type = '';
     public string $typeFile = '';
     public int $confirm = 0;

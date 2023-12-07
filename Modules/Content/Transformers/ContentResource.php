@@ -3,6 +3,7 @@
 namespace Modules\Content\Transformers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Content\Entities\Content;
 
 class ContentResource extends JsonResource
 {
@@ -21,7 +22,7 @@ class ContentResource extends JsonResource
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,
             'typeFile' => $this->typeFile,
-
+             'preview' => new ContentResource($this->whenLoaded('preview')),
 
 
 
