@@ -60,7 +60,8 @@ return new class extends Migration
             $table->tinyInteger('is_analyze')->default(0);
             $table->tinyInteger('off')->default(0);
             $table->text('research')->nullable();
-            $table->text('diplomsCache')->nullable();
+            $table->text('diploms_cache')->nullable();
+            $table->text('content_cache')->nullable();
             $table->string('quotes', 5000)->default('');
             $table->text('interviews')->nullable();
             $table->text('awards')->nullable();
