@@ -15,14 +15,15 @@ use Illuminate\Support\Facades\File;
 
 abstract class PreviewsServiceAbstract
 {
-    protected ?Content $originalContent = null;
+    protected string|null $originalContentId = null;
+    protected string|null $previewId = null;
     protected string $extensionPreview = '';
     protected string $key = '';
 //    protected ?string $fileOriginal = '';
     protected ?int $width = null;
     protected ?int $height = null;
     protected int $quality = 100;
-
+    public ?self $bannerPreviewService = null;
     abstract public function generatePreviews();
     abstract public function getPossibleOriginalType();
 
@@ -49,8 +50,18 @@ abstract class PreviewsServiceAbstract
 
 
 
-    public function forOriginalContent( Content $originalContent ):self     {
-        $this->originalContent = $originalContent;
+//    public function forOriginalContent( Content $originalContent ):self     {
+//        $this->originalContent = $originalContent;
+//        return $this;
+//    }
+
+    public function forOriginalContentId( string $id ):self     {
+        $this->originalContentId = $id;
+        return $this;
+    }
+
+    public function forPreviewId( string $id):self    {
+        $this->previewId = $id;
         return $this;
     }
 
@@ -80,4 +91,7 @@ abstract class PreviewsServiceAbstract
         $this->key = $key;
         return $this;
     }
+
+
+
 }

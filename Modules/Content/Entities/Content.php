@@ -25,7 +25,7 @@ class Content extends Model
         'contentable_id',
         'parent_id',
         'mime',
-        'previews_id'
+        'banner_id'
     ];
 
 
@@ -72,8 +72,8 @@ class Content extends Model
     {
         return $this->morphTo();
     }
-    public function preview() {
-        return $this->hasOne(Content::class,'preview_id');
+    public function banner() {
+        return $this->hasOne(Content::class,'id', 'banner_id');
     }
 
 }

@@ -22,7 +22,7 @@ class ContentResource extends JsonResource
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,
             'typeFile' => $this->typeFile,
-             'preview' => new ContentResource($this->whenLoaded('preview')),
+             'banner' => new ContentResource($this->whenLoaded('banner')),
 
 
 

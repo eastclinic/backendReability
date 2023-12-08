@@ -23,20 +23,26 @@ class VideoPreviewsService extends PreviewsServiceAbstract
     public ?ReviewContent $content = null;
     protected array $possibleExtensions = ["mp4", "mov", 'webm'];
     protected string $extensionPreview = 'webm';
+
     const EXTENSION_FFMPEG = ['webm' => \FFMpeg\Format\Video\WebM::class];
 
 
 
     public function generatePreviews():bool {
-        if( !$this->originalContent || !$this->key)       return false;
+        if( !$this->originalContentId || !$this->previewId || !$this->key)       return false;
         try {
+
             $contentService = new ContentService();
+            //get fresh original and preview content from db
+            $originalContent = Content::where('id', $this->originalContentId)->first();
+            $previewContent = Content::where('id', $this->previewId)->first();
+            if(!$originalContent || !$originalContent->id || !$previewContent || !$previewContent->id ) return false;
             $disk = $contentService->getStorageDisk();
-            $fileOriginalFullPath = $disk->path($this->originalContent->file);
+            $fileOriginalFullPath = $disk->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
-            $fileInfo= pathinfo($this->originalContent->file);
+            $fileInfo= pathinfo($originalContent->file);
             $originalFileExtension = mb_strtolower($fileInfo['extension']);
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, $this->possibleExtensions)) return false;
@@ -47,7 +53,7 @@ class VideoPreviewsService extends PreviewsServiceAbstract
 //            $previewFileFullPath = $disk->path($previewFile);
 //https://github.com/protonemedia/laravel-ffmpeg
             $ffmpeg = FFMpeg::fromDisk($contentService->diskName())
-                ->open($this->originalContent->file)
+                ->open($originalContent->file)
 //                ->addWatermark(function(WatermarkFactory $watermark) {
 //                    $watermark->openUrl('https://eastclinic.ru/favicon.png?v=2');
 //                })
@@ -75,7 +81,7 @@ class VideoPreviewsService extends PreviewsServiceAbstract
 
                 ]
             );
-            Content::create($previewFileInfo->toArray());
+            $previewContent->update($previewFileInfo->toArray());
 
         }catch (\Throwable $e){
             error_log($e->getMessage());
@@ -92,5 +98,13 @@ class VideoPreviewsService extends PreviewsServiceAbstract
     protected function getFormat(string $extension ):string   {
         return self::EXTENSION_FFMPEG[$extension];
     }
+
+    public function withBanner(PreviewsServiceAbstract $previewService):self  {
+        $this->bannerPreviewService = $previewService;
+        return $this;
+    }
+
+
+
 
 }

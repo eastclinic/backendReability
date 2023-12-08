@@ -188,18 +188,41 @@ class ContentService
 
         if($originalContents->count() > 0){
             foreach ($originalContents as $content){
-                if(!$contentInfoFromServer = $contentInfoForUpdate[$content->id] ) continue;
-                /**@var ContentUpdateStructure $contentInfoFromServer*/
+                if(!$contentInfoFromFront = $contentInfoForUpdate[$content->id] ) continue;
+                /**@var ContentUpdateStructure $contentInfoFromFront*/
+
                 //handle generate previews
                 if(!$content->confirm && $this->handlePreviews($content)){
                     $content->update(['confirm'=>1]);
                 }
-                //todo set published 1 to origin and all previews content
-                if($contentInfoFromServer->published !== $content->published) $content->update([ 'published'=> $contentInfoFromServer->published]);
-                if($contentInfoFromServer->isDeleted) {
+
+                //handle remove
+                if($contentInfoFromFront->isDeleted) {
                     $this->removeContentById($content->id);
                     continue;
                 }
+
+                //handle banner
+                if( $contentInfoFromFront->banner_id ){
+                    if( $content->banner_id !== $contentInfoFromFront->banner_id ){
+                        //remove old banner
+                        $this->removeContentById($content->banner_id);
+                        //update banner run preview service for generate banners
+                        $this->handleBannersForPreviews($content, $contentInfoFromFront->banner_id);
+                    }
+                }else{
+                    //remove banner
+                    $this->removeContentById($content->banner_id);
+                }
+
+                $updatedData = [ 'published' => $contentInfoFromFront->published,
+                    'banner_id' => $contentInfoFromFront->banner_id,
+                ];
+                //update original file
+                $content->update($updatedData);
+                //update previews
+                Content::where('parent_id', $content->id)->update($updatedData);
+
 
             }
         }
@@ -214,7 +237,45 @@ class ContentService
         /**@var ContentUpdateStructure $content*/
         if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
             foreach ($previewServices as $previewService){
+                //now create unconfirmed content
+                $preview = Content::create([
+                    'contentable_id' => $content->contentable_id,
+                    'contentable_type' => $content->contentable_type,
+                    'parent_id' => $content->id,
+                ]);
                 /**@var PreviewsServiceAbstract $previewService*/
+                //dont forget to run  Supervisor  php artisan queue:listen
+                CreatePreviewJob::dispatch($previewService->forOriginalContentId($content->id)->forPreviewId($preview->id));
+            }
+        }
+        return true;
+    }
+
+
+    protected function handleBannersForPreviews(Content $content, string $newBannerId):bool {
+        //search previews for content
+        $contentPreviews = Content::where('parent_id', $content->id)->get();
+        if( $contentPreviews->count() === 0 ) return true;
+        foreach ( $contentPreviews as $preview ){
+            if( !$previewService = $this->getPreviewServiceByTypeFileAndKey($preview->typeFile, $preview->type) ){
+                throw new \Exception('Not have preview service for ready preview');
+
+            }else{
+                if(!$previewService->bannerPreviewService)  continue;
+                if($preview->banner_id !== $newBannerId){
+                    $this->removeContentById($preview->banner_id);
+
+                }
+            }
+        }
+
+        if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
+            foreach ($previewServices as $previewService){
+                /**@var PreviewsServiceAbstract $previewService*/
+                if($previewService->bannerPreviewService){
+                    //dont forget to run  Supervisor  php artisan queue:listen
+                    CreatePreviewJob::dispatch($previewService->forOriginalContent($content));
+                }
                 //dont forget to run  Supervisor  php artisan queue:listen
                 CreatePreviewJob::dispatch($previewService->forOriginalContent($content));
             }
@@ -261,6 +322,10 @@ class ContentService
 
     protected function getPreviewServicesByTypeFile(string $typeFile ):?array{
         return (isset($this->previewServices[$typeFile])) ? $this->previewServices[$typeFile] : null;
+    }
+
+    protected function getPreviewServiceByTypeFileAndKey(string $typeFile, string $key ):?PreviewsServiceAbstract{
+        return (isset($this->previewServices[$typeFile]) && isset($this->previewServices[$typeFile][$key])) ? $this->previewServices[$typeFile][$key] : null;
     }
 
     public function diskName():string    {

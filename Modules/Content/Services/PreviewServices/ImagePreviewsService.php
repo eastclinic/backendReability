@@ -23,15 +23,19 @@ class ImagePreviewsService extends PreviewsServiceAbstract
 
     public function generatePreviews():bool {
 
-        if( !$this->originalContent || !$this->key)       return false;
+        if( !$this->originalContentId || !$this->previewId || !$this->key)       return false;
         try {
             $contentService = new ContentService();
+            //get fresh original and preview content from db
+            $originalContent = Content::where('id', $this->originalContentId)->first();
+            $previewContent = Content::where('id', $this->previewId)->first();
+            if(!$originalContent || !$originalContent->id || !$previewContent || !$previewContent->id ) return false;
             $disk = $contentService->getStorageDisk();
-            $fileOriginalFullPath = $disk->path($this->originalContent->file);
+            $fileOriginalFullPath = $disk->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
-            $fileInfo= pathinfo($this->originalContent->file);
+            $fileInfo= pathinfo($originalContent->file);
             $originalFileExtension = mb_strtolower($fileInfo['extension']);
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, ["jpg", "png", "jpeg", 'webp'])) return false;
@@ -59,17 +63,17 @@ class ImagePreviewsService extends PreviewsServiceAbstract
                     'type' =>$this->key,
                     'typeFile' => $contentService->getFileType($previewFile),
                     'confirm' => 1,
-                    'published' => $this->originalContent->published,
-                    'contentable_type' => $this->originalContent->contentable_type,
-                    'contentable_id' => $this->originalContent->contentable_id,
-                    'parent_id' => $this->originalContent->id,
+                    'published' => $originalContent->published,
+                    'contentable_type' => $originalContent->contentable_type,
+                    'contentable_id' => $originalContent->contentable_id,
+                    'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFile),
 
                 ]
             );
             $fwsdw = 1;
 
-            Content::create($previewFileInfo->toArray());
+            $previewContent->update($previewFileInfo->toArray());
 
 //            $this->originalContent
 //                ->fill([

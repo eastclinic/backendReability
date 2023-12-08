@@ -45,19 +45,20 @@ class DoctorResourceController extends Controller
      */
     public function index(ApiDataTableRequest $request)
     {
-//        DB::enableQueryLog();
+        DB::enableQueryLog();
         $doctors = Doctor::query();
 
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
         $doctors->with('diploms.content')
+            ->with('content.preview')
             ->with([
             'content' => function ($query) {
                 $query->where('type', 'original')->where('confirm', 1);
             }])  ;
 
-//        $results = $doctors->get();
+        $results = $doctors->get();
 //// Get the executed queries from the query log
-//        $queries = DB::getQueryLog();
+        $queries = DB::getQueryLog();
 
 //        $dbconnect = DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
