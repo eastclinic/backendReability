@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Content\Services\PreviewServices;
+namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\CreatePreviewContentStructure;
@@ -18,7 +18,7 @@ use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
-class VideoPreviewsService extends PreviewsServiceAbstract
+class VideoContentConverter extends ContentConverterAbstract
 {
     public ?ReviewContent $content = null;
     protected array $possibleExtensions = ["mp4", "mov", 'webm'];
@@ -99,8 +99,8 @@ class VideoPreviewsService extends PreviewsServiceAbstract
         return self::EXTENSION_FFMPEG[$extension];
     }
 
-    public function withBanner(PreviewsServiceAbstract $previewService):self  {
-        $this->bannerPreviewService = $previewService;
+    public function withPreview(ContentConverterAbstract $converter):self  {
+        $this->previewConverter = $converter;
         return $this;
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Content\Services\PreviewServices;
+namespace Modules\Content\Services\ContentConverters;
 
 
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +13,7 @@ use Modules\Reviews\Entities\ReviewContent;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
-abstract class PreviewsServiceAbstract
+abstract class ContentConverterAbstract
 {
     protected string|null $originalContentId = null;
     protected string|null $previewId = null;
@@ -23,21 +23,21 @@ abstract class PreviewsServiceAbstract
     protected ?int $width = null;
     protected ?int $height = null;
     protected int $quality = 100;
-    public ?self $bannerPreviewService = null;
+    public ?self $previewConverter = null;
     abstract public function generatePreviews();
     abstract public function getPossibleOriginalType();
 
 
-    public function removePreviews():bool {
-        if( !$this->content )       return false;
-        if(!$previews = ReviewContent::where('parent_content_id', $this->content->id)->get())  return true;
-        foreach ($previews as $preview){
-            Storage::disk('reviewContent')->delete($preview->file);
-            $preview->delete();
-        }
-//        ReviewContent::where('parent_content_id', $this->content->parent_content_id)->delete();
-        return true;
-    }
+//    public function removePreviews():bool {
+//        if( !$this->content )       return false;
+//        if(!$previews = ReviewContent::where('parent_content_id', $this->content->id)->get())  return true;
+//        foreach ($previews as $preview){
+//            Storage::disk('reviewContent')->delete($preview->file);
+//            $preview->delete();
+//        }
+////        ReviewContent::where('parent_content_id', $this->content->parent_content_id)->delete();
+//        return true;
+//    }
 
     public function confirmPreviewsByContentIds(array $contentIds):bool     {
         if(!$previews = ReviewContent::whereIn('parent_content_id',$contentIds)->get())  return true;

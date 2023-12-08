@@ -7,7 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Modules\Content\Services\PreviewServices\PreviewsServiceAbstract;
+use Modules\Content\Services\ContentConverters\PreviewsServiceAbstract;
 
 class CreatePreviewJob implements ShouldQueue
 {

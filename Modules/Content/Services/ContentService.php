@@ -6,12 +6,14 @@ namespace Modules\Content\Services;
 
 
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use App\DataStructures\Content\ContentFileInfoStructure;
 use App\DataStructures\Content\ContentUpdateStructure;
 use Modules\Content\Entities\Content;
-use Modules\Content\Services\PreviewServices\ImagePreviewsService;
-use Modules\Content\Services\PreviewServices\PreviewsServiceAbstract;
+use Modules\Content\Services\ContentConverters\ImageContentConverter;
+use Modules\Content\Services\ContentConverters\VideoContentConverter;
+use Modules\Content\Services\ContentConverters\ContentConverterAbstract;
 use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
 use Modules\Reviews\Jobs\CreatePreviewJob;
 use App\DataStructures\AbstractDataStructure;
@@ -109,7 +111,7 @@ class ContentService
 
 
     protected ?Content $content = null;
-    protected ?array $previewServices = null;
+    protected ?array $contentConverters = null;
     public function saveTempFile( $fileBlob , string $contentableType, int $contentableId):?Content {
 
         //if isset id, save to folder with name id
@@ -191,8 +193,8 @@ class ContentService
                 if(!$contentInfoFromFront = $contentInfoForUpdate[$content->id] ) continue;
                 /**@var ContentUpdateStructure $contentInfoFromFront*/
 
-                //handle generate previews
-                if(!$content->confirm && $this->handlePreviews($content)){
+                //handle generate replicas only if not confirmed original content
+                if(!$content->confirm && $this->handleReplicas($content)){
                     $content->update(['confirm'=>1]);
                 }
 
@@ -202,21 +204,11 @@ class ContentService
                     continue;
                 }
 
-                //handle banner
-                if( $contentInfoFromFront->banner_id ){
-                    if( $content->banner_id !== $contentInfoFromFront->banner_id ){
-                        //remove old banner
-                        $this->removeContentById($content->banner_id);
-                        //update banner run preview service for generate banners
-                        $this->handleBannersForPreviews($content, $contentInfoFromFront->banner_id);
-                    }
-                }else{
-                    //remove banner
-                    $this->removeContentById($content->banner_id);
-                }
+                //handle preview (for video)
+                $this->handlePreviewsForContent($content, $contentInfoFromFront->preview_id);
 
                 $updatedData = [ 'published' => $contentInfoFromFront->published,
-                    'banner_id' => $contentInfoFromFront->banner_id,
+                    'preview_id' => $contentInfoFromFront->preview_id,
                 ];
                 //update original file
                 $content->update($updatedData);
@@ -232,54 +224,69 @@ class ContentService
     }
 
 
+    protected function createReplica(Content $originalContent, ContentConverterAbstract $converter):Model{
+        $newReplica = Content::create([
+            'contentable_id' => $originalContent->contentable_id,
+            'contentable_type' => $originalContent->contentable_type,
+            'parent_id' => $originalContent->id,
+        ]);
+        //dont forget to run  Supervisor  php artisan queue:listen
+        CreatePreviewJob::dispatch($converter->forOriginalContentId($originalContent->id)->forPreviewId($newReplica->id));
+        return $newReplica;
+    }
 
-    protected function handlePreviews(Content $content):bool {
-        /**@var ContentUpdateStructure $content*/
-        if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
-            foreach ($previewServices as $previewService){
-                //now create unconfirmed content
-                $preview = Content::create([
-                    'contentable_id' => $content->contentable_id,
-                    'contentable_type' => $content->contentable_type,
-                    'parent_id' => $content->id,
-                ]);
-                /**@var PreviewsServiceAbstract $previewService*/
-                //dont forget to run  Supervisor  php artisan queue:listen
-                CreatePreviewJob::dispatch($previewService->forOriginalContentId($content->id)->forPreviewId($preview->id));
+    protected function handleReplicas(Content $content):bool {
+        if($contentConverters = $this->getConvertersByTypeFile($content->typeFile)){
+            foreach ($contentConverters as $converter){
+                $this->createReplica($content, $converter);
             }
         }
         return true;
     }
 
 
-    protected function handleBannersForPreviews(Content $content, string $newBannerId):bool {
-        //search previews for content
-        $contentPreviews = Content::where('parent_id', $content->id)->get();
-        if( $contentPreviews->count() === 0 ) return true;
-        foreach ( $contentPreviews as $preview ){
-            if( !$previewService = $this->getPreviewServiceByTypeFileAndKey($preview->typeFile, $preview->type) ){
-                throw new \Exception('Not have preview service for ready preview');
+    protected function handlePreviewsForContent(Model $originalContent, string $originalPreviewId = ''):bool {
+        if( !$originalContent->preview_id && !$originalPreviewId) return true;
 
-            }else{
-                if(!$previewService->bannerPreviewService)  continue;
-                if($preview->banner_id !== $newBannerId){
-                    $this->removeContentById($preview->banner_id);
+        if( $originalPreviewId && $originalContent->preview_id === $originalPreviewId ) return true;
 
+        //update previews for replicas
+        //search previews for original content
+        $replicas = Content::where('parent_id', $originalContent->id)->where('confirmed', true)->get();
+        if( $originalContent->preview_id && !$originalPreviewId ){ //if remove original preview then clear previews for replicas
+            $this->removeContentById( $originalContent->preview_id );
+            if($replicas->count() > 0){
+                foreach ($replicas as $replica){
+                    $this->removeContentById($replica->preview_id);
+                }
+                return true;
+            }
+        }
+
+        if ($replicas->count() === 0) return true;
+        if($originalPreviewId && $originalContent->preview_id !== $originalPreviewId){
+            if (!$originalPreview = Content::where('id', $originalPreviewId)) { //check already upload preview content
+                throw new \Exception('Do not uploaded preview ');
+            }
+            foreach ($replicas as $replica) {
+                if (!$converter = $this->getConverterByTypeFileAndKey($replica->typeFile, $replica->type)) {
+                    //if exists replica by not have converter for convert to this replica - its error
+                    throw new \Exception('Not have preview service for ready preview');
+                }
+                if (!$converter->previewConverter){
+                    if(!$replica->preview_id)   continue;
+                    $this->removeContentById($replica->preview_id); //if change settings converters
+                    continue;
+                }
+                //remove old previews of replicas
+                $this->removeContentById($replica->preview_id);
+
+                if( $replicaPreview = $this->createReplica($originalPreview, $converter)){
+                    $replica->update(['preview_id' => $replicaPreview->id]);
                 }
             }
         }
 
-        if($previewServices = $this->getPreviewServicesByTypeFile($content->typeFile)){
-            foreach ($previewServices as $previewService){
-                /**@var PreviewsServiceAbstract $previewService*/
-                if($previewService->bannerPreviewService){
-                    //dont forget to run  Supervisor  php artisan queue:listen
-                    CreatePreviewJob::dispatch($previewService->forOriginalContent($content));
-                }
-                //dont forget to run  Supervisor  php artisan queue:listen
-                CreatePreviewJob::dispatch($previewService->forOriginalContent($content));
-            }
-        }
         return true;
     }
 
@@ -313,19 +320,19 @@ class ContentService
         return array_unique($contentIds);
     }
 
-    public function addPreviewService( PreviewsServiceAbstract $previewService, string $originalTypeFile = '' ):self    {
-        if(!$originalTypeFile) $originalTypeFile = $previewService->getPossibleOriginalType();
-        if(!isset($this->previewServices[$originalTypeFile])) $this->previewServices[$originalTypeFile] = [];
-        $this->previewServices[$originalTypeFile][] = $previewService;
+    public function addContentConverter( ContentConverterAbstract $converter, string $originalTypeFile = '' ):self    {
+        if(!$originalTypeFile) $originalTypeFile = $converter->getPossibleOriginalType();
+        if(!isset($this->contentConverters[$originalTypeFile])) $this->contentConverters[$originalTypeFile] = [];
+        $this->contentConverters[$originalTypeFile][] = $converter;
         return $this;
     }
 
-    protected function getPreviewServicesByTypeFile(string $typeFile ):?array{
-        return (isset($this->previewServices[$typeFile])) ? $this->previewServices[$typeFile] : null;
+    protected function getConvertersByTypeFile(string $typeFile ):?array{
+        return (isset($this->contentConverters[$typeFile])) ? $this->contentConverters[$typeFile] : null;
     }
 
-    protected function getPreviewServiceByTypeFileAndKey(string $typeFile, string $key ):?PreviewsServiceAbstract{
-        return (isset($this->previewServices[$typeFile]) && isset($this->previewServices[$typeFile][$key])) ? $this->previewServices[$typeFile][$key] : null;
+    protected function getConverterByTypeFileAndKey(string $typeFile, string $key ):?ContentConverterAbstract{
+        return ( $this->contentConverters[$typeFile] && isset($this->contentConverters[$typeFile][$key])) ? $this->contentConverters[$typeFile][$key] : null;
     }
 
     public function diskName():string    {
@@ -352,12 +359,17 @@ class ContentService
             throw new \Exception('Review not found');
         }
         $this->storageDisk()->delete($content->file);
-        //clear previews files recursive
-        if($previews = Content::where('parent_id', $contentId)->get()){
-            foreach ($previews as $preview){
-                $this->removeContentById($preview->id);
+        //clear replicas files recursive
+        if($replicas = Content::where('parent_id', $contentId)->get()){
+            foreach ($replicas as $replica){
+                $this->removeContentById($replica->id);
             }
         }
+        //remove content preview if exists
+        if($content->preview_id){
+            $this->removeContentById( $content->preview_id );
+        }
+
         $content->delete();
         return true;
     }

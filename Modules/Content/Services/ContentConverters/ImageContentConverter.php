@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Content\Services\PreviewServices;
+namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\ContentFileInfoStructure;
@@ -17,7 +17,7 @@ use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
 
-class ImagePreviewsService extends PreviewsServiceAbstract
+class ImageContentConverter extends ContentConverterAbstract
 {
 
 
