@@ -26,7 +26,7 @@ class Content extends Model
         'contentable_id',
         'parent_id',
         'mime',
-        'preview_id'
+        'is_preview_for'
     ];
 
 

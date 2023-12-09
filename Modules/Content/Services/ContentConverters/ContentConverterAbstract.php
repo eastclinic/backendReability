@@ -15,8 +15,7 @@ use Illuminate\Support\Facades\File;
 
 abstract class ContentConverterAbstract
 {
-    protected string|null $originalContentId = null;
-    protected string|null $previewId = null;
+    protected ?string $originalContentId = null;
     protected string $extensionPreview = '';
     protected string $key = '';
 //    protected ?string $fileOriginal = '';
@@ -60,11 +59,6 @@ abstract class ContentConverterAbstract
         return $this;
     }
 
-    public function forPreviewId( string $id):self    {
-        $this->previewId = $id;
-        return $this;
-    }
-
     public function withExtension( string $extension):self     {
         $this->extensionPreview = $extension;
         return $this;
@@ -77,10 +71,6 @@ abstract class ContentConverterAbstract
         return $this;
     }
 
-//    public function forFileOriginal( string $fileOriginal ):self     {
-//        $this->fileOriginal = $fileOriginal;
-//        return $this;
-//    }
     public function withQuality( int $quality = 100 ):self     {
         if($quality < 3) return $this; //<<<<<<<<<<<<<
         $this->quality = $quality;

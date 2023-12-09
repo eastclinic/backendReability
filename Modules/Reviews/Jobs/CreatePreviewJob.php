@@ -7,18 +7,18 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Modules\Content\Services\ContentConverters\PreviewsServiceAbstract;
+use Modules\Content\Services\ContentConverters\ContentConverterAbstract;
 
 class CreatePreviewJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected PreviewsServiceAbstract $previewService;
+    protected ContentConverterAbstract $previewService;
 
     /**
      * CreatePreviewJob constructor.
-     * @param PreviewsServiceAbstract $previewService
+     * @param ContentConverterAbstract $previewService
      */
-    public function __construct(PreviewsServiceAbstract $previewService)
+    public function __construct(ContentConverterAbstract $previewService)
     {
         $this->previewService = $previewService;
 

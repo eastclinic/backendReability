@@ -194,7 +194,7 @@ class ContentService
                 /**@var ContentUpdateStructure $contentInfoFromFront*/
 
                 //handle generate replicas only if not confirmed original content
-                if(!$content->confirm && $this->handleReplicas($content)){
+                if(!$content->confirm && $this->handleReplicasForOriginalContent($content)){
                     $content->update(['confirm'=>1]);
                 }
 
@@ -224,35 +224,63 @@ class ContentService
     }
 
 
-    protected function createReplica(Content $originalContent, ContentConverterAbstract $converter):Model{
-        $newReplica = Content::create([
-            'contentable_id' => $originalContent->contentable_id,
-            'contentable_type' => $originalContent->contentable_type,
-            'parent_id' => $originalContent->id,
-        ]);
-        //dont forget to run  Supervisor  php artisan queue:listen
-        CreatePreviewJob::dispatch($converter->forOriginalContentId($originalContent->id)->forPreviewId($newReplica->id));
-        return $newReplica;
-    }
 
-    protected function handleReplicas(Content $content):bool {
+
+    protected function handleReplicasForOriginalContent(Content $content):bool {
         if($contentConverters = $this->getConvertersByTypeFile($content->typeFile)){
             foreach ($contentConverters as $converter){
-                $this->createReplica($content, $converter);
+                //dont forget to run  Supervisor  php artisan queue:listen
+                CreatePreviewJob::dispatch($converter->forOriginalContentId($content->id));
             }
         }
         return true;
     }
 
+    protected function handleOriginalPreview(Model $originalContent):bool {
+        $originalPreviews = Content::where('is_preview_for', $originalContent->id)->get();
+        if($originalPreviews->count() === 0 && $originalContent->preview){
+            throw new \Exception('not found preview');
+        }
 
-    protected function handlePreviewsForContent(Model $originalContent, string $originalPreviewId = ''):bool {
-        if( !$originalContent->preview_id && !$originalPreviewId) return true;
+        foreach ($originalPreviews as $preview){
+            if($originalContent->preview->id !== $preview->id){ //remove older preview
+                $this->removeContentById($preview->id); //remove preview with child
+            }
+        }
+        return true;
+    }
 
-        if( $originalPreviewId && $originalContent->preview_id === $originalPreviewId ) return true;
+    protected function handlePreviewsForContent(Model $originalContent):bool {
+        //if(!$originalContent->preview) return true;
 
-        //update previews for replicas
-        //search previews for original content
-        $replicas = Content::where('parent_id', $originalContent->id)->where('confirmed', true)->get();
+        $originalPreview = Content::where('is_preview_for', $originalContent->id)->get();
+//        if( $originalContent->preview && $originalPreview && $originalContent->preview->id === $originalPreview->id) return true;
+
+
+        if(!$originalContent->preview ){ //it means that clear preview
+            if($originalPreview){
+                $this->removeContentById($originalPreview->id); //remove preview with child
+            }
+            return true;
+        }elseif ( $originalContent->preview ){
+            $replicas = Content::where('parent_id', $originalContent->id)->with('preview')->get();
+
+
+            if( $originalPreview &&  $originalContent->preview->id !== $originalPreview->id ){
+                $this->removeContentById($originalPreview->id); //remove preview with child
+
+
+
+            }
+            if ($replicas->count() === 0) return true;
+            foreach ($replicas as $replica) {
+//                if($replica->preview)
+            }
+
+        }
+
+
+
         if( $originalContent->preview_id && !$originalPreviewId ){ //if remove original preview then clear previews for replicas
             $this->removeContentById( $originalContent->preview_id );
             if($replicas->count() > 0){
@@ -264,11 +292,11 @@ class ContentService
         }
 
         if ($replicas->count() === 0) return true;
+        //if have new review id for content
         if($originalPreviewId && $originalContent->preview_id !== $originalPreviewId){
-            if (!$originalPreview = Content::where('id', $originalPreviewId)) { //check already upload preview content
-                throw new \Exception('Do not uploaded preview ');
-            }
+            $originalContent->update(['preview_id' => $originalPreviewId]);
             foreach ($replicas as $replica) {
+                if(!$replica->typeFile || !$replica->type)  continue; //because still not run job converter for replica
                 if (!$converter = $this->getConverterByTypeFileAndKey($replica->typeFile, $replica->type)) {
                     //if exists replica by not have converter for convert to this replica - its error
                     throw new \Exception('Not have preview service for ready preview');
@@ -278,13 +306,17 @@ class ContentService
                     $this->removeContentById($replica->preview_id); //if change settings converters
                     continue;
                 }
-                //remove old previews of replicas
-                $this->removeContentById($replica->preview_id);
-
-                if( $replicaPreview = $this->createReplica($originalPreview, $converter)){
-                    $replica->update(['preview_id' => $replicaPreview->id]);
+                if($replica->preview_id){
+                    //clear old previews of replicas
+                    $this->removeContentById($replica->preview_id);
                 }
+
+                CreatePreviewJob::dispatch($converter->forOriginalContentId($originalContent->id));
+//                if( $replicaPreview = $this->createReplica($originalPreview, $converter)){
+//                    $replica->update(['preview_id' => $replicaPreview->id]);
+//                }
             }
+
         }
 
         return true;
@@ -365,9 +397,12 @@ class ContentService
                 $this->removeContentById($replica->id);
             }
         }
+
         //remove content preview if exists
-        if($content->preview_id){
-            $this->removeContentById( $content->preview_id );
+        if($previews = Content::where('is_preview_for', $contentId)->get()){
+            foreach ($previews as $preview){
+                $this->removeContentById($preview->id);
+            }
         }
 
         $content->delete();

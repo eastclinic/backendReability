@@ -12,6 +12,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Content\Entities\Content;
 use Modules\Content\Services\ContentService;
 use Modules\Reviews\Entities\ReviewContent;
+use Modules\Reviews\Jobs\CreatePreviewJob;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
@@ -29,14 +30,14 @@ class VideoContentConverter extends ContentConverterAbstract
 
 
     public function generatePreviews():bool {
-        if( !$this->originalContentId || !$this->previewId || !$this->key)       return false;
+        if( !$this->originalContentId || !$this->key)       return false;
         try {
 
             $contentService = new ContentService();
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->first();
-            $previewContent = Content::where('id', $this->previewId)->first();
-            if(!$originalContent || !$originalContent->id || !$previewContent || !$previewContent->id ) return false;
+
+            if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $disk->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
@@ -73,15 +74,23 @@ class VideoContentConverter extends ContentConverterAbstract
                     'type' =>$this->key,
                     'typeFile' => $contentService->getFileType($previewFilename),
                     'confirm' => 1,
-                    'published' => $this->originalContent->published,
-                    'contentable_type' => $this->originalContent->contentable_type,
-                    'contentable_id' => $this->originalContent->contentable_id,
-                    'parent_id' => $this->originalContent->id,
+                    'published' => $originalContent->published,
+                    'contentable_type' => $originalContent->contentable_type,
+                    'contentable_id' => $originalContent->contentable_id,
+                    'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFilename),
 
                 ]
             );
-            $previewContent->update($previewFileInfo->toArray());
+
+            Content::create($previewFileInfo->toArray());
+
+            //handle situation if job run after add preview to original content
+            if($originalContent->preview_id && $this->previewConverter ){
+                if($previewContent = Content::where('id', $originalContent->preview_id)->first()){
+                    $contentService->createReplica($previewContent, $this->previewConverter);
+                }
+            }
 
         }catch (\Throwable $e){
             error_log($e->getMessage());
