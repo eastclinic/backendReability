@@ -73,27 +73,21 @@ class ContentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(StoreContentRequest $request)   {
-
-        $filesInfo = [];
-        if ($request->hasFile('files')) {
-            $files = $request->file('files');
-//save files
-            foreach ($files as $file) {
-                if(!$content = $this->contentService->saveTempFile( $file, $request->contentable_type, $request->contentable_id )){
-                    return response()->error('Error save upload files');
-                }
-                $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();
+        try {
+            if (!$request->hasFile('files')) {
+                return response()->error('Not have upload files'); //<<<<<<<<<<<<<<<<<
             }
-        }
-        if(!$filesInfo) {
-            return response()->error('Error save upload files');
-        }
-        if(!$contentIds = array_column($filesInfo, 'id')){
-            return response()->error('Error save upload files');
-        }
-        $contentCollection = Content::whereIN('id', $contentIds);
-        return ResponseService::apiCollection( ContentResource::collection($contentCollection->paginate()) );
+            $filesInfo = $this->contentService->saveTempFiles($request);
 
+            if(!$contentIds = array_column($filesInfo, 'id')){
+                return response()->error('Error save upload files');
+            }
+            $contentCollection = Content::whereIN('id', $contentIds);
+            return ResponseService::apiCollection( ContentResource::collection($contentCollection->paginate()) );
+
+        }catch ( \Exception $e){
+            return response()->error($e->getMessage());
+        }
     }
 
 

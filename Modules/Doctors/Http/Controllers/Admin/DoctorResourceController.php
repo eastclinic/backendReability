@@ -52,7 +52,7 @@ class DoctorResourceController extends Controller
             ->with('content.preview')
             ->with([
             'content' => function ($query) {
-                $query->where('type', 'original')->where('confirm', 1);
+                $query->where('type', 'original')->where('confirm', 1)->where('is_preview_for', '');
             }])  ;
 
         $results = $doctors->get();

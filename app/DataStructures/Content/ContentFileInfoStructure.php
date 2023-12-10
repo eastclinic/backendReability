@@ -14,5 +14,7 @@ class ContentFileInfoStructure extends \App\DataStructures\AbstractDataStructure
 
     public string $contentable_type = '';
     public int $contentable_id = 0;
-
+    public ?string $parent_id = null;
+    public string $is_preview_for = '';
+    public ?string $mime = null;
 }

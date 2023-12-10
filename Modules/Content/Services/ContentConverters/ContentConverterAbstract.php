@@ -17,7 +17,7 @@ abstract class ContentConverterAbstract
 {
     protected ?string $originalContentId = null;
     protected string $extensionPreview = '';
-    protected string $key = '';
+    public string $key = '';
     protected string $parentReplicaId = '';
 //    protected ?string $fileOriginal = '';
     protected ?int $width = null;
