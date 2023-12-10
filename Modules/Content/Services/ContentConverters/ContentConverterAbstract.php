@@ -18,6 +18,7 @@ abstract class ContentConverterAbstract
     protected ?string $originalContentId = null;
     protected string $extensionPreview = '';
     protected string $key = '';
+    protected string $parentReplicaId = '';
 //    protected ?string $fileOriginal = '';
     protected ?int $width = null;
     protected ?int $height = null;
@@ -82,6 +83,9 @@ abstract class ContentConverterAbstract
         return $this;
     }
 
-
+    public function asPreviewFor(string $parentReplicaId):self    {
+        $this->parentReplicaId = $parentReplicaId;
+        return $this;
+    }
 
 }

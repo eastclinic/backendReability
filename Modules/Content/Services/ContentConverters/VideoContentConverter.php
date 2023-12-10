@@ -79,18 +79,11 @@ class VideoContentConverter extends ContentConverterAbstract
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFilename),
-
+                    'is_preview_for'=>($this->parentReplicaId) ?? '',
                 ]
             );
 
             Content::create($previewFileInfo->toArray());
-
-            //handle situation if job run after add preview to original content
-            if($originalContent->preview_id && $this->previewConverter ){
-                if($previewContent = Content::where('id', $originalContent->preview_id)->first()){
-                    $contentService->createReplica($previewContent, $this->previewConverter);
-                }
-            }
 
         }catch (\Throwable $e){
             error_log($e->getMessage());
@@ -112,6 +105,7 @@ class VideoContentConverter extends ContentConverterAbstract
         $this->previewConverter = $converter;
         return $this;
     }
+
 
 
 

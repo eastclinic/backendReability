@@ -74,7 +74,7 @@ class Content extends Model
         return $this->morphTo();
     }
     public function preview(): HasOne {
-        return $this->hasOne(Content::class,'id', 'preview_id');
+        return $this->hasOne(Content::class,'is_preview_for');
     }
 
 }

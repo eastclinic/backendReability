@@ -23,24 +23,16 @@ namespace Modules\Content\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Services\ApiRequestQueryBuilders\ApiListService;
 use App\Services\Response\ResponseService;
-use http\Env\Response;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
 use Modules\Content\Entities\Content;
 use Modules\Content\Http\Requests\ListContentRequest;
 use Modules\Content\Http\Requests\SaveContentRequest;
 use Modules\Content\Http\Requests\UpdateRequest;
 use Modules\Content\Transformers\ContentResource;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Modules\Reviews\Entities\ReviewContent;
-use Modules\Reviews\Http\Requests\Admin\Reviews\StoreContentRequest;
-use Modules\Reviews\Jobs\CreatePreviewJob;
-use Modules\Reviews\Services\ReviewContentStorage;
+use Modules\Content\Http\Requests\StoreContentRequest;
 use Modules\Reviews\Transformers\Admin\ReviewContentResource;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Bus;
 use Modules\Content\Services\ContentService;
-use Illuminate\Http\Request;
 
 
 
@@ -101,21 +93,9 @@ class ContentController extends Controller
         }
         $contentCollection = Content::whereIN('id', $contentIds);
         return ResponseService::apiCollection( ContentResource::collection($contentCollection->paginate()) );
-//        return response()->ok($filesInfo, 200);
 
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $reviews = ReviewContent::query()->where('id', $id);
-        return ResponseService::apiCollection( ReviewContentResource::collection($reviews->paginate()) );
-    }
 
     /**
      * Update the specified resource in storage.

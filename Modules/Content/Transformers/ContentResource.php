@@ -18,12 +18,12 @@ class ContentResource extends JsonResource
          return [
             'id' => $this->id,
             'url' => (empty($_SERVER['HTTPS']) ? 'http' : 'https').'://'.$_SERVER['HTTP_HOST'].$this->url,
-            'title' => $this->title,
+            'title' => (string)$this->title,
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,
             'typeFile' => $this->typeFile,
              'preview' => new ContentResource($this->whenLoaded('preview')),
-             'is_preview_for' => $this->is_preview_for,
+//             'is_preview_for' => (string)$this->is_preview_for,
 
 
         ];

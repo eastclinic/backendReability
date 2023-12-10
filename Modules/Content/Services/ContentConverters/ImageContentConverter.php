@@ -23,13 +23,12 @@ class ImageContentConverter extends ContentConverterAbstract
 
     public function generatePreviews():bool {
 
-        if( !$this->originalContentId || !$this->previewId || !$this->key)       return false;
+        if( !$this->originalContentId || !$this->key)       return false;
         try {
             $contentService = new ContentService();
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->first();
-            $previewContent = Content::where('id', $this->previewId)->first();
-            if(!$originalContent || !$originalContent->id || !$previewContent || !$previewContent->id ) return false;
+            if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $disk->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
@@ -68,19 +67,10 @@ class ImageContentConverter extends ContentConverterAbstract
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFile),
-
                 ]
             );
-            $fwsdw = 1;
 
-            $previewContent->update($previewFileInfo->toArray());
-
-//            $this->originalContent
-//                ->fill([
-//                    'file' => $previewFile,
-//                    'url' => $disk->url($previewFile),
-//                    ])
-//                ->save();
+            Content::create($previewFileInfo->toArray());
 
         }catch (\Throwable $e){
             error_log($e->getMessage());
