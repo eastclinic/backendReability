@@ -14,5 +14,6 @@ class CreatePreviewContentStructure extends \App\DataStructures\AbstractDataStru
     public ?string $contentable_type = null;
     public ?int $contentable_id = null;
     public ?string $parent_id = null;
+    public string $is_preview_for = '';
     public ?string $mime = null;
 }

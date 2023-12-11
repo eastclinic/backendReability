@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Content\Services\PreviewServices;
+namespace Modules\Content\Services\ContentConverters;
 
 
 use Illuminate\Support\Facades\Storage;
@@ -13,30 +13,31 @@ use Modules\Reviews\Entities\ReviewContent;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
-abstract class PreviewsServiceAbstract
+abstract class ContentConverterAbstract
 {
-    protected ?Content $originalContent = null;
+    protected ?string $originalContentId = null;
     protected string $extensionPreview = '';
-    protected string $key = '';
+    public string $key = '';
+    protected string $parentReplicaId = '';
 //    protected ?string $fileOriginal = '';
     protected ?int $width = null;
     protected ?int $height = null;
     protected int $quality = 100;
-
+    public ?self $previewConverter = null;
     abstract public function generatePreviews();
     abstract public function getPossibleOriginalType();
 
 
-    public function removePreviews():bool {
-        if( !$this->content )       return false;
-        if(!$previews = ReviewContent::where('parent_content_id', $this->content->id)->get())  return true;
-        foreach ($previews as $preview){
-            Storage::disk('reviewContent')->delete($preview->file);
-            $preview->delete();
-        }
-//        ReviewContent::where('parent_content_id', $this->content->parent_content_id)->delete();
-        return true;
-    }
+//    public function removePreviews():bool {
+//        if( !$this->content )       return false;
+//        if(!$previews = ReviewContent::where('parent_content_id', $this->content->id)->get())  return true;
+//        foreach ($previews as $preview){
+//            Storage::disk('reviewContent')->delete($preview->file);
+//            $preview->delete();
+//        }
+////        ReviewContent::where('parent_content_id', $this->content->parent_content_id)->delete();
+//        return true;
+//    }
 
     public function confirmPreviewsByContentIds(array $contentIds):bool     {
         if(!$previews = ReviewContent::whereIn('parent_content_id',$contentIds)->get())  return true;
@@ -49,8 +50,13 @@ abstract class PreviewsServiceAbstract
 
 
 
-    public function forOriginalContent( Content $originalContent ):self     {
-        $this->originalContent = $originalContent;
+//    public function forOriginalContent( Content $originalContent ):self     {
+//        $this->originalContent = $originalContent;
+//        return $this;
+//    }
+
+    public function forOriginalContentId( string $id ):self     {
+        $this->originalContentId = $id;
         return $this;
     }
 
@@ -66,10 +72,6 @@ abstract class PreviewsServiceAbstract
         return $this;
     }
 
-//    public function forFileOriginal( string $fileOriginal ):self     {
-//        $this->fileOriginal = $fileOriginal;
-//        return $this;
-//    }
     public function withQuality( int $quality = 100 ):self     {
         if($quality < 3) return $this; //<<<<<<<<<<<<<
         $this->quality = $quality;
@@ -80,4 +82,10 @@ abstract class PreviewsServiceAbstract
         $this->key = $key;
         return $this;
     }
+
+    public function asPreviewFor(string $parentReplicaId):self    {
+        $this->parentReplicaId = $parentReplicaId;
+        return $this;
+    }
+
 }

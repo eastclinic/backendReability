@@ -11,8 +11,8 @@ use App\Services\Response\ResponseService;
 
 use Illuminate\Support\Facades\Log;
 use Modules\Content\Services\ContentService;
-use Modules\Content\Services\PreviewServices\ImagePreviewsService;
-use Modules\Content\Services\PreviewServices\VideoPreviewsService;
+use Modules\Content\Services\ContentConverters\ImageContentConverter;
+use Modules\Content\Services\ContentConverters\VideoContentConverter;
 use Modules\Doctors\Entities\Doctor;
 use Modules\Doctors\Http\Requests\DoctorInfo\CreateRequest;
 use Modules\Doctors\Http\Requests\DoctorInfo\UpdateRequest;
@@ -29,12 +29,11 @@ class DoctorResourceController extends Controller
     private ContentService $contentService;
 
     public function __construct(
-        //ReviewService $reviewService,
         ApiDataTableService $apiHandler,//,
         ContentService $contentService
     )    {
         $this->QueryBuilderByRequest = $apiHandler;
-        $this->contentService = $this->addPreviewServiceForContent($contentService);
+        $this->contentService = $this->addContentConverters($contentService);
 
     }
 
@@ -45,19 +44,21 @@ class DoctorResourceController extends Controller
      */
     public function index(ApiDataTableRequest $request)
     {
-//        DB::enableQueryLog();
+        DB::enableQueryLog();
         $doctors = Doctor::query();
 
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
         $doctors->with('diploms.content')
+            ->with('content.preview')
             ->with([
             'content' => function ($query) {
-                $query->where('type', 'original')->where('confirm', 1);
+                $query->where('type', 'original')->where('confirm', 1)->where('is_preview_for', '');
             }])  ;
 
-//        $results = $doctors->get();
+        $results = $doctors->get();
+        $dfefew = $results->toArray();
 //// Get the executed queries from the query log
-//        $queries = DB::getQueryLog();
+        $queries = DB::getQueryLog();
 
 //        $dbconnect = DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
@@ -156,32 +157,36 @@ class DoctorResourceController extends Controller
     }
 
 
-    protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
-        $contentService->addPreviewService( (new ImagePreviewsService())
+    protected function addContentConverters( ContentService $contentService ):ContentService{
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('120x120')
             ->withExtension('webp')
             ->withSize(120, 120)) ;
 
-        $contentService->addPreviewService( (new ImagePreviewsService())
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('232x269')
             ->withExtension('webp')
             ->withSize(232, 269)) ;
 
-        $contentService->addPreviewService( (new ImagePreviewsService())
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('576x576')
             ->withExtension('webp')
             ->withSize(576, 576)) ;
 
-        $contentService->addPreviewService( (new ImagePreviewsService())
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('compress')
             ->withExtension('webp')
             ->withSize(1980, 1080)) ;
 
 
-        $contentService->addPreviewService( (new VideoPreviewsService())
-            ->withKey('576x576')
+        $contentService->addContentConverter( (new VideoContentConverter())
+            ->withKey('300x300')
             ->withExtension('webm')
-            ->withSize(576, 576)) ;
+            ->withSize(300, 300)
+            ->withPreview((new ImageContentConverter())
+                ->withKey('300x300')
+                ->withExtension('webp')
+                ->withSize(300, 300)));
 
         return $contentService;
     }

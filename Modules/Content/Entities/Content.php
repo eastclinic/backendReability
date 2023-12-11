@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Content extends Model
 {
@@ -25,6 +26,7 @@ class Content extends Model
         'contentable_id',
         'parent_id',
         'mime',
+        'is_preview_for'
     ];
 
 
@@ -71,6 +73,8 @@ class Content extends Model
     {
         return $this->morphTo();
     }
-
+    public function preview(): HasOne {
+        return $this->hasOne(Content::class,'is_preview_for');
+    }
 
 }

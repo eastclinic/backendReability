@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Content\Services\PreviewServices;
+namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\CreatePreviewContentStructure;
@@ -12,31 +12,38 @@ use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Content\Entities\Content;
 use Modules\Content\Services\ContentService;
 use Modules\Reviews\Entities\ReviewContent;
+use Modules\Reviews\Jobs\CreatePreviewJob;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
-class VideoPreviewsService extends PreviewsServiceAbstract
+class VideoContentConverter extends ContentConverterAbstract
 {
     public ?ReviewContent $content = null;
     protected array $possibleExtensions = ["mp4", "mov", 'webm'];
     protected string $extensionPreview = 'webm';
+
     const EXTENSION_FFMPEG = ['webm' => \FFMpeg\Format\Video\WebM::class];
 
 
 
     public function generatePreviews():bool {
-        if( !$this->originalContent || !$this->key)       return false;
+        if( !$this->originalContentId || !$this->key)       return false;
         try {
+
             $contentService = new ContentService();
+            //get fresh original and preview content from db
+            $originalContent = Content::where('id', $this->originalContentId)->first();
+
+            if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
-            $fileOriginalFullPath = $disk->path($this->originalContent->file);
+            $fileOriginalFullPath = $disk->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
-            $fileInfo= pathinfo($this->originalContent->file);
+            $fileInfo= pathinfo($originalContent->file);
             $originalFileExtension = mb_strtolower($fileInfo['extension']);
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, $this->possibleExtensions)) return false;
@@ -47,7 +54,7 @@ class VideoPreviewsService extends PreviewsServiceAbstract
 //            $previewFileFullPath = $disk->path($previewFile);
 //https://github.com/protonemedia/laravel-ffmpeg
             $ffmpeg = FFMpeg::fromDisk($contentService->diskName())
-                ->open($this->originalContent->file)
+                ->open($originalContent->file)
 //                ->addWatermark(function(WatermarkFactory $watermark) {
 //                    $watermark->openUrl('https://eastclinic.ru/favicon.png?v=2');
 //                })
@@ -67,14 +74,15 @@ class VideoPreviewsService extends PreviewsServiceAbstract
                     'type' =>$this->key,
                     'typeFile' => $contentService->getFileType($previewFilename),
                     'confirm' => 1,
-                    'published' => $this->originalContent->published,
-                    'contentable_type' => $this->originalContent->contentable_type,
-                    'contentable_id' => $this->originalContent->contentable_id,
-                    'parent_id' => $this->originalContent->id,
+                    'published' => $originalContent->published,
+                    'contentable_type' => $originalContent->contentable_type,
+                    'contentable_id' => $originalContent->contentable_id,
+                    'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFilename),
-
+                    'is_preview_for'=>($this->parentReplicaId) ?? '',
                 ]
             );
+
             Content::create($previewFileInfo->toArray());
 
         }catch (\Throwable $e){
@@ -92,5 +100,14 @@ class VideoPreviewsService extends PreviewsServiceAbstract
     protected function getFormat(string $extension ):string   {
         return self::EXTENSION_FFMPEG[$extension];
     }
+
+    public function withPreview(ContentConverterAbstract $converter):self  {
+        $this->previewConverter = $converter;
+        return $this;
+    }
+
+
+
+
 
 }

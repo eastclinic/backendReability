@@ -43,6 +43,10 @@ class StoreContentRequest extends FormRequest
     {
         return [
             'files.*.mimes' => 'Неправильный тип изображение. Возможно jpg,jpeg,png',
+            'contentable_id' => ['required', 'numeric'],
+            'contentable_type' => ['required', 'string'],
+            'title' => ['nullable', 'string'],
+            'is_preview_for' => ['nullable', 'string'],
         ];
     }
 
