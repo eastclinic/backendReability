@@ -80,6 +80,7 @@ class ContentService
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',];
     const STORAGE_DISK = 'content';
+    const STORAGE_DISK_ORIGINAL = 'contentOriginal';
     const IMAGE = 'image';
 
 //с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
@@ -144,16 +145,16 @@ class ContentService
 
         $filePath =  md5(date('Y-m-d'));
 //        $filePath =  'tmp';
-        Storage::disk('content')->putFileAs($filePath, $fileBlob, $fileNameWithExtension);
+        Storage::disk(self::STORAGE_DISK_ORIGINAL)->putFileAs($filePath, $fileBlob, $fileNameWithExtension);
         $file = $filePath.DIRECTORY_SEPARATOR.$fileNameWithExtension;
-        if(!$fileType = $this->getFileType(Storage::disk('content')->path($file))) return null;
+        if(!$fileType = $this->getFileType(Storage::disk(self::STORAGE_DISK_ORIGINAL)->path($file))) return null;
 
         //create job for clear "forget" content
         ClearUnconfirmedContentJob::dispatch($file)->delay(now()->addHours(2));
 
         $originalContent = Content::create([
             'file' => $file,
-            'url' => Storage::disk('content')->url($file),
+            'url' => Storage::disk(self::STORAGE_DISK_ORIGINAL)->url($file),
             'type' => 'original',
             'typeFile' => $fileType,
             'mime' => $this->getMime($file),
