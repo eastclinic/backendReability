@@ -57,7 +57,42 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "install-eastclinic-production": [
+            "php -r \"copy('.env.sourceProduction', '.env');\"",
+            "@composer install",
+            "@php artisan key:generate --ansi",
+            "@php artisan vendor:publish --provider=\"Tymon\\JWTAuth\\Providers\\LaravelServiceProvider\"",
+            "@php artisan vendor:publish --provider=\"PHPOpenSourceSaver\\JWTAuth\\Providers\\LaravelServiceProvider\"",
+
+            "@php artisan jwt:secret",
+
+            "@php artisan vendor:publish --provider=\"Nwidart\\Modules\\LaravelModulesServiceProvider\"",
+
+            "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProvider\"",
+            "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProviderLaravelRecent\"",
+
+            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\""
+
+        ],
+        "install-eastclinic-dev": [
+            "php -r \"copy('.env.sourceDev', '.env');\"",
+            "@composer install",
+            "@php artisan key:generate --ansi",
+            "@php artisan vendor:publish --provider=\"Tymon\\JWTAuth\\Providers\\LaravelServiceProvider\"",
+            "@php artisan vendor:publish --provider=\"PHPOpenSourceSaver\\JWTAuth\\Providers\\LaravelServiceProvider\"",
+
+            "@php artisan jwt:secret",
+
+            "@php artisan vendor:publish --provider=\"Nwidart\\Modules\\LaravelModulesServiceProvider\"",
+
+            "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProvider\"",
+            "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProviderLaravelRecent\"",
+
+            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\""
+
         ]
+
     },
     "extra": {
         "laravel": {
