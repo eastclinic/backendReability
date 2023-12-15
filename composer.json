@@ -59,7 +59,7 @@
             "@php artisan key:generate --ansi"
         ],
         "install-eastclinic-production": [
-            "php -r \"copy('.env.sourceProduction', '.env');\"",
+            "php -r \"copy('.env.prod', '.env');\"",
             "@composer install",
             "@php artisan key:generate --ansi",
             "@php artisan vendor:publish --provider=\"Tymon\\JWTAuth\\Providers\\LaravelServiceProvider\"",
@@ -76,7 +76,7 @@
 
         ],
         "install-eastclinic-dev": [
-            "php -r \"copy('.env.sourceDev', '.env');\"",
+            "php -r \"copy('.env.dev', '.env');\"",
             "@composer install",
             "@php artisan key:generate --ansi",
             "@php artisan vendor:publish --provider=\"Tymon\\JWTAuth\\Providers\\LaravelServiceProvider\"",

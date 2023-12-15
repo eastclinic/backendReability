@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->char('author')->default('');
             $table->unsignedInteger('author_id')->default(0);
-            $table->text('author_info')->default('');
+            $table->char('author_info')->default('');
             $table->float('rating')->default(0);
-            $table->text('text')->default('');
+            $table->text('text');
 
 
             $table->char('confirm')->nullable(); //можно использовать номер договора или к примеру фото
