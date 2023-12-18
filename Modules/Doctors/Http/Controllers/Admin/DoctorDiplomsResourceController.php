@@ -105,7 +105,12 @@ class DoctorDiplomsResourceController extends Controller
      */
     public function destroy($id)
     {
-        //
+        if(DoctorDiplom::where('id', $id)->first()){
+            DoctorDiplom::destroy($id);
+            return ResponseService::okMessage('Removed diplom');
+        }else{
+            return  ResponseService::error('Failed to remove diplom');
+        }
     }
 
     protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
