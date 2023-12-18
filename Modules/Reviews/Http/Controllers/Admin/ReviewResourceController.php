@@ -9,8 +9,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Modules\Content\Services\ContentConverters\ImagePreviewsService;
-use Modules\Content\Services\ContentConverters\VideoPreviewsService;
+use Modules\Content\Services\ContentConverters\ImageContentConverter;
+use Modules\Content\Services\ContentConverters\VideoContentConverter;
 use Modules\Reviews\Entities\Review;
 use Illuminate\Database\Eloquent\Relations\Relation;
 //use Modules\Reviews\Http\Requests\Admin\IndexRequest;
@@ -180,13 +180,13 @@ class ReviewResourceController extends Controller
 
 
     protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
-        $contentService->addPreviewService( (new ImagePreviewsService())
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('300x300')
             ->withExtension('webp')
             ->withSize(300, 300)) ;
 
 
-        $contentService->addPreviewService( (new VideoPreviewsService())
+        $contentService->addContentConverter( (new VideoContentConverter())
             ->withKey('300x300')
             ->withExtension('webm')
             ->withSize(300, 300)) ;
