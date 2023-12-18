@@ -8,8 +8,8 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Content\Services\ContentService;
-use Modules\Content\Services\ContentConverters\ImagePreviewsService;
-use Modules\Content\Services\ContentConverters\VideoPreviewsService;
+use Modules\Content\Services\ContentConverters\ImageContentConverter;
+use Modules\Content\Services\ContentConverters\VideoContentConverter;
 use Modules\Doctors\Entities\DoctorDiplom;
 use Modules\Doctors\Http\Requests\Diploms\CreateRequest;
 use Modules\Doctors\Http\Requests\Diploms\UpdateRequest;
@@ -109,13 +109,13 @@ class DoctorDiplomsResourceController extends Controller
     }
 
     protected function addPreviewServiceForContent( ContentService $contentService ):ContentService{
-        $contentService->addPreviewService( (new ImagePreviewsService())
+        $contentService->addContentConverter( (new ImageContentConverter())
             ->withKey('300x300')
             ->withExtension('webp')
             ->withSize(300, 300)) ;
 
 
-        $contentService->addPreviewService( (new VideoPreviewsService())
+        $contentService->addContentConverter( (new VideoContentConverter())
             ->withKey('300x300')
             ->withExtension('webm')
             ->withSize(300, 300)) ;
