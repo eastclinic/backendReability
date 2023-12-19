@@ -11,7 +11,7 @@ return new class extends Migration
      *
      * @var string
      */
-//    protected $connection = 'MODX';
+    protected $connection = 'MODX';
 
     /**
      * Run the migrations.

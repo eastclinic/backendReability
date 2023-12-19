@@ -12,7 +12,7 @@ class Doctor extends Model
 {
     use HasFactory;
 
-//    protected $connection = 'MODX';
+    protected $connection = 'MODX';
 
     protected $table = 'modx_doc_doctors';
     //todo permission
