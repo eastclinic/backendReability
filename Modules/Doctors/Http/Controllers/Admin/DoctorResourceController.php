@@ -48,12 +48,15 @@ class DoctorResourceController extends Controller
         $doctors = Doctor::query();
 
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
-        $doctors->with('diploms.content')
+        $doctors
             ->with('content.preview')
             ->with([
-            'content' => function ($query) {
-                $query->where('type', 'original')->where('confirm', 1)->where('is_preview_for', '');
-            }])  ;
+                'content' => function ($query) {
+                    $query->where('type', 'original')->where('confirm', 1)->where('is_preview_for', '');
+                },
+                'diploms.content' => function ($query) {
+                    $query->where('type', 'original')->where('confirm', 1);
+                }, ])  ;
 
         $results = $doctors->get();
         $dfefew = $results->toArray();
@@ -103,7 +106,7 @@ class DoctorResourceController extends Controller
 
         if($doctor = Doctor::where('id', $id)->first()){
             $doctor -> update($requestData);
-            if($requestData['content']) {
+            if( isset($requestData['content']) && $requestData['content'] ) {
                 $this->contentService->store( $requestData['content'], Doctor::class, $id  );
                 //update legacy content data
                 $doctorForUpdateContent = Doctor::where('id', $id)->with([

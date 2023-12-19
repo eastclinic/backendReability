@@ -16,7 +16,8 @@ class CreateRequest extends FormRequest
         return [
             'title' =>'required',
             'doctor_id' =>'required',
-            'content' => ['nullable', 'array']
+            'content' => ['nullable', 'array'],
+            'published' => ['nullable', 'boolean'],
         ];
     }
 

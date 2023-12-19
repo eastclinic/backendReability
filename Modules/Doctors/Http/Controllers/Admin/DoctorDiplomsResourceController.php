@@ -46,17 +46,9 @@ class DoctorDiplomsResourceController extends Controller
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
         //ReviewResource
 //        return response()->apiCollection( $reviews );
-        return ResponseService::apiCollection( DiplomResourse::collection($diploms->paginate()) );
+        return ResponseService::apiCollection( DiplomResource::collection($diploms->paginate()) );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     * @return Renderable
-     */
-    public function create()
-    {
-        return view('doctors::create');
-    }
 
     /**
      * Store a newly created resource in storage.
