@@ -72,8 +72,8 @@
             "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProvider\"",
             "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProviderLaravelRecent\"",
 
-            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\""
-
+            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\"",
+            "@php artisan config:clear"
         ],
         "install-eastclinic-dev": [
             "php -r \"copy('.env.dev', '.env');\"",
@@ -89,7 +89,8 @@
             "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProvider\"",
             "@php artisan vendor:publish --provider=\"Intervention\\Image\\ImageServiceProviderLaravelRecent\"",
 
-            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\""
+            "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\"",
+            "@php artisan config:clear"
 
         ]
 
