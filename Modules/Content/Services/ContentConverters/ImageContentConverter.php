@@ -30,7 +30,7 @@ class ImageContentConverter extends ContentConverterAbstract
             $originalContent = Content::where('id', $this->originalContentId)->first();
             if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
-            $fileOriginalFullPath = $disk->path($originalContent->file);
+            $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
@@ -50,7 +50,10 @@ class ImageContentConverter extends ContentConverterAbstract
 
             $previewFile = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
             $previewFileFullPath = $disk->path($previewFile);
-
+            if (!$disk->exists($originalFileFolder)) {
+                // If the folder doesn't exist, create it
+                $disk->makeDirectory($originalFileFolder);
+            }
             $preview->save( $previewFileFullPath );
 
 
