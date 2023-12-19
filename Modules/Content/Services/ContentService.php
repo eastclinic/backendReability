@@ -375,12 +375,21 @@ class ContentService
     public function diskName():string    {
         return self::STORAGE_DISK;
     }
+
+    public function diskNameOriginal():string    {
+        return self::STORAGE_DISK_ORIGINAL;
+    }
+
     public function getStorageDiskNameDefault():string{
         return self::STORAGE_DISK;
     }
 
     public function getStorageDisk():Filesystem   {
         return $this->storageDisk();
+    }
+
+    public function getOriginalDisk():Filesystem   {
+        return Storage::disk(self::STORAGE_DISK_ORIGINAL);
     }
 
     protected function storageDisk():Filesystem {

@@ -39,7 +39,7 @@ class VideoContentConverter extends ContentConverterAbstract
 
             if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
-            $fileOriginalFullPath = $disk->path($originalContent->file);
+            $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
                 throw new \Exception('Not exists original file');
             }
@@ -53,7 +53,7 @@ class VideoContentConverter extends ContentConverterAbstract
             $previewFileFullUrl = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
 //            $previewFileFullPath = $disk->path($previewFile);
 //https://github.com/protonemedia/laravel-ffmpeg
-            $ffmpeg = FFMpeg::fromDisk($contentService->diskName())
+            $ffmpeg = FFMpeg::fromDisk($contentService->diskNameOriginal())
                 ->open($originalContent->file)
 //                ->addWatermark(function(WatermarkFactory $watermark) {
 //                    $watermark->openUrl('https://eastclinic.ru/favicon.png?v=2');
@@ -65,6 +65,10 @@ class VideoContentConverter extends ContentConverterAbstract
                  if($this->width && $this->height) {
                      $ffmpeg->resize($this->width, $this->height);
                  }
+            if (!$disk->exists($originalFileFolder)) {
+                // If the folder doesn't exist, create it
+                $disk->makeDirectory($originalFileFolder);
+            }
             $ffmpeg->save($previewFileFullPath);
 
             $previewFileInfo = new CreatePreviewContentStructure(
