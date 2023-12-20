@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'localhost'),
 
     /*
     |--------------------------------------------------------------------------
@@ -35,15 +35,15 @@ return [
 
     'connections' => [
 
-        'sqlite' => [
+        'sqlite2' => [
             'driver' => 'sqlite',
             'url' => env('DATABASE_URL'),
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
-        'mysql' => [
-            'driver' => env('DB_CONNECTION', 'mysql'),
+        'localhost' => [
+            'driver' => 'mysql',
             'host' => env('DB_HOST', 'localhost'),
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'eastlar'),
@@ -60,48 +60,13 @@ return [
 //                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
 //            ]) : [],
         ],
-//        'MODX_prod' => [
-//            'driver' => env('DB_CONNECTION_MODX', 'mysql'),
-//            'host' => env('DB_HOST_MODX', 'localhost'),
-//            'port' => env('DB_PORT_MODX', '3306'),
-//            'database' => env('DB_DATABASE_MODX', 'east_prod'),
-//            'username' => env('DB_USERNAME_MODX', 'eastlar'),
-//            'password' => env('DB_PASSWORD_MODX', 'jSoi5ZuhMRrP4!4d'),
-//            'unix_socket' => env('DB_SOCKET', ''),
-//            'charset' => 'utf8mb4',
-//            'collation' => 'utf8mb4_unicode_ci',
-//            'prefix' => '',
-//            'prefix_indexes' => true,
-//            'strict' => true,
-//            'engine' => null,
-////            'options' => extension_loaded('pdo_mysql') ? array_filter([
-////                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-////            ]) : [],
-//        ],
+
         'MODX' => [
-            'driver' => env('DB_CONNECTION_MODX', 'mysql'),
+            'driver' => 'mysql',
             'host' => env('DB_HOST_MODX', '192.168.88.245'),
             'port' => env('DB_PORT_MODX', '3306'),
             'database' => env('DB_DATABASE_MODX', 'east_dev'),
             'username' => env('DB_USERNAME_MODX', 'east_dev'),
-            'password' => env('DB_PASSWORD_MODX', 'i5Zuh2S5VL?;.Q'),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-//            'options' => extension_loaded('pdo_mysql') ? array_filter([
-//                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-//            ]) : [],
-        ],
-        'MODX_dev_ap' => [
-            'driver' => env('DB_CONNECTION_MODX', 'mysql'),
-            'host' => env('DB_HOST_MODX', '192.168.88.244'),
-            'port' => env('DB_PORT_MODX', '3306'),
-            'database' => env('DB_DATABASE_MODX', 'east_dev_ap'),
-            'username' => env('DB_USERNAME_MODX', 'eastlar'),
             'password' => env('DB_PASSWORD_MODX', 'i5Zuh2S5VL?;.Q'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',

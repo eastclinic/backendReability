@@ -33,7 +33,7 @@ class Doctor extends Model
 
 
     public function content(){
-        return $this->morphMany(Content::class, 'contentable');
+        return $this->morphMany(Content::class, 'contentable')->on('localhost');
     }
 
 
