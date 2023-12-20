@@ -28,7 +28,7 @@ class Content extends Model
         'mime',
         'is_preview_for'
     ];
-
+    protected $table = 'contents';
 
     protected static function newFactory()
     {
