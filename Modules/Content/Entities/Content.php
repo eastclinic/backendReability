@@ -13,6 +13,9 @@ class Content extends Model
 {
     use HasFactory;
     use HasUuids;
+
+    protected $connection = DB_CONNECTION_DEFAULT;
+
     protected $fillable = [
         'file',
         'url',

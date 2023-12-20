@@ -16,6 +16,7 @@ return [
     */
 
     'default' => env('DB_CONNECTION', 'localhost'),
+    'MODX' => env('DB_CONNECTION_MODX', 'MODX'),
 
     /*
     |--------------------------------------------------------------------------

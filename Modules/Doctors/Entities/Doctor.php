@@ -12,7 +12,7 @@ class Doctor extends Model
 {
     use HasFactory;
 
-    protected $connection = 'MODX';
+    protected $connection = DB_CONNECTION_MODX;
 
     protected $table = 'modx_doc_doctors';
     //todo permission
@@ -33,7 +33,7 @@ class Doctor extends Model
 
 
     public function content(){
-        return $this->morphMany(Content::class, 'contentable')->on('localhost');
+        return $this->morphMany(Content::class, 'contentable');
     }
 
 
