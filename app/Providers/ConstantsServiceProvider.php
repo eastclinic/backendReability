@@ -7,8 +7,12 @@ class ConstantsServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        define('DB_CONNECTION_DEFAULT', config('database.default'));
-        define('DB_CONNECTION_MODX', config('database.MODX'));
+        if (!defined('DB_CONNECTION_DEFAULT')) {
+            define('DB_CONNECTION_DEFAULT', config('database.default'));
+        }
+        if (!defined('DB_CONNECTION_MODX')) {
+            define('DB_CONNECTION_MODX', config('database.MODX'));
+        }
         // Add more constants here
     }
 
