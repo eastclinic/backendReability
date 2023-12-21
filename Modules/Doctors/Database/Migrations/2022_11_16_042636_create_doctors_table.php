@@ -11,7 +11,7 @@ return new class extends Migration
      *
      * @var string
      */
-//    protected $connection = 'MODX';
+    protected $connection = DB_CONNECTION_MODX;
 
     /**
      * Run the migrations.
@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('photo', 255)->nullable();
             $table->string('photo_type', 60)->nullable();
             $table->json('photos')->nullable();
+            $table->json('videos')->nullable();
             $table->tinyInteger('holiday')->default(0);
             $table->integer('rating')->default(0);
             $table->float('rating5')->default(0);
@@ -59,6 +60,8 @@ return new class extends Migration
             $table->tinyInteger('is_nurse')->default(0);
             $table->tinyInteger('is_analyze')->default(0);
             $table->tinyInteger('off')->default(0);
+            $table->integer('iskill')->default(1);
+            $table->tinyInteger('is_speciality')->default(0);
             $table->text('research')->nullable();
             $table->text('diploms_cache')->nullable();
             $table->text('content_cache')->nullable();

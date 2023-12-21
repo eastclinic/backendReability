@@ -9,7 +9,7 @@ use Modules\Content\Entities\Content;
 class DoctorDiplom extends Model
 {
     use HasFactory;
-
+    protected $connection = DB_CONNECTION_DEFAULT;
     protected $fillable = ['title', 'doctor_id', 'published'];
 
 //    protected $table = 'doctor_diploms';

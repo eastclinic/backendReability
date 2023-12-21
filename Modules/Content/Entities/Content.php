@@ -13,6 +13,9 @@ class Content extends Model
 {
     use HasFactory;
     use HasUuids;
+
+    protected $connection = DB_CONNECTION_DEFAULT;
+
     protected $fillable = [
         'file',
         'url',
@@ -28,7 +31,7 @@ class Content extends Model
         'mime',
         'is_preview_for'
     ];
-
+    protected $table = 'contents';
 
     protected static function newFactory()
     {

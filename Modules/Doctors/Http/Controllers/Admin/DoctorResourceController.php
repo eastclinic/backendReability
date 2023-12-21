@@ -59,7 +59,7 @@ class DoctorResourceController extends Controller
                 }, ])  ;
 
         $results = $doctors->get();
-        $dfefew = $results->toArray();
+        //$dfefew = $results->toArray();
 //// Get the executed queries from the query log
         $queries = DB::getQueryLog();
 

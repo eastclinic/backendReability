@@ -6,6 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
+
+    protected $connection = DB_CONNECTION_DEFAULT;
     /**
      * Run the migrations.
      *
@@ -13,15 +15,12 @@ return new class extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('doctor_diploms');
         Schema::create('doctor_diploms', function (Blueprint $table) {
             $table->id();
             $table->string('title')->default('');
             $table->boolean('published')->default(false);
-            $table->foreignId('doctor_id')
-                ->references('id')->on('modx_doc_doctors')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-
+            $table->unsignedBigInteger('doctor_id');
             $table->timestamps();
         });
     }

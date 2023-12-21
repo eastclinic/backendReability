@@ -40,7 +40,7 @@ class DoctorDiplomsResourceController extends Controller
         $diploms->with(['content' => function ($query) {
             $query->where('type', 'original')->where('confirm', 1);
         }]);
-//        $dbconnect = DB::connection('MODX')->getPDO();
+//        $dbconnect = \DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
 //        dd($dbname);
         //necessarily models to collection must get with pagination data:  collection($model->paginate())
