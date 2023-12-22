@@ -9,6 +9,7 @@ use App\Services\ApiRequestQueryBuilders\ApiRequestQueryBuilderAbstractService;
 use App\Services\Response\ResponseService;
 
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Modules\Content\Services\ContentService;
 use Modules\Content\Services\ContentConverters\ImageContentConverter;
@@ -49,10 +50,9 @@ class DoctorResourceController extends Controller
 
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
         $doctors
-            ->with('content.preview')
             ->with([
                 'content' => function ($query) {
-                    $query->where('type', 'original')->where('confirm', 1)->where('is_preview_for', '');
+                    $query->where('type', 'original');
                 },
                 'diploms.content' => function ($query) {
                     $query->where('type', 'original')->where('confirm', 1);
@@ -104,35 +104,11 @@ class DoctorResourceController extends Controller
         $requestData = $request->validated();
 
 
-        if($doctor = Doctor::where('id', $id)->first()){
-            $doctor -> update($requestData);
+        if($doctor = Doctor::where('id', $id)->with('content')->first()){
+            $diplomsCache = ( isset($requestData['diploms']) && $requestData['diploms'] ) ? json_encode($requestData['diploms']) : json_encode([]);
+            $doctor -> update($requestData + ['diploms_cache' => $diplomsCache]);
             if( isset($requestData['content']) && $requestData['content'] ) {
                 $this->contentService->store( $requestData['content'], Doctor::class, $id  );
-                //update legacy content data
-                $doctorForUpdateContent = Doctor::where('id', $id)->with([
-                    'content' => function ($query) {
-                        $query->where('type', '!=', 'original')
-                           // ->where('published', 1) //todo uncomment when will work published
-                        ;
-                    }])->first();
-
-                if($doctorForUpdateContent->content){
-                    $contentLegacy = [];
-                    foreach ($doctorForUpdateContent->content as $content){
-                        $contentLegacy[] = [
-                            "id" => $content->id,
-                            "size" => $content->type,
-                            "type" => $content->typeFile,
-                            "image" => $content->url,
-
-                        ];
-                    }
-                    $doctorForUpdateContent->content_cache = json_encode($contentLegacy);
-                    $doctorForUpdateContent->save();
-                }
-
-
-
             }
             return response()->okMessage('Change data.', 200);
         }
@@ -152,7 +128,7 @@ class DoctorResourceController extends Controller
      */
     public function destroy($id) {
 
-        if($this->reviewService->delete($id)){
+        if($this->contentService->delete($id)){
             return ResponseService::okMessage('Removed review');
         }else{
             return  ResponseService::error('Failed to remove review');
@@ -194,5 +170,33 @@ class DoctorResourceController extends Controller
         return $contentService;
     }
 
+    protected function legacyContentCacheUpdate( Model $doctor):self    {
+        // Check if posts relation is loaded, if not, load it
+        if (!$doctor->relationLoaded('content')) {
+            $doctor->loadMissing('content');
+        }
+        if( !$doctor->content) return $this;
 
+        $contentCache = [];
+        foreach ($doctor->content as $content){
+            $contentLegacy = [
+                "id" => $content->id,
+                "size" => $content->type,
+                "type" => $content->typeFile,
+                "image" => $content->url,
+            ];
+            if($content->preview){
+                $contentLegacy['preview'] = [
+                    "id" => $content->preview->id,
+                    "size" => $content->preview->type,
+                    "type" => $content->preview->typeFile,
+                    "image" => $content->preview->url,
+                ];
+            }
+            $contentCache[] = $contentLegacy;
+        }
+        $doctor->content_cache = json_encode($contentCache);
+        $doctor->save();
+        return $this;
+    }
 }

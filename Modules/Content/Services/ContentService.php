@@ -223,7 +223,10 @@ class ContentService
 
                //handle preview (for video)
                 $this->handlePreviewsForContent( $content );
-
+                //update legacy cache data in doctor table
+                if($targetForUpdateContent = $contentable_type::where('id', $contentable_id)->with('content')->first()){
+                    $targetForUpdateContent->contentCacheUpdate();
+                }
                 //update original file
 
 
@@ -247,19 +250,9 @@ class ContentService
         return true;
     }
 
-    protected function handleOriginalPreview(Model $originalContent):bool {
-        $originalPreviews = Content::where('is_preview_for', $originalContent->id)->get();
-        if($originalPreviews->count() === 0 && $originalContent->preview){
-            throw new \Exception('not found preview');
-        }
 
-        foreach ($originalPreviews as $preview){
-            if($originalContent->preview->id !== $preview->id){ //remove older preview
-                $this->removeContentById($preview->id); //remove preview with child
-            }
-        }
-        return true;
-    }
+
+
 
     protected function handlePreviewsForContent(Model $originalContent):bool {
 
@@ -327,6 +320,20 @@ class ContentService
         }
         return $contentInfoStructures;
     }
+
+    public function updateTargetModelCache( string $targetClass, $targetId ):self    {
+        try {
+            $target = $targetClass::where('id', $targetId)->with(['content'])->first();
+            if(!$target) return $this;
+            if(isset($target->content_cache)) $target->update([]);
+
+        }catch (\Exception $e){
+            //todo handle error
+        }
+
+        return $this;
+    }
+
 
     protected function getContentIds( array $contentStructures):array{
         $contentIds = [];
