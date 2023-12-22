@@ -66,6 +66,7 @@ class ImageContentConverter extends ContentConverterAbstract
                     'typeFile' => $contentService->getFileType($previewFile),
                     'confirm' => 1,
                     'published' => $originalContent->published,
+                    'targetClass' => $originalContent->targetClass,
                     'contentable_type' => $originalContent->contentable_type,
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,

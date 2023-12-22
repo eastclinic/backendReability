@@ -5,22 +5,15 @@ namespace Modules\Content\Services;
 
 
 
+use App\DataStructures\Content\ContentUpdateStructure;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use App\DataStructures\Content\ContentFileInfoStructure;
-use App\DataStructures\Content\ContentUpdateStructure;
 use Modules\Content\Entities\Content;
 use Modules\Content\Http\Requests\StoreContentRequest;
-use Modules\Content\Services\ContentConverters\ImageContentConverter;
-use Modules\Content\Services\ContentConverters\VideoContentConverter;
-use Modules\Content\Services\ContentConverters\ContentConverterAbstract;
-use Modules\Reviews\Jobs\ClearUnconfirmedContentJob;
+use Modules\Content\Jobs\ClearUnconfirmedContentJob;
 use Modules\Content\Jobs\CreateReplicaJob;
-use App\DataStructures\AbstractDataStructure;
-
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use TheSeer\Tokenizer\Exception;
+use Modules\Content\Services\ContentConverters\ContentConverterAbstract;
 
 class ContentService
 {
@@ -124,7 +117,7 @@ class ContentService
 //save files
             foreach ($files as $file) {
                 if(!$content = $this->saveTempFile( $file, $request )){
-                    throw new Exception('Error save upload files');
+                    throw new \Exception('Error save upload files');
                 }
                 $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();
             }
@@ -158,7 +151,7 @@ class ContentService
             'type' => 'original',
             'typeFile' => $fileType,
             'mime' => $this->getMime($file),
-            'contentable_type' => $request->contentable_type,
+            'contentable_type'=> $request->contentable_type,
             'contentable_id' => $request->contentable_id,
             'is_preview_for' => ($request->is_preview_for) ?? '',
 
@@ -189,16 +182,16 @@ class ContentService
 
     public function store(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
-        return $this->updateFromArrayStructures( $contentInfoForUpdate );
+        return $this->updateFromArrayStructures( $contentInfoForUpdate, $contentable_type, $contentable_id );
     }
 
     public function update(array $contentInfoAsArray, string $contentable_type, string $contentable_id):self    {
 
         if(!$contentInfoForUpdate = $this->contentFromArrayToStructures($contentInfoAsArray, $contentable_type, $contentable_id)) return $this;
-        return $this->updateFromArrayStructures( $contentInfoForUpdate );
+        return $this->updateFromArrayStructures( $contentInfoForUpdate, $contentable_type, $contentable_id );
     }
 
-    public function updateFromArrayStructures( array $contentInfoForUpdate ):self    {
+    public function updateFromArrayStructures( array $contentInfoForUpdate, string $contentable_type, string $contentable_id ):self    {
 
         $contentIds = $this->getContentIds($contentInfoForUpdate);
 
@@ -224,6 +217,10 @@ class ContentService
                 if( $content->published !== $contentInfoFromFront->published ){
                     $content->update([ 'published' => $contentInfoFromFront->published, ]);
                 }
+                if(!$content->targetClass) {
+                    $content->update([ 'targetClass' => $contentable_type, ]);
+                }
+
                //handle preview (for video)
                 $this->handlePreviewsForContent( $content );
 
@@ -285,6 +282,7 @@ class ContentService
                         continue;   //<<<<<<<<<<<<<<<<<<<<
                     }
                     if( (int)$preview->confirm === 1)   continue;   //<<<<<<<<<<<<<<<<<<<<
+                    $preview->update(['confirm' => 1, 'targetClass' => $originalContent->targetClass,]);
                     $preview->update(['confirm' => 1]);
                     $replicas = Content::where('parent_id', $originalContent->id)->with('preview')->get();
 
