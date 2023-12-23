@@ -53,10 +53,11 @@ class Doctor extends Model
 
 
     public function contentCacheUpdate():self    {
-        // Check if posts relation is loaded, if not, load it
-        if (!$this->relationLoaded('content')) {
-            $this->loadMissing('content');
-        }
+
+        $this->load([
+            'content' => function ($query) {
+                $query->where('type','!=', 'original');
+            }]);
         if( !$this->content) return $this;
 
         $contentCache = [];
