@@ -21,8 +21,15 @@ class DoctorDiplom extends Model
         return \Modules\Doctors\Database\factories\DoctorDiplomFactory::new();
     }
 
-    public function content(){
+    public function contentRaw(){
         return $this->morphMany(Content::class, 'contentable');
+    }
+
+    public function content(){
+        return $this->contentRaw()
+            ->with('preview')
+            ->where('confirm', 1)
+            ->where('is_preview_for', '');
     }
 
     public function getMorphClass()

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->char('type')->default('');
             $table->char('typeFile')->default('');
             $table->char('mime')->default('');
+            $table->char('targetClass')->default('');
             $table->nullableMorphs('contentable');
             $table->boolean('confirm')->default(false);
             $table->boolean('published')->default(false);

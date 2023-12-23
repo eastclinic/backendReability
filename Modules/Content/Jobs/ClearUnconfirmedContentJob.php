@@ -1,14 +1,12 @@
 <?php
 
-namespace Modules\Reviews\Jobs;
+namespace Modules\Content\Jobs;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Storage;
-use Modules\Reviews\Entities\ReviewContent;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 
 class ClearUnconfirmedContentJob implements ShouldQueue

@@ -66,12 +66,19 @@ class ImageContentConverter extends ContentConverterAbstract
                     'typeFile' => $contentService->getFileType($previewFile),
                     'confirm' => 1,
                     'published' => $originalContent->published,
+                    'targetClass' => $originalContent->targetClass,
                     'contentable_type' => $originalContent->contentable_type,
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFile),
                 ]
             );
+            //update content cache
+            if($originalContent->targetClass && method_exists($originalContent->targetClass, 'contentCacheUpdate')){
+                if($target = $originalContent->targetClass::where('id', $originalContent->contentable_id)->first()){
+                    $target->contentCacheUpdate();
+                }
+            }
 
             Content::create($previewFileInfo->toArray());
 

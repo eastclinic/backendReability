@@ -14,7 +14,8 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'title',
+            'title'=> ['nullable', 'string'],
+            'published'=> ['nullable'],
             'doctor_id' =>'required',
             'content' => ['nullable', 'array']
         ];

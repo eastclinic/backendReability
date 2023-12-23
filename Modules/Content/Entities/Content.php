@@ -25,6 +25,7 @@ class Content extends Model
         'typeFile',
         'confirm',
         'published',
+        'targetClass',
         'contentable_type',
         'contentable_id',
         'parent_id',

@@ -19,7 +19,8 @@ class UpdateRequest extends FormRequest
             'name' =>['nullable'],
             'middlename' =>['nullable'],
 
-            'content' => ['nullable', 'array']
+            'content' => ['nullable', 'array'],
+            'diploms' => ['nullable', 'array']
         ];
     }
 
