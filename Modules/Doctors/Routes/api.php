@@ -18,9 +18,7 @@ use Modules\Doctors\Http\Controllers\Front\DoctorsListController as DoctorsListF
 */
 //admin
 //add check access
-Route::group([
-    'middleware' => 'api',
-], function ($router) {
+Route::prefix('v1')->middleware('api')->group( function ($router) {
 
     Route::apiResources([
         'doctors'=>DoctorResourceController::class

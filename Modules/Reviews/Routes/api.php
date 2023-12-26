@@ -29,9 +29,7 @@ use Modules\Reviews\Http\Requests\ApiListReviewsByDoctorRequest;
 //    });
 //});
 
-Route::group([
-    'middleware' => 'api',
-], function ($router) {
+Route::prefix('v1')->middleware('api')->group( function ($router) {
 
     Route::get('reviews/reviewable-type', [TargetTypeController::class, 'index']);
 //    Route::get('doctor/reviews', [DoctorReviewController::class, 'getReviews']);
