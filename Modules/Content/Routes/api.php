@@ -18,16 +18,11 @@ use Modules\Content\Http\Controllers\ContentController;
 //    return $request->user();
 //});
 
-Route::group([
-    'middleware' => 'api',
-], function ($router) {
-error_log('api2');
+Route::prefix('v1')->middleware('api')->group(function ($router) {
     Route::put('content/save', [ContentController::class, 'save']);
     Route::patch('content/save', [ContentController::class, 'save']);
     Route::apiResources([
         'content'=>ContentController::class
     ]);
-
-
 
 });
