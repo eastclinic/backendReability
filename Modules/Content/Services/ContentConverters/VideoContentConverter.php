@@ -5,6 +5,7 @@ namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\CreatePreviewContentStructure;
+use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Storage;
 //use Intervention\Image\Image;
 //use Intervention\Image\Facades\Image;
@@ -12,7 +13,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Content\Entities\Content;
 use Modules\Content\Services\ContentService;
 use Modules\Reviews\Entities\ReviewContent;
-use Modules\Reviews\Jobs\CreatePreviewJob;
+//use Modules\Reviews\Jobs\CreatePreviewJob;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
@@ -25,7 +26,10 @@ class VideoContentConverter extends ContentConverterAbstract
     protected array $possibleExtensions = ["mp4", "mov", 'webm'];
     protected string $extensionPreview = 'webm';
 
-    const EXTENSION_FFMPEG = ['webm' => \FFMpeg\Format\Video\WebM::class];
+    const EXTENSION_FFMPEG = [
+        'webm' => \FFMpeg\Format\Video\WebM::class,
+        'mp4' => X264::class,
+        ];
 
 
 
