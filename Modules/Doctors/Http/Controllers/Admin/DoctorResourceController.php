@@ -160,7 +160,7 @@ class DoctorResourceController extends Controller
 
         $contentService->addContentConverter( (new VideoContentConverter())
             ->withKey('300x300')
-            ->withExtension('webm')
+            ->withExtension('mp4')
             ->withSize(300, 300)
             ->withPreview((new ImageContentConverter())
                 ->withKey('300x300')

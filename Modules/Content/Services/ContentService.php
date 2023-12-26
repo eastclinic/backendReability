@@ -225,7 +225,10 @@ class ContentService
                 $this->handlePreviewsForContent( $content );
                 //update legacy cache data in doctor table
                 if($targetForUpdateContent = $contentable_type::where('id', $contentable_id)->with('content')->first()){
-                    $targetForUpdateContent->contentCacheUpdate();
+                    if(method_exists($targetForUpdateContent, 'contentCacheUpdate')){
+                        $targetForUpdateContent->contentCacheUpdate();
+                    }
+
                 }
                 //update original file
 
