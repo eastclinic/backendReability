@@ -9,6 +9,9 @@ class Cors
     public function handle($request, Closure $next)
     {
         $response = $next($request);
+        if ($request->isMethod('OPTIONS')) {
+            $response = response('', 200);
+        }
 
         // Add headers to allow cross-origin requests
         $response->header('Access-Control-Allow-Origin', '*');

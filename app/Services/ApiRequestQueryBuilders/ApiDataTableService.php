@@ -45,7 +45,8 @@ class ApiDataTableService extends ApiRequestQueryBuilderAbstractService
                 $searchFields = $this->searchFieldsGlobal;
                 $query->where(function (Builder $query) use ($value, $searchFields) {
                     foreach ($searchFields as $field){
-                        $query->orWhere("LOWER($field)", 'like', '%'.strtolower($value).'%');
+                        $query->orWhereRaw("LOWER($field) LIKE ?", ['%'.strtolower($value).'%']);
+//                        $query->orWhereRaw("LOWER($field)", 'like', '%'.strtolower($value).'%');
                     }
 
                 });
