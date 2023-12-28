@@ -52,36 +52,35 @@ class Doctor extends Model
         return 'doctor';
     }
 
+    /**
+     * Update content_cache column in modx db
+     * @return $this
+     */
 
     public function contentCacheUpdate():self    {
-        DB::enableQueryLog();
-        $content = Doctor::where('id', $this->id)->with([
-            'content' => function ($query) {
-                $query->where('type','!=', 'original')
-                    ->orderBy('updated_at', 'desc');
-            }]);
+        $contentCache = [];
+        //always load content relation with order by updated time
         $this->load([
             'content' => function ($query) {
                 $query->where('type','!=', 'original')
                     ->orderBy('updated_at', 'desc');
             }]);
+        //if cleared content
+        if( !$this->content) {
+            $this->content_cache = json_encode($contentCache);
+            $this->save();
+            return $this;
+        }
 
-        $results = $content->get();
-        //$dfefew = $results->toArray();
-//// Get the executed queries from the query log
-        $queries = DB::getQueryLog();
-
-        if( !$this->content) return $this;
-$f = $results->toArray();
-        $contentCache = [];
         foreach ($this->content as $content){
+            //fill legacy
             $contentLegacy = [
                 "id" => $content->id,
                 "type" => $content->type,
                 "typeFile" => $content->typeFile,
                 "url" => $content->url,
             ];
-            if($content->preview){
+            if($content->preview){ //add preview
                 $contentLegacy['preview'] = [
                     "id" => $content->preview->id,
                     "type" => $content->preview->type,

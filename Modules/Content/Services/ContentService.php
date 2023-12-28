@@ -224,24 +224,27 @@ class ContentService
                //handle preview (for video)
                 $this->handlePreviewsForContent( $content );
                 //update legacy cache data in doctor table
-                if($targetForUpdateContent = $contentable_type::where('id', $contentable_id)->with('content')->first()){
-                    if(method_exists($targetForUpdateContent, 'contentCacheUpdate')){
-                        $targetForUpdateContent->contentCacheUpdate();
-                    }
 
-                }
                 //update original file
 
 
             }
         }
+        if($targetForUpdateContent = $contentable_type::where('id', $contentable_id)->with('content')->first()){
+            if(method_exists($targetForUpdateContent, 'contentCacheUpdate')){
+                $targetForUpdateContent->contentCacheUpdate();
+            }
 
+        }
 
         return $this;
     }
 
 
-
+    /**+ set jobs for create replicas of original content
+     * @param Content $content
+     * @return bool
+     */
 
     protected function handleReplicasForOriginalContent(Content $content):bool {
         if($contentConverters = $this->getConvertersByTypeFile($content->typeFile)){
@@ -254,8 +257,13 @@ class ContentService
     }
 
 
-
-
+    /**
+     * for original content handle previews
+     * if not have preview from front - clear older preview in db
+     * @param Model $originalContent
+     * @return bool
+     * @throws \Exception
+     */
 
     protected function handlePreviewsForContent(Model $originalContent):bool {
 
@@ -277,13 +285,15 @@ class ContentService
                         $this->removeContentById($preview->id); //remove preview with previews of child content
                         continue;   //<<<<<<<<<<<<<<<<<<<<
                     }
-                    if( (int)$preview->confirm === 1)   continue;   //<<<<<<<<<<<<<<<<<<<<
+//                    if( (int)$preview->confirm === 1)   continue;   //<<<<<<<<<<<<<<<<<<<<
                     $preview->update(['confirm' => 1, 'targetClass' => $originalContent->targetClass,]);
-                    $preview->update(['confirm' => 1]);
+                    //get replicas for original content
                     $replicas = Content::where('parent_id', $originalContent->id)->with('preview')->get();
 
                     if ($replicas->count() === 0)  continue;//<<<<<<<<<<<<<<<<<<<
+                    //for every replica, if preview is change, update replica for new preview (in job)
                     foreach ($replicas as $replica) {
+                        if ($replica->preview && $replica->preview->parent_id === $preview->id) continue;
                         if (!$previewConverter = $this->getPreviewConverterForReplica($replica)) {
                             //if exists replica by not have converter for convert to this replica - its error
                             throw new \Exception('Not have preview service for ready preview');//<<<<<<<<<<<<<<<<<<<
@@ -293,11 +303,6 @@ class ContentService
                 }
 
             }
-
-
-
-
-
 
         }
         return true;

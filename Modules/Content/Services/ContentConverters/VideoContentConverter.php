@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 //use Intervention\Image\Facades\Image;
 use Intervention\Image\ImageManagerStatic as Image;
 use Modules\Content\Entities\Content;
+use Modules\Content\Jobs\CreateReplicaJob;
 use Modules\Content\Services\ContentService;
 use Modules\Reviews\Entities\ReviewContent;
 //use Modules\Reviews\Jobs\CreatePreviewJob;
@@ -39,7 +40,7 @@ class VideoContentConverter extends ContentConverterAbstract
 
             $contentService = new ContentService();
             //get fresh original and preview content from db
-            $originalContent = Content::where('id', $this->originalContentId)->first();
+            $originalContent = Content::where('id', $this->originalContentId)->with('preview')->first();
 
             if(!$originalContent || !$originalContent->id ) return false;
             $disk = $contentService->getStorageDisk();
@@ -88,11 +89,19 @@ class VideoContentConverter extends ContentConverterAbstract
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => $contentService->getMime($previewFilename),
-                    'is_preview_for'=>($this->parentReplicaId) ?? '',
+
                 ]
             );
 
-            Content::create($previewFileInfo->toArray());
+            $content = Content::create($previewFileInfo->toArray());
+            if($originalContent->preview && $originalContent->preview->id && $this->previewConverter && $content && $content->id){
+                CreateReplicaJob::dispatch($this->previewConverter->forOriginalContentId($originalContent->preview->id)->asPreviewFor($content->id));
+            }
+            if($originalContent->targetClass && method_exists($originalContent->targetClass, 'contentCacheUpdate')){
+                if($target = $originalContent->targetClass::where('id', $originalContent->contentable_id)->first()){
+                    $target->contentCacheUpdate();
+                }
+            }
 
         }catch (\Throwable $e){
             error_log($e->getMessage());

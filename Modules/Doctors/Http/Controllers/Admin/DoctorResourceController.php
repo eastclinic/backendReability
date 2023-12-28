@@ -170,33 +170,4 @@ class DoctorResourceController extends Controller
         return $contentService;
     }
 
-    protected function legacyContentCacheUpdate( Model $doctor):self    {
-        // Check if posts relation is loaded, if not, load it
-        if (!$doctor->relationLoaded('content')) {
-            $doctor->loadMissing('content');
-        }
-        if( !$doctor->content) return $this;
-
-        $contentCache = [];
-        foreach ($doctor->content as $content){
-            $contentLegacy = [
-                "id" => $content->id,
-                "size" => $content->type,
-                "type" => $content->typeFile,
-                "image" => $content->url,
-            ];
-            if($content->preview){
-                $contentLegacy['preview'] = [
-                    "id" => $content->preview->id,
-                    "size" => $content->preview->type,
-                    "type" => $content->preview->typeFile,
-                    "image" => $content->preview->url,
-                ];
-            }
-            $contentCache[] = $contentLegacy;
-        }
-        $doctor->content_cache = json_encode($contentCache);
-        $doctor->save();
-        return $this;
-    }
 }
