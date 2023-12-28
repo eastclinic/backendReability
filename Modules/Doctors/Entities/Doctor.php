@@ -4,6 +4,7 @@ namespace Modules\Doctors\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Modules\Content\Entities\Content;
 use Modules\Content\Transformers\ContentResource;
 use Modules\Doctors\Database\factories\DoctorFactory;
@@ -51,29 +52,40 @@ class Doctor extends Model
         return 'doctor';
     }
 
+    /**
+     * Update content_cache column in modx db
+     * @return $this
+     */
 
     public function contentCacheUpdate():self    {
-
+        $contentCache = [];
+        //always load content relation with order by updated time
         $this->load([
             'content' => function ($query) {
-                $query->where('type','!=', 'original');
+                $query->where('type','!=', 'original')
+                    ->orderBy('updated_at', 'desc');
             }]);
-        if( !$this->content) return $this;
+        //if cleared content
+        if( !$this->content) {
+            $this->content_cache = json_encode($contentCache);
+            $this->save();
+            return $this;
+        }
 
-        $contentCache = [];
         foreach ($this->content as $content){
+            //fill legacy
             $contentLegacy = [
                 "id" => $content->id,
-                "size" => $content->type,
-                "type" => $content->typeFile,
-                "image" => $content->url,
+                "type" => $content->type,
+                "typeFile" => $content->typeFile,
+                "url" => $content->url,
             ];
-            if($content->preview){
+            if($content->preview){ //add preview
                 $contentLegacy['preview'] = [
                     "id" => $content->preview->id,
-                    "size" => $content->preview->type,
-                    "type" => $content->preview->typeFile,
-                    "image" => $content->preview->url,
+                    "type" => $content->preview->type,
+                    "typeFile" => $content->preview->typeFile,
+                    "url" => $content->preview->url,
                 ];
             }
             $contentCache[] = $contentLegacy;

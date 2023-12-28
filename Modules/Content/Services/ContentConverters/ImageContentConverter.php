@@ -70,9 +70,11 @@ class ImageContentConverter extends ContentConverterAbstract
                     'contentable_type' => $originalContent->contentable_type,
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
+                    'is_preview_for'=>($this->parentReplicaId) ?? '',
                     'mime' => $contentService->getMime($previewFile),
                 ]
             );
+            Content::create($previewFileInfo->toArray());
             //update content cache
             if($originalContent->targetClass && method_exists($originalContent->targetClass, 'contentCacheUpdate')){
                 if($target = $originalContent->targetClass::where('id', $originalContent->contentable_id)->first()){
@@ -80,7 +82,7 @@ class ImageContentConverter extends ContentConverterAbstract
                 }
             }
 
-            Content::create($previewFileInfo->toArray());
+
 
         }catch (\Throwable $e){
             error_log($e->getMessage());
