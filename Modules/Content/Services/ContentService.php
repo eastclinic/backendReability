@@ -73,7 +73,7 @@ class ContentService
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',];
     const STORAGE_DISK = 'content';
-    const STORAGE_DISK_ORIGINAL = 'contentOriginal';
+    const STORAGE_DISK_ORIGINAL = 'content-original';
     const IMAGE = 'image';
 
 //с фронта приходят blob файлы - контент для отзывов (тренируемся на них)
