@@ -55,13 +55,6 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
-        'reviewContent' => [
-            'driver' => 'local',
-            'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'img'.DIRECTORY_SEPARATOR.'reviews'),
-            'throw' => false,
-            'url' => '/storage/img/reviews',
-            'visibility' => 'public',
-        ],
         'content' => [
             'driver' => 'local',
             'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'content'),

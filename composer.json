@@ -74,7 +74,8 @@
 
             "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\"",
             "@php artisan config:clear",
-            "@php artisan config:cache"
+            "@php artisan config:cache",
+            "@php artisan storage:link"
         ],
         "install-eastclinic-dev": [
             "php -r \"copy('.env.dev', '.env');\"",
@@ -92,7 +93,8 @@
 
             "@php artisan vendor:publish --provider=\"ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider\"",
             "@php artisan config:clear",
-            "@php artisan config:cache"
+            "@php artisan config:cache",
+            "@php artisan storage:link"
 
         ]
 
