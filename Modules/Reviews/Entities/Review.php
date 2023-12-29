@@ -35,9 +35,6 @@ class Review extends Model
         return $this->morphMany(Content::class, 'contentable');
     }
 
-//    public function contentOriginal():HasMany    {
-//        return $this->content()->where('type', 'original');
-//    }
 
     public function messages():HasMany{
         return $this->hasMany(ReviewMessage::class);
