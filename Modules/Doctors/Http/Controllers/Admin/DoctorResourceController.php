@@ -17,7 +17,7 @@ use Modules\Content\Services\ContentConverters\VideoContentConverter;
 use Modules\Doctors\Entities\Doctor;
 use Modules\Doctors\Http\Requests\DoctorInfo\CreateRequest;
 use Modules\Doctors\Http\Requests\DoctorInfo\UpdateRequest;
-use Modules\Doctors\Http\Resources\DoctorResource;
+use Modules\Doctors\Http\Resources\Admin\DoctorResource;
 use Illuminate\Support\Facades\DB;
 
 
@@ -50,13 +50,7 @@ class DoctorResourceController extends Controller
 
         $doctors = $this->QueryBuilderByRequest->withGlobalSearchByFields([ 'surname', 'name', 'id'])->build( $doctors, $request );
         $doctors
-            ->with([
-                'content' => function ($query) {
-                    $query->where('type', 'original');
-                },
-                'diploms.content' => function ($query) {
-                    $query->where('type', 'original')->where('confirm', 1);
-                }, ])  ;
+            ->with([ 'contentOriginal',  'diplomsOriginal' ])  ;
 
         $results = $doctors->get();
         //$dfefew = $results->toArray();
@@ -105,7 +99,7 @@ class DoctorResourceController extends Controller
 
 
         if($doctor = Doctor::where('id', $id)->with('content')->first()){
-            $diplomsCache = ( isset($requestData['diploms']) && $requestData['diploms'] ) ? json_encode($requestData['diploms']) : json_encode([]);
+            $diplomsCache = ( isset($requestData['diplomsOriginal']) && $requestData['diplomsOriginal'] ) ? json_encode($requestData['diplomsOriginal']) : json_encode([]);
             $doctor -> update($requestData + ['diploms_cache' => $diplomsCache]);
             if( isset($requestData['content']) && $requestData['content'] ) {
                 $this->contentService->store( $requestData['content'], Doctor::class, $id  );

@@ -5,6 +5,7 @@ namespace Modules\Doctors\Entities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Content\Entities\Content;
+use Modules\Content\Services\ContentLegacyCacheService;
 
 class DoctorDiplom extends Model
 {
@@ -29,7 +30,16 @@ class DoctorDiplom extends Model
         return $this->contentRaw()
             ->with('preview')
             ->where('confirm', 1)
-            ->where('is_preview_for', '');
+            ->where('is_preview_for', '')
+            ->where('type', '!=', 'original');
+    }
+
+    public function contentOriginal(){
+        return $this->contentRaw()
+            ->with('preview')
+            ->where('confirm', 1)
+            ->where('is_preview_for', '')
+            ->where('type', 'original');
     }
 
     public function getMorphClass()
@@ -44,4 +54,13 @@ class DoctorDiplom extends Model
     {
         return $this->belongsTo(Doctor::class);
     }
+
+    public function contentCacheUpdate():self    {
+        $this->load([ 'doctor']);
+        $this->doctor->contentCacheUpdate();
+
+        return $this;
+    }
+
+
 }
