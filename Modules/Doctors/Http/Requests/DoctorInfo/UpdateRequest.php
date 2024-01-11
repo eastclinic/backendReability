@@ -20,7 +20,9 @@ class UpdateRequest extends FormRequest
             'middlename' =>['nullable'],
 
             'content' => ['nullable', 'array'],
-            'diploms' => ['nullable', 'array']
+            'diploms' => ['nullable', 'array'],
+            'contentOriginal' => ['nullable', 'array'],
+            'diplomsOriginal' => ['nullable', 'array']
         ];
     }
 

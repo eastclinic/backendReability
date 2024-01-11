@@ -17,7 +17,8 @@ class UpdateRequest extends FormRequest
             'title'=> ['nullable', 'string'],
             'published'=> ['nullable'],
             'doctor_id' =>'required',
-            'content' => ['nullable', 'array']
+            'content' => ['nullable', 'array'],
+            'contentOriginal' => ['nullable', 'array']
         ];
     }
 

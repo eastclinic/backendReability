@@ -13,7 +13,7 @@ use Modules\Content\Services\ContentConverters\VideoContentConverter;
 use Modules\Doctors\Entities\DoctorDiplom;
 use Modules\Doctors\Http\Requests\Diploms\CreateRequest;
 use Modules\Doctors\Http\Requests\Diploms\UpdateRequest;
-use Modules\Doctors\Http\Resources\DiplomResource;
+use Modules\Doctors\Http\Resources\Admin\DiplomResource;
 
 class DoctorDiplomsResourceController extends Controller
 {
@@ -37,9 +37,7 @@ class DoctorDiplomsResourceController extends Controller
     public function index(Request $request)
     {
         $diploms = DoctorDiplom::query();
-        $diploms->with(['content' => function ($query) {
-            $query->where('type', 'original')->where('confirm', 1);
-        }]);
+        $diploms->with([ 'contentOriginal' ]);
 //        $dbconnect = \DB::connection('MODX')->getPDO();
 //        $dbname = DB::connection('MODX')->select('SHOW TABLES FROM east_prod');
 //        dd($dbname);
@@ -60,8 +58,8 @@ class DoctorDiplomsResourceController extends Controller
         $requestData = $request->validated();
         $diplom = DoctorDiplom::create($requestData);
 
-        if(isset($requestData['content']) && $requestData['content']) {
-            $this->contentService->store( $requestData['content'], DoctorDiplom::class, $diplom->id  );
+        if(isset($requestData['contentOriginal']) && $requestData['contentOriginal']) {
+            $this->contentService->store( $requestData['contentOriginal'], DoctorDiplom::class, $diplom->id  );
         }
         return response()->ok( (new DiplomResource($diplom))->jsonSerialize(), ['message' => 'Diplom created'], 200 );
     }
@@ -81,8 +79,8 @@ class DoctorDiplomsResourceController extends Controller
 
         if($diplom = DoctorDiplom::where('id', $id)->first()){
             $diplom -> update($requestData);
-            if($requestData['content']) {
-                $this->contentService->store( $requestData['content'], DoctorDiplom::class, $id  );
+            if(isset($requestData['contentOriginal']) && $requestData['contentOriginal']) {
+                $this->contentService->store( $requestData['contentOriginal'], DoctorDiplom::class, $id  );
             }
             return response()->ok( new DiplomResource($diplom), ['message' => 'Diplom updated'], 200 );
         }
