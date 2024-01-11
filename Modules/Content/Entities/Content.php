@@ -30,7 +30,8 @@ class Content extends Model
         'contentable_id',
         'parent_id',
         'mime',
-        'is_preview_for'
+        'is_preview_for',
+        'original_file_name'
     ];
     protected $table = 'contents';
 

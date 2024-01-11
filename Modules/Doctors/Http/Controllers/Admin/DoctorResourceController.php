@@ -78,8 +78,8 @@ class DoctorResourceController extends Controller
         $requestData = $request->validated();
         $doctor = Doctor::create($requestData);
 
-        if($requestData['content']) {
-            $this->contentService->store( $requestData['content'], Doctor::class, $doctor->id  );
+        if($requestData['contentOriginal']) {
+            $this->contentService->store( $requestData['contentOriginal'], Doctor::class, $doctor->id  );
         }
         return response()->okMessage('Create new doctor', 200);
     }
@@ -101,8 +101,8 @@ class DoctorResourceController extends Controller
         if($doctor = Doctor::where('id', $id)->with('content')->first()){
             $diplomsCache = ( isset($requestData['diplomsOriginal']) && $requestData['diplomsOriginal'] ) ? json_encode($requestData['diplomsOriginal']) : json_encode([]);
             $doctor -> update($requestData + ['diploms_cache' => $diplomsCache]);
-            if( isset($requestData['content']) && $requestData['content'] ) {
-                $this->contentService->store( $requestData['content'], Doctor::class, $id  );
+            if( isset($requestData['contentOriginal']) && $requestData['contentOriginal'] ) {
+                $this->contentService->store( $requestData['contentOriginal'], Doctor::class, $id  );
             }
             return response()->okMessage('Change data.', 200);
         }
