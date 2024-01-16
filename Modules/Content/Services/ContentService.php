@@ -154,7 +154,7 @@ class ContentService
             'contentable_type'=> $request->contentable_type,
             'contentable_id' => $request->contentable_id,
             'is_preview_for' => ($request->is_preview_for) ?? '',
-
+            'original_file_name' => $request->original_file_name
         ]);
 
 

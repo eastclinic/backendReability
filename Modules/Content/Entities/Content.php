@@ -82,4 +82,8 @@ class Content extends Model
         return $this->hasOne(Content::class,'is_preview_for');
     }
 
+    public function previewOriginal(): HasOne {
+        return $this->hasOne(Content::class,'is_preview_for')->where('type', 'original');
+    }
+
 }
