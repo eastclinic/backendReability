@@ -33,6 +33,7 @@ class UpdateRequest extends FormRequest
             'published'=> ['nullable', 'boolean'],
             'targetClass'=> ['nullable', 'string'],
             'previewOriginal' => ['nullable', 'array'],
+            'alt' => ['nullable', 'string'],
         ];
     }
 

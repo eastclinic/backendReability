@@ -15,6 +15,7 @@ class ContentUpdateStructure extends \App\DataStructures\AbstractDataStructure
 //    public string $original_banner_id = '';
     public string $type = '';
     public string $typeFile = '';
+    public string $alt = '';
     public int $confirm = 0;
     public bool $published = false;
     public int $isDeleted = 0;

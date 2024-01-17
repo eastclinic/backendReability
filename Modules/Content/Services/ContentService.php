@@ -214,9 +214,10 @@ class ContentService
                     $this->removeContentById($content->id);
                     continue;
                 }
-                if( $content->published !== $contentInfoFromFront->published ){
-                    $content->update([ 'published' => $contentInfoFromFront->published, ]);
-                }
+                $content->update($contentInfoFromFront->toArray());
+//                if( $content->published !== $contentInfoFromFront->published ){
+//                    $content->update([ 'published' => $contentInfoFromFront->published, ]);
+//                }
                 if(!$content->targetClass) {
                     $content->update([ 'targetClass' => $contentable_type, ]);
                 }
