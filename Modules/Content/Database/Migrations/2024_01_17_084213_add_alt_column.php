@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('contents', function (Blueprint $table) {
-            $table->char('alt')->default('');
+            $table->char('alt')->nullable(false)->default('');
         });
     }
 

@@ -218,6 +218,7 @@ class ContentService
 //                if( $content->published !== $contentInfoFromFront->published ){
 //                    $content->update([ 'published' => $contentInfoFromFront->published, ]);
 //                }
+                $f = $contentInfoFromFront->toArray(['published', 'alt' ]);
                 $content->update($contentInfoFromFront->toArray(['published', 'alt' ]));
                 if(!$content->targetClass) {
                     $content->update([ 'targetClass' => $contentable_type, ]);
