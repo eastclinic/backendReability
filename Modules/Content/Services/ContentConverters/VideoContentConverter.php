@@ -53,7 +53,7 @@ class VideoContentConverter extends ContentConverterAbstract
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, $this->possibleExtensions)) return false;
             $extension = ($this->extensionPreview && in_array($this->extensionPreview, $this->possibleExtensions)) ? $this->extensionPreview : $originalFileExtension;
-            $previewFilename = md5_file($fileOriginalFullPath).'.'.$extension;
+            $previewFilename = uniqid().'.'.$extension;
             $previewFileFullPath = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
             $previewFileFullUrl = $originalFileFolder.DIRECTORY_SEPARATOR.$previewFilename;
 //            $previewFileFullPath = $disk->path($previewFile);

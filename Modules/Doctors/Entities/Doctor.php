@@ -47,7 +47,7 @@ class Doctor extends Model
 
     public function contentOriginal(){
         return $this->contentRaw()
-            ->with('preview')
+            ->with('previewOriginal')
             ->where('confirm', 1)
             ->where('is_preview_for', '')
             ->where('type', 'original');

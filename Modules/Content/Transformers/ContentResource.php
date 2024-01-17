@@ -23,6 +23,7 @@ class ContentResource extends JsonResource
             'published' => (bool)$this->published,
             'typeFile' => $this->typeFile,
              'preview' => new ContentResource($this->whenLoaded('preview')),
+             'previewOriginal' => new ContentResource($this->whenLoaded('previewOriginal')),
              'original_file_name' => $this->original_file_name,
              'alt' => $this->alt,
 //             'is_preview_for' => (string)$this->is_preview_for,
