@@ -31,7 +31,8 @@ class Content extends Model
         'parent_id',
         'mime',
         'is_preview_for',
-        'original_file_name'
+        'original_file_name',
+        'alt'
     ];
     protected $table = 'contents';
 

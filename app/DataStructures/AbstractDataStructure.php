@@ -40,9 +40,10 @@ abstract class AbstractDataStructure
 
 
 
-    public function toArray() {
+    public function toArray( array $possibleFields = []) {
         $toArray = [];
         foreach ($this as $key => $val){
+            if($possibleFields && !array_search($key, $possibleFields)) continue;
             if (is_array($val)){
                 foreach ($val as $k => $v){
                     if(is_object($v)){
