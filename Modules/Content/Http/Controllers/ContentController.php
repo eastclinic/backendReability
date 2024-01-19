@@ -100,17 +100,9 @@ class ContentController extends Controller
      */
     public function update(UpdateRequest $request, $id)
     {
-//        $requestData = $request->validated();
-//        error_log('update');
-//        error_log('id - ' . $id);
-//        error_log(print_r($requestData, 1));
-//        if(!$requestData['id']) {
-//            $content = new Review($requestData);
-//            $content->save();
-//        }
-////        $review = ReviewContent::where('id', $id)->first();
-////        $review -> update($request->validated());
-//        return response()->okMessage('update', 200);
+        $content = Content::where('id', $id)->firstOrFail();
+        $this->contentService->store($request->validated(), $content->targetClass, $content->contentable_id);
+        return response()->okMessage('Content update', 200);
     }
 
     /**
@@ -125,6 +117,7 @@ class ContentController extends Controller
     }
 
     public function save(SaveContentRequest $request){
+
         $this->contentService->update( $request->attachContent, $request->targetType, $request->targetId);
 
         return response()->okMessage('saved', 200);

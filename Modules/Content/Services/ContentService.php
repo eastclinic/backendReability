@@ -154,6 +154,7 @@ class ContentService
             'contentable_type'=> $request->contentable_type,
             'contentable_id' => $request->contentable_id,
             'is_preview_for' => ($request->is_preview_for) ?? '',
+            'original_file_name' => $request->original_file_name,
 
         ]);
 
@@ -197,6 +198,7 @@ class ContentService
 
         $originalContents = Content::where('type', 'original')
             ->whereIn('id', $contentIds)
+            ->with(['previewOriginal'])
             ->get();
 
         if($originalContents->count() > 0){
@@ -214,15 +216,17 @@ class ContentService
                     $this->removeContentById($content->id);
                     continue;
                 }
-                if( $content->published !== $contentInfoFromFront->published ){
-                    $content->update([ 'published' => $contentInfoFromFront->published, ]);
-                }
+
+//                if( $content->published !== $contentInfoFromFront->published ){
+//                    $content->update([ 'published' => $contentInfoFromFront->published, ]);
+//                }
+                $content->update($contentInfoFromFront->toArray(['published', 'alt' ]));
                 if(!$content->targetClass) {
                     $content->update([ 'targetClass' => $contentable_type, ]);
                 }
 
                //handle preview (for video)
-                $this->handlePreviewsForContent( $content );
+                $this->handlePreviewsForContent( $contentInfoFromFront );
                 //update legacy cache data in doctor table
 
                 //update original file
@@ -265,11 +269,11 @@ class ContentService
      * @throws \Exception
      */
 
-    protected function handlePreviewsForContent(Model $originalContent):bool {
+    protected function handlePreviewsForContent(ContentUpdateStructure $contentFromFront):bool {
 
-        $originalPreviews = Content::where('is_preview_for', $originalContent->id)->get(); //possible more than one previews, if now change by new preview
+        $originalPreviews = Content::where('is_preview_for', $contentFromFront->id)->get(); //possible more than one previews, if now change by new preview
         if($originalPreviews->count() === 0) $originalPreviews = null;
-        if( !$originalContent->preview ){ //it means that clear preview
+        if( !$contentFromFront->previewOriginal ){ //it means that clear preview
             if($originalPreviews){
                 foreach ($originalPreviews as $preview){
                     $this->removeContentById($preview->id); //remove preview with previews of child content
@@ -281,24 +285,23 @@ class ContentService
                 throw new \Exception('Not have original preview');//<<<<<<<<<<<<<<<<<<<
             }else{
                 foreach ($originalPreviews as $preview){
-                    if($originalContent->preview->id !== $preview->id){
+                    if($contentFromFront->previewOriginal->id !== $preview->id){
                         $this->removeContentById($preview->id); //remove preview with previews of child content
                         continue;   //<<<<<<<<<<<<<<<<<<<<
                     }
 //                    if( (int)$preview->confirm === 1)   continue;   //<<<<<<<<<<<<<<<<<<<<
-                    $preview->update(['confirm' => 1, 'targetClass' => $originalContent->targetClass,]);
+                    $preview->update(['confirm' => 1]);
                     //get replicas for original content
-                    $replicas = Content::where('parent_id', $originalContent->id)->with('preview')->get();
+                    $replicas = Content::where('parent_id', $contentFromFront->id)->with('previewOriginal')->get();
 
                     if ($replicas->count() === 0)  continue;//<<<<<<<<<<<<<<<<<<<
                     //for every replica, if preview is change, update replica for new preview (in job)
                     foreach ($replicas as $replica) {
-                        if ($replica->preview && $replica->preview->parent_id === $preview->id) continue;
-                        if (!$previewConverter = $this->getPreviewConverterForReplica($replica)) {
-                            //if exists replica by not have converter for convert to this replica - its error
-                            throw new \Exception('Not have preview service for ready preview');//<<<<<<<<<<<<<<<<<<<
+                        if ($replica->previewOriginal && $replica->previewOriginal->parent_id === $preview->id) continue;
+                        if ($previewConverter = $this->getPreviewConverterForReplica($replica)) {
+                            CreateReplicaJob::dispatch($previewConverter->forOriginalContentId($preview->id)->asPreviewFor($replica->id));
                         }
-                        CreateReplicaJob::dispatch($previewConverter->forOriginalContentId($preview->id)->asPreviewFor($replica->id));
+
                     }
                 }
 
@@ -311,20 +314,15 @@ class ContentService
 
     protected function contentFromArrayToStructures($contentInfoAsArray, string $contentable_type, string $contentable_id):array{
         $contentInfoStructures = [];
+        $contentInfo = ['contentable_type' => $contentable_type, 'contentable_id' => $contentable_id];
         if(isset($contentInfoAsArray['id']) && $contentInfoAsArray['id']){
-            $contentInfo = ['contentable_type' => $contentable_type, 'contentable_id' => $contentable_id];
-            $contentInfoStructures[$contentInfoAsArray['id']] = $contentInfo = new ContentUpdateStructure($contentInfoAsArray + $contentInfo);
-            if(!$contentInfo->contentable_id || !$contentInfo->contentable_type){
-                throw  new \Exception('not set contentable_id or contentable_type');
+            $contentInfoAsArray = [$contentInfoAsArray];
+        }
+        foreach ($contentInfoAsArray as $info){
+            if(isset( $info['previewOriginal']) && $info['previewOriginal'] ){
+                $info['previewOriginal'] = new ContentUpdateStructure($info['previewOriginal'] + $contentInfo);
             }
-        }else{
-            foreach ($contentInfoAsArray as $info){
-                $contentInfo = ['contentable_type' => $contentable_type, 'contentable_id' => $contentable_id];
-                $contentInfoStructures[$info['id']] = $contentInfo = new ContentUpdateStructure($info + $contentInfo);
-                if(!$contentInfo->contentable_id || !$contentInfo->contentable_type){
-                    throw  new \Exception('not set contentable_id or contentable_type');
-                }
-            }
+            $contentInfoStructures[$info['id']] = new ContentUpdateStructure($info + $contentInfo);
         }
         return $contentInfoStructures;
     }
@@ -370,7 +368,7 @@ class ContentService
             //if exists replica by not have converter for convert to this replica - its error
             throw new \Exception('Not have replica->typeFile or replica->type ');
         }
-        if(!$this->contentConverters[$replica->typeFile]) return null;
+        if(!$this->contentConverters || !isset($this->contentConverters[$replica->typeFile]) || !$this->contentConverters[$replica->typeFile]) return null;
         foreach ($this->contentConverters[$replica->typeFile] as $converter){
             /**@var ContentConverterAbstract $converter*/
             if($converter->key === $replica->type){

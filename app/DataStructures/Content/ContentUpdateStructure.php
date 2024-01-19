@@ -18,6 +18,20 @@ class ContentUpdateStructure extends \App\DataStructures\AbstractDataStructure
     public int $confirm = 0;
     public bool $published = false;
     public int $isDeleted = 0;
+    public ?ContentUpdateStructure $previewOriginal = null; //un neccesarally
 
+
+    public function isFill():bool {
+        $reflectionClass = new \ReflectionClass($this);
+        $defaultFields = $reflectionClass->getDefaultProperties();
+        if($defaultFields){
+            foreach ($defaultFields as $field => $value){
+                if($value === null && $this->$field === null && $field !== 'previewOriginal'){
+                    throw new \Exception("Not fill '$field' in structure $reflectionClass->name");
+                }
+            }
+        }
+        return true;
+    }
 
 }

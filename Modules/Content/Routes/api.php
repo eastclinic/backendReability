@@ -19,8 +19,8 @@ use Modules\Content\Http\Controllers\ContentController;
 //});
 
 Route::prefix('v1')->middleware('api')->group(function ($router) {
-    Route::put('content/save', [ContentController::class, 'save']);
-    Route::patch('content/save', [ContentController::class, 'save']);
+//    Route::put('content/save', [ContentController::class, 'save']);
+//    Route::patch('content/save', [ContentController::class, 'save']);
     Route::apiResources([
         'content'=>ContentController::class
     ]);

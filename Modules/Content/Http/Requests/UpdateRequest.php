@@ -27,17 +27,13 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
 
-        //Не забываем что этот метод вызывается на get запрос, и все параметры передаются в виде строки
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'author' =>['nullable'],
-            'text' =>'nullable',
-            //'author_id' => 'nullable',
-            'reviewable_type' => ['nullable', Rule::in($this->targetModel->getNameList())],
-            'reviewable_id' => 'nullable',
-            'rating' => ['nullable', 'numeric'],
-            'published' => ['nullable', 'boolean'],
-            'is_new' => ['nullable', 'boolean'],
-            'content' => ['nullable', 'array']
+            'id' => [ 'string'],
+            'confirm' => ['nullable', 'boolean'],
+            'published'=> ['nullable', 'boolean'],
+            'targetClass'=> ['nullable', 'string'],
+            'previewOriginal' => ['nullable', 'array'],
+            'alt' => ['nullable', 'string'],
         ];
     }
 

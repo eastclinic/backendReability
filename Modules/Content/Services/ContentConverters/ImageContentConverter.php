@@ -39,7 +39,8 @@ class ImageContentConverter extends ContentConverterAbstract
             $originalFileFolder = $fileInfo['dirname'];
             if(!in_array($originalFileExtension, ["jpg", "png", "jpeg", 'webp'])) return false;
             $extension = ($this->extensionPreview && in_array($this->extensionPreview, ["jpg", "png", "jpeg", 'webp'])) ? $this->extensionPreview : $originalFileExtension;
-            $previewFilename = md5_file($fileOriginalFullPath).'.'.$extension;
+            //todo possible doubles unique id, i think so, check it later
+            $previewFilename = uniqid().'.'.$extension;
 
             $preview = Image::make($fileOriginalFullPath);
 

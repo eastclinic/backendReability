@@ -30,7 +30,9 @@ class Content extends Model
         'contentable_id',
         'parent_id',
         'mime',
-        'is_preview_for'
+        'is_preview_for',
+        'original_file_name',
+        'alt'
     ];
     protected $table = 'contents';
 
@@ -79,6 +81,10 @@ class Content extends Model
     }
     public function preview(): HasOne {
         return $this->hasOne(Content::class,'is_preview_for');
+    }
+
+    public function previewOriginal(): HasOne {
+        return $this->hasOne(Content::class,'is_preview_for')->where('type', 'original');
     }
 
 }
