@@ -15,7 +15,7 @@ use App\DataStructures\Content\CreateReplicaContentStructure;
 class YoutubeContentConverter extends ContentConverterAbstract
 {
 
-    public function generateReplicas() {
+    public function generateReplicas():bool {
         if( !$this->originalContentId || !$this->key)       return false;
         $originalContent = Content::where('id', $this->originalContentId)->first();
         if(!$originalContent || !$originalContent->id ) return false;

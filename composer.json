@@ -80,7 +80,7 @@
             "@php artisan config:clear",
             "@php artisan config:cache",
             "@php artisan storage:link",
-            "@php php artisan route:clear"
+            "@php artisan route:clear"
         ],
         "install-eastclinic-dev": [
             "php -r \"copy('.env.dev', '.env');\"",
@@ -100,7 +100,7 @@
             "@php artisan config:clear",
             "@php artisan config:cache",
             "@php artisan storage:link",
-            "@php php artisan route:clear"
+            "@php artisan route:clear"
 
 
 
