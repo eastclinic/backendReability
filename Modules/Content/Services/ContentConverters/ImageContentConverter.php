@@ -5,7 +5,7 @@ namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\ContentFileInfoStructure;
-use App\DataStructures\Content\CreatePreviewContentStructure;
+use App\DataStructures\Content\CreateReplicaContentStructure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
@@ -22,7 +22,7 @@ class ImageContentConverter extends ContentConverterAbstract
 {
 
 
-    public function generatePreviews():bool {
+    public function generateReplicas():bool {
 
         if( !$this->originalContentId || !$this->key)       return false;
         try {
@@ -64,7 +64,7 @@ class ImageContentConverter extends ContentConverterAbstract
 
 
 
-            $previewFileInfo = new CreatePreviewContentStructure(
+            $previewFileInfo = new CreateReplicaContentStructure(
                 [
                     'file' => $previewFile,
                     'url' => $disk->url($previewFile),

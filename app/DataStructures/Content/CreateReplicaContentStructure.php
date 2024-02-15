@@ -3,7 +3,7 @@
 
 namespace App\DataStructures\Content;
 
-class CreatePreviewContentStructure extends \App\DataStructures\AbstractDataStructure
+class CreateReplicaContentStructure extends \App\DataStructures\AbstractDataStructure
 {
     public ?string $file = null;
     public ?string $url = null;

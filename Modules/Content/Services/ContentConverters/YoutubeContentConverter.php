@@ -4,15 +4,18 @@ namespace Modules\Content\Services\ContentConverters;
 
 use Illuminate\Support\Facades\Log;
 use Modules\Content\Entities\Content;
+use Modules\Content\Jobs\CreateReplicaJob;
 use Modules\Content\Services\ContentService;
 use Modules\Content\Services\YoutubeDownloaderService;
 use YouTube\Exception\YouTubeException;
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use App\DataStructures\Content\CreateReplicaContentStructure;
 
 class YoutubeContentConverter extends ContentConverterAbstract
 {
-    public function generatePreviews() {
+
+    public function generateReplicas() {
         if( !$this->originalContentId || !$this->key)       return false;
         $originalContent = Content::where('id', $this->originalContentId)->first();
         if(!$originalContent || !$originalContent->id ) return false;
@@ -22,74 +25,74 @@ class YoutubeContentConverter extends ContentConverterAbstract
         }
         $downloadLink = 'https://www.youtube.com/watch?v=' . str_replace('.txt', '', $originalContent->original_file_name);
         $link = '';
-        $info = '';
+        //todo possible extension from youtube can be not equal mp4
         $extension = 'mp4';
-        $youtube = new YouTubeDownloaderService();
+        $youtubeService = new YouTubeDownloaderService();
 
         try {
-            $downloadOptions = $youtube->getDownloadLinks($downloadLink);
+            $downloadOptions = $youtubeService->getDownloadLinks($downloadLink);
             if ($downloadOptions->getAllFormats()) {
                 $link = $downloadOptions->getFullHdDownloadLink();
-                $info = $downloadOptions->getInfo();
+//                $info = $downloadOptions->getInfo();
             }
         } catch (YouTubeException $e) {
             echo 'Something went wrong: ' . $e->getMessage();
         }
-        Log::info('info', (array)$info);
-        Log::info('link', (array)$link);
-//        return true;
-        $contentService = new ContentService();
-        $disk = $contentService->getStorageDisk();
-        $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
-        if( !file_exists($fileOriginalFullPath) ) {
-            throw new \Exception('Not exists original file');
-        }
+
+        $disk = (new ContentService())->getStorageDisk();
+
         $fileInfo= pathinfo($originalContent->file);
-        $originalFileExtension = mb_strtolower($fileInfo['extension']);
-        $originalFileFolder = $fileInfo['dirname'];
+        $fileFolderMD5 = $fileInfo['dirname'];
+        if (!$disk->exists($fileFolderMD5)) {
+            // If the folder in disk doesn't exist, create it
+            $disk->makeDirectory($fileFolderMD5);
+        }
+        $replicaFilename = uniqid().'.'.$extension;
+        $replicaFilePath = $fileFolderMD5.DIRECTORY_SEPARATOR.$replicaFilename;
 
-        $client = new Client([
-            'verify' => false // Отключаем проверку SSL-сертификата
-        ]); // Создаем экземпляр клиента GuzzleHttp
-
-        Log::info('$fileInfo', (array)$fileInfo);
-        Log::info('$fileOriginalFullPath', (array)$fileOriginalFullPath);
-        Log::info('$originalFileExtension', (array)$originalFileExtension);
         try {
-            // Отправляем GET-запрос для скачивания файла
-            $response = $client->get($link, ['sink' => str_replace($originalFileExtension, $extension, $fileOriginalFullPath)]);
+            // Send GET-request for file download
+            $response = (new GuzzleClient([
+                'verify' => false // Disable ssl
+            ]))->get($link, ['sink' => $disk->path($replicaFilePath)]);
 
-            // Проверяем статус ответа
-            if ($response->getStatusCode() === 200) {
-                Log::info("Файл успешно скачан и сохранен по пути: $originalFileFolder");
-            } else {
+            // check status code response from youtube
+            if ($response->getStatusCode() !== 200) {
+                //todo send error report to telegram
                 Log::error("Произошла ошибка при скачивании файла");
                 return false;
             }
+            //check content data through data structure
+            $replicaFileInfo = new CreateReplicaContentStructure(
+                [
+                    'file' => $replicaFilePath,
+                    'url' => $disk->url($fileFolderMD5.'/'.$replicaFilename),
+                    'type' =>$this->key,
+                    'typeFile' => 'video',
+                    'confirm' => 1,
+                    'published' => $originalContent->published,
+                    'targetClass' => $originalContent->targetClass,
+                    'contentable_type' => $originalContent->contentable_type,
+                    'contentable_id' => $originalContent->contentable_id,
+                    'parent_id' => $originalContent->id,
+                    'mime' => 'video/mp4',
+
+                ]
+            );
+            $content = Content::create($replicaFileInfo->toArray());
+            //handle preview for video
+            if($originalContent->preview && $originalContent->preview->id && $this->previewConverter && $content && $content->id){
+                CreateReplicaJob::dispatch($this->previewConverter->forOriginalContentId($originalContent->preview->id)->asPreviewFor($content->id));
+            }
+            //run cache update for target class if exists
+            $this->handleTargetModelCache($originalContent);
+            return true;
+
         } catch (GuzzleException $e) {
-            Log::error("Произошла ошибка: " . $e->getMessage() );
+            Log::error("Guzzle error during download file from youtube: " . $e->getMessage() );
             return false;
         }
-//        Log::info('response', (array)$response);
-        return false;
-        $previewFileInfo = new CreatePreviewContentStructure(
-            [
-                'file' => $previewFileFullPath,
-                'url' => $disk->url($previewFileFullUrl),
-                'type' =>$this->key,
-                'typeFile' => 'mp4',
-                'confirm' => 1,
-                'published' => $originalContent->published,
-                'targetClass' => $originalContent->targetClass,
-                'contentable_type' => $originalContent->contentable_type,
-                'contentable_id' => $originalContent->contentable_id,
-                'parent_id' => $originalContent->id,
-                'mime' => $contentService->getMime($previewFilename),
 
-            ]
-        );
-
-        return false;
     }
 
     public function getPossibleOriginalType(): string {
