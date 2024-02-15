@@ -358,7 +358,7 @@ class ContentService
     }
 
     protected function getConvertersByTypeFile(string $typeFile ):?array{
-        return (isset($this->contentConverters[$typeFile])) ? $this->contentConverters[$typeFile] : null;
+        return (isset($this->contentConverters[$typeFile])) ? $this->contentConverters[$typeFile] : [];
     }
 
 

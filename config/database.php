@@ -64,7 +64,7 @@ return [
 
         'MODX' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST_MODX', '192.168.88.245'),
+            'host' => env('DB_HOST_MODX', '192.168.88.244'),
             'port' => env('DB_PORT_MODX', '3306'),
             'database' => env('DB_DATABASE_MODX', 'east_dev'),
             'username' => env('DB_USERNAME_MODX', 'east_dev'),

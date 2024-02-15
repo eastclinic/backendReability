@@ -16,6 +16,7 @@ use Modules\Content\Services\ContentService;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class ImageContentConverter extends ContentConverterAbstract
 {
@@ -29,6 +30,10 @@ class ImageContentConverter extends ContentConverterAbstract
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->first();
             if(!$originalContent || !$originalContent->id ) return false;
+            if($originalContent->typeFile === 'text') {
+                Log::info('not image');
+                return false;
+            }
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
