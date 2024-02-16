@@ -29,11 +29,8 @@ class ImageContentConverter extends ContentConverterAbstract
             $contentService = new ContentService();
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->first();
-            if(!$originalContent || !$originalContent->id ) return false;
-            if($originalContent->typeFile === 'text') {
-                Log::info('not image');
-                return false;
-            }
+            if(!$originalContent || !$originalContent->id || $originalContent->typeFile !== 'image' ) return false;
+
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {

@@ -126,6 +126,27 @@ class ContentService
         return $filesInfo;
     }
 
+    public function saveVideoLink(StoreContentRequest $request):array  {
+        $filesInfo = [];
+        $content = Content::create([
+            'file' => '',
+            'url' => $request->videoLink,
+            'type' => 'original',
+            'typeFile' => 'videoLinkYoutube',
+            'mime' => 'hyperlink',
+            'contentable_type'=> $request->contentable_type,
+            'contentable_id' => $request->contentable_id,
+            'is_preview_for' => ($request->is_preview_for) ?? '',
+            'original_file_name' => '',
+
+        ]);
+        $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();
+        //create job for clear "forget" content
+        ClearUnconfirmedContentJob::dispatch($content->id)->delay(now()->addHours(2));
+
+        return $filesInfo;
+    }
+
 
     public function saveTempFile( $fileBlob , StoreContentRequest $request):?Content {
 

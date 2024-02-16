@@ -19,11 +19,11 @@ class StoreContentRequest extends FormRequest
     {
 
         return [ //пока напрямую задаем, потом можно будет брать из объекта Access
-            'files.*' => 'required|file|mimes:jpg,jpeg,png,mp4,mov,quicktime,webm,txt|max:409600000',
+            'files.*' => 'file|mimes:jpg,jpeg,png,mp4,mov,quicktime,webm,txt|max:409600000',
             'contentable_type' => ['required', 'string'],
             'contentable_id' => ['required', ],
             'original_file_name' => [ 'string'],
-
+            'videoLink' => [ 'string'],
         ];
 
     }
