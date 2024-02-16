@@ -19,11 +19,10 @@ class YoutubeContentConverter extends ContentConverterAbstract
         if( !$this->originalContentId || !$this->key)       return false;
         $originalContent = Content::where('id', $this->originalContentId)->first();
         if(!$originalContent || !$originalContent->id ) return false;
-        if($originalContent->typeFile !== 'text') {
-            Log::info('not image ' . $originalContent->typeFile);
+        if($originalContent->typeFile !== 'videoLinkYoutube') {
             return false;
         }
-        $downloadLink = 'https://www.youtube.com/watch?v=' . str_replace('.txt', '', $originalContent->original_file_name);
+        $downloadLink = 'https://www.youtube.com/watch?v=' . $originalContent->original_file_name;
         $link = '';
         //todo possible extension from youtube can be not equal mp4
         $extension = 'mp4';
@@ -41,8 +40,8 @@ class YoutubeContentConverter extends ContentConverterAbstract
 
         $disk = (new ContentService())->getStorageDisk();
 
-        $fileInfo= pathinfo($originalContent->file);
-        $fileFolderMD5 = $fileInfo['dirname'];
+       $fileFolderMD5 = $filePath =  md5(date('Y-m-d'));
+
         if (!$disk->exists($fileFolderMD5)) {
             // If the folder in disk doesn't exist, create it
             $disk->makeDirectory($fileFolderMD5);
@@ -96,6 +95,6 @@ class YoutubeContentConverter extends ContentConverterAbstract
     }
 
     public function getPossibleOriginalType(): string {
-        return 'text';
+        return 'videoLinkYoutube';
     }
 }

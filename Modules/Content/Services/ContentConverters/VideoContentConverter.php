@@ -41,7 +41,8 @@ class VideoContentConverter extends ContentConverterAbstract
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->with('preview')->first();
 
-            if(!$originalContent || !$originalContent->id ) return false;
+            if(!$originalContent || !$originalContent->id || $originalContent->typeFile !== 'video') return false;
+
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {

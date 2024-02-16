@@ -128,16 +128,20 @@ class ContentService
 
     public function saveVideoLink(StoreContentRequest $request):array  {
         $filesInfo = [];
+        $vendorName = $this->getVendorNameFromVideoLink($request->videoLink);
+        $idVideo = $this->getIdFromVideoLink($request->videoLink);
+        if(!$vendorName || !$idVideo) return $filesInfo;
+
         $content = Content::create([
             'file' => '',
             'url' => $request->videoLink,
             'type' => 'original',
-            'typeFile' => 'videoLinkYoutube',
+            'typeFile' => $vendorName,
             'mime' => 'hyperlink',
             'contentable_type'=> $request->contentable_type,
             'contentable_id' => $request->contentable_id,
             'is_preview_for' => ($request->is_preview_for) ?? '',
-            'original_file_name' => '',
+            'original_file_name' => $idVideo,
 
         ]);
         $filesInfo[] = $content->setVisible(['id', 'url', 'typeFile', 'confirm', 'published', ])->toArray();
@@ -460,6 +464,25 @@ class ContentService
         return $this;
     }
 
+
+    protected function getVendorNameFromVideoLink($url):?string{
+        // YouTube video URL pattern
+        $youtubePattern = '/^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)(.*)?$/';
+        if(preg_match($youtubePattern, $url) === 1){// Check if the URL matches the YouTube pattern
+            return 'videoLinkYoutube';
+        }
+
+        return '';
+    }
+
+    protected function getIdFromVideoLink($url):?string{
+        $pattern = '/^https:\/\/(?:(?:www|m)\.)?(?:youtube\.com\/watch\?v=|youtu.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)(?:&.*)?$/';
+        if (preg_match($pattern, $url, $matches)) {
+            return $matches[1];
+        } else {
+            return null;
+        }
+    }
 
 
 }
