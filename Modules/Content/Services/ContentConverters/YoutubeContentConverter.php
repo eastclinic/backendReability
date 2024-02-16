@@ -2,6 +2,7 @@
 
 namespace Modules\Content\Services\ContentConverters;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\Content\Entities\Content;
 use Modules\Content\Jobs\CreateReplicaJob;
@@ -14,7 +15,8 @@ use App\DataStructures\Content\CreateReplicaContentStructure;
 
 class YoutubeContentConverter extends ContentConverterAbstract
 {
-
+    protected string $previewSize = '';
+    protected string $previewkey = '';
     public function generateReplicas():bool {
         if( !$this->originalContentId || !$this->key)       return false;
         $originalContent = Content::where('id', $this->originalContentId)->first();
@@ -27,12 +29,13 @@ class YoutubeContentConverter extends ContentConverterAbstract
         //todo possible extension from youtube can be not equal mp4
         $extension = 'mp4';
         $youtubeService = new YouTubeDownloaderService();
-
+        $thumbnails = null;
         try {
             $downloadOptions = $youtubeService->getDownloadLinks($downloadLink);
             if ($downloadOptions->getAllFormats()) {
                 $link = $downloadOptions->getFullHdDownloadLink();
 //                $info = $downloadOptions->getInfo();
+                $thumbnails = $youtubeService->getThumbnails($originalContent->original_file_name);
             }
         } catch (YouTubeException $e) {
             echo 'Something went wrong: ' . $e->getMessage();
@@ -80,7 +83,11 @@ class YoutubeContentConverter extends ContentConverterAbstract
             );
             $content = Content::create($replicaFileInfo->toArray());
             //handle preview for video
-            if($originalContent->preview && $originalContent->preview->id && $this->previewConverter && $content && $content->id){
+            if($this->previewSize && $thumbnails && isset($thumbnails[$this->previewSize])){
+                if($previewStructure = $this->savePreviewFromYouTubeUrl($thumbnails[$this->previewSize], $originalContent)){
+                    Content::create($previewStructure->toArray());
+                }
+            } elseif($originalContent->preview && $originalContent->preview->id && $this->previewConverter && $content && $content->id){
                 CreateReplicaJob::dispatch($this->previewConverter->forOriginalContentId($originalContent->preview->id)->asPreviewFor($content->id));
             }
             //run cache update for target class if exists
@@ -94,7 +101,70 @@ class YoutubeContentConverter extends ContentConverterAbstract
 
     }
 
+    protected function savePreviewFromYouTubeUrl( string $imageUrl, Content $originalContent):?CreateReplicaContentStructure{
+        // Make an HTTP request to fetch the image
+        $response = Http::withoutVerifying()->get($imageUrl);
+        if (!$response->successful()) return null; //<<<<<<<<<<<<<<<<<<<<
+        // Get the image content
+        $preview = $response->body();
+        $contentService = new ContentService();
+        // Extract file extension
+        $extension = pathinfo($imageUrl, PATHINFO_EXTENSION);
+        $previewFilename = uniqid().'.'.$extension;
+        $filePath =  md5(date('Y-m-d'));
+        $disk = $contentService->getStorageDisk();
+        $previewFile = $filePath.DIRECTORY_SEPARATOR.$previewFilename;
+        $disk->put( $previewFile, $preview );
+        return new CreateReplicaContentStructure(
+            [
+                'file' => $previewFile,
+                'url' => $disk->url($previewFile),
+                'type' =>($this->previewkey) ?? $this->previewSize,
+                'typeFile' => $contentService->getFileType($previewFile),
+                'confirm' => 1,
+                'published' => $originalContent->published,
+                'targetClass' => $originalContent->targetClass,
+                'contentable_type' => $originalContent->contentable_type,
+                'contentable_id' => $originalContent->contentable_id,
+                'parent_id' => $originalContent->id,
+                'is_preview_for'=>($this->parentReplicaId) ?? '',
+                'mime' => $contentService->getMime($previewFile),
+            ]
+        );
+    }
+
     public function getPossibleOriginalType(): string {
         return 'videoLinkYoutube';
+    }
+
+
+    public function withPreviewMax(string $customKey = ''):self    {
+        $this->previewSize = 'maxres';
+        if($customKey) $this->previewkey = $customKey;
+        return $this;
+    }
+
+    public function withPreviewStandard(string $customKey = ''):self    {
+        $this->previewSize = 'standard';
+        if($customKey) $this->previewkey = $customKey;
+        return $this;
+    }
+
+    public function withPreviewHigh(string $customKey = ''):self    {
+        $this->previewSize = 'high';
+        if($customKey) $this->previewkey = $customKey;
+        return $this;
+    }
+
+    public function withPreviewMedium(string $customKey = ''):self    {
+        $this->previewSize = 'medium';
+        if($customKey) $this->previewkey = $customKey;
+        return $this;
+    }
+
+    public function withPreviewDefault(string $customKey = ''):self    {
+        $this->previewSize = 'default';
+        if($customKey) $this->previewkey = $customKey;
+        return $this;
     }
 }

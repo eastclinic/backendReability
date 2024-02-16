@@ -163,6 +163,7 @@ class DoctorResourceController extends Controller
 //                ->withSize(300, 300)));
 
         $contentService->addContentConverter( (new YoutubeContentConverter())
+            ->withPreviewMax('1280x720')
             ->withKey('1080p')
         );
 
