@@ -43,7 +43,7 @@ class ImageContentConverter extends ContentConverterAbstract
             $extension = ($this->extensionPreview && in_array($this->extensionPreview, ["jpg", "png", "jpeg", 'webp'])) ? $this->extensionPreview : $originalFileExtension;
             //todo possible doubles unique id, i think so, check it later
             $previewFilename = uniqid().'.'.$extension;
-
+            ini_set('memory_limit', '256M');
             $preview = Image::make($fileOriginalFullPath);
 
             if($this->width && $this->height) {

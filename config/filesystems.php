@@ -65,9 +65,11 @@ return [
         'content-original' => [
             'driver' => 'local',
             'root' => storage_path('app'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'content-original'),
+//            'root' => storage_path().'content-original',
+//            'root' => env('APP_URL').'content-original',
             'throw' => false,
             'url' => '/storage/content-original',
-            'visibility' => 'private',
+            'visibility' => 'public',
         ],
 
     ],
@@ -84,7 +86,7 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
+//        public_path('storage') => storage_path('app/public'),
         public_path('content') => storage_path('app/public/content'),
         public_path('content-original') => storage_path('app/public/content-original'),
     ],

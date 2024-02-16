@@ -75,7 +75,9 @@ class Doctor extends Model
         //always load content relation with order by updated time
         $this->load([ 'content', 'diploms', ]);
 
+        $f = $this->content;
         $this->content_cache = json_encode((new ContentLegacyCacheService())->forContent($this->content)->getLegacyContentData());
+        $e = $this->content_cache;
         $diploms = [];
         if($this->diploms){
 //            $diploms = $this->diploms->toArray();
