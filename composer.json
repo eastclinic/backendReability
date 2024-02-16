@@ -7,8 +7,9 @@
     "require": {
         "php": "^8.0.2",
         "andreaselia/laravel-api-to-postman": "^1.13",
+        "athlon1600/youtube-downloader": "4.0",
         "doctrine/dbal": "^3.5",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^7.8",
         "intervention/image": "^2.7",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
@@ -45,6 +46,9 @@
         }
     },
     "scripts": {
+        "run dev": [
+            "@php artisan serve"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
@@ -76,7 +80,7 @@
             "@php artisan config:clear",
             "@php artisan config:cache",
             "@php artisan storage:link",
-            "@php php artisan route:clear"
+            "@php artisan route:clear"
         ],
         "install-eastclinic-dev": [
             "php -r \"copy('.env.dev', '.env');\"",
@@ -96,7 +100,7 @@
             "@php artisan config:clear",
             "@php artisan config:cache",
             "@php artisan storage:link",
-            "@php php artisan route:clear"
+            "@php artisan route:clear"
 
 
 

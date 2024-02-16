@@ -74,14 +74,19 @@ class ContentController extends Controller
      */
     public function store(StoreContentRequest $request)   {
         try {
-            if (!$request->hasFile('files')) {
-                return response()->error('Not have upload files'); //<<<<<<<<<<<<<<<<<
+            $contentIds = [];
+            if ($request->hasFile('files')) {
+                $filesInfo = $this->contentService->saveTempFiles($request);
+                $contentIds = array_column($filesInfo, 'id');
+            }elseif ($request->get('videoLink')){
+                $filesInfo = $this->contentService->saveVideoLink($request);
+                $contentIds = array_column($filesInfo, 'id');
             }
-            $filesInfo = $this->contentService->saveTempFiles($request);
-
-            if(!$contentIds = array_column($filesInfo, 'id')){
+            if(!$contentIds){
                 return response()->error('Error save upload files');
             }
+
+
             $contentCollection = Content::whereIN('id', $contentIds);
             return ResponseService::apiCollection( ContentResource::collection($contentCollection->paginate()) );
 

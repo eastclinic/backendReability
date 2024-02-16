@@ -4,7 +4,7 @@
 namespace Modules\Content\Services\ContentConverters;
 
 
-use App\DataStructures\Content\CreatePreviewContentStructure;
+use App\DataStructures\Content\CreateReplicaContentStructure;
 use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Storage;
 //use Intervention\Image\Image;
@@ -18,7 +18,6 @@ use Modules\Reviews\Entities\ReviewContent;
 use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
-use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 
 class VideoContentConverter extends ContentConverterAbstract
@@ -34,7 +33,7 @@ class VideoContentConverter extends ContentConverterAbstract
 
 
 
-    public function generatePreviews():bool {
+    public function generateReplicas():bool {
         if( !$this->originalContentId || !$this->key)       return false;
         try {
 
@@ -42,7 +41,8 @@ class VideoContentConverter extends ContentConverterAbstract
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->with('preview')->first();
 
-            if(!$originalContent || !$originalContent->id ) return false;
+            if(!$originalContent || !$originalContent->id || $originalContent->typeFile !== 'video') return false;
+
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
@@ -76,7 +76,7 @@ class VideoContentConverter extends ContentConverterAbstract
             }
             $ffmpeg->save($previewFileFullPath);
 
-            $previewFileInfo = new CreatePreviewContentStructure(
+            $previewFileInfo = new CreateReplicaContentStructure(
                 [
                     'file' => $previewFileFullPath,
                     'url' => $disk->url($previewFileFullUrl),
@@ -94,14 +94,12 @@ class VideoContentConverter extends ContentConverterAbstract
             );
 
             $content = Content::create($previewFileInfo->toArray());
+            //handle preview for video
             if($originalContent->preview && $originalContent->preview->id && $this->previewConverter && $content && $content->id){
                 CreateReplicaJob::dispatch($this->previewConverter->forOriginalContentId($originalContent->preview->id)->asPreviewFor($content->id));
             }
-            if($originalContent->targetClass && method_exists($originalContent->targetClass, 'contentCacheUpdate')){
-                if($target = $originalContent->targetClass::where('id', $originalContent->contentable_id)->first()){
-                    $target->contentCacheUpdate();
-                }
-            }
+            //run cache update for target class if exists
+            $this->handleTargetModelCache($originalContent);
 
         }catch (\Throwable $e){
             error_log($e->getMessage());

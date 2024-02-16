@@ -24,7 +24,7 @@ abstract class ContentConverterAbstract
     protected ?int $height = null;
     protected int $quality = 100;
     public ?self $previewConverter = null;
-    abstract public function generatePreviews();
+    abstract public function generateReplicas();
     abstract public function getPossibleOriginalType();
 
 
@@ -85,6 +85,16 @@ abstract class ContentConverterAbstract
 
     public function asPreviewFor(string $parentReplicaId):self    {
         $this->parentReplicaId = $parentReplicaId;
+        return $this;
+    }
+
+    protected function handleTargetModelCache( Content $originalContent):self{
+        //run cache update for target class if exists
+        if($originalContent->targetClass && method_exists($originalContent->targetClass, 'contentCacheUpdate')){
+            if($target = $originalContent->targetClass::where('id', $originalContent->contentable_id)->first()){
+                $target->contentCacheUpdate();
+            }
+        }
         return $this;
     }
 

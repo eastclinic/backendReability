@@ -15,9 +15,12 @@ class ContentResource extends JsonResource
      */
     public function toArray($request = null)
     {
+        if($this->mime === 'hyperlink') $url = $this->url;
+        else $url = (empty($_SERVER['HTTPS']) ? 'http' : 'https').'://'.$_SERVER['HTTP_HOST'].$this->url;
+
          return [
             'id' => $this->id,
-            'url' => (empty($_SERVER['HTTPS']) ? 'http' : 'https').'://'.$_SERVER['HTTP_HOST'].$this->url,
+            'url' => $url,
             'title' => (string)$this->title,
             'confirm' => (bool)$this->confirm,
             'published' => (bool)$this->published,

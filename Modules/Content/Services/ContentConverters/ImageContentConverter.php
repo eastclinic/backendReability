@@ -5,7 +5,7 @@ namespace Modules\Content\Services\ContentConverters;
 
 
 use App\DataStructures\Content\ContentFileInfoStructure;
-use App\DataStructures\Content\CreatePreviewContentStructure;
+use App\DataStructures\Content\CreateReplicaContentStructure;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\Filesystem;
 //use Intervention\Image\Image;
@@ -16,19 +16,21 @@ use Modules\Content\Services\ContentService;
 use function Symfony\Component\Finder\name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class ImageContentConverter extends ContentConverterAbstract
 {
 
 
-    public function generatePreviews():bool {
+    public function generateReplicas():bool {
 
         if( !$this->originalContentId || !$this->key)       return false;
         try {
             $contentService = new ContentService();
             //get fresh original and preview content from db
             $originalContent = Content::where('id', $this->originalContentId)->first();
-            if(!$originalContent || !$originalContent->id ) return false;
+            if(!$originalContent || !$originalContent->id || $originalContent->typeFile !== 'image' ) return false;
+
             $disk = $contentService->getStorageDisk();
             $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
             if( !file_exists($fileOriginalFullPath) ) {
@@ -59,7 +61,7 @@ class ImageContentConverter extends ContentConverterAbstract
 
 
 
-            $previewFileInfo = new CreatePreviewContentStructure(
+            $previewFileInfo = new CreateReplicaContentStructure(
                 [
                     'file' => $previewFile,
                     'url' => $disk->url($previewFile),

@@ -31,7 +31,7 @@ class CreateReplicaJob implements ShouldQueue
      */
     public function handle()
     {
-        $this->previewService->generatePreviews();
+        $this->previewService->generateReplicas();
         return;
     }
 

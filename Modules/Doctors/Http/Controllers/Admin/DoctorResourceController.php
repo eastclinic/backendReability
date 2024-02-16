@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Modules\Content\Services\ContentService;
 use Modules\Content\Services\ContentConverters\ImageContentConverter;
 use Modules\Content\Services\ContentConverters\VideoContentConverter;
+use Modules\Content\Services\ContentConverters\YoutubeContentConverter;
 use Modules\Doctors\Entities\Doctor;
 use Modules\Doctors\Http\Requests\DoctorInfo\CreateRequest;
 use Modules\Doctors\Http\Requests\DoctorInfo\UpdateRequest;
@@ -152,14 +153,18 @@ class DoctorResourceController extends Controller
             ->withSize(1980, 1080)) ;
 
 
-        $contentService->addContentConverter( (new VideoContentConverter())
-            ->withKey('300x300')
-            ->withExtension('mp4')
-            ->withSize(300, 300)
-            ->withPreview((new ImageContentConverter())
-                ->withKey('300x300')
-                ->withExtension('webp')
-                ->withSize(300, 300)));
+//        $contentService->addContentConverter( (new VideoContentConverter())
+//            ->withKey('300x300')
+//            ->withExtension('mp4')
+//            ->withSize(300, 300)
+//            ->withPreview((new ImageContentConverter())
+//                ->withKey('300x300')
+//                ->withExtension('webp')
+//                ->withSize(300, 300)));
+
+        $contentService->addContentConverter( (new YoutubeContentConverter())
+            ->withKey('1080p')
+        );
 
         return $contentService;
     }

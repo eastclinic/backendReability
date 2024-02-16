@@ -7,20 +7,22 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Modules\Content\Entities\Content;
+use Modules\Content\Services\ContentService;
 
 
 class ClearUnconfirmedContentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected ?string $filePath = null;
+    protected ?string $contentId = null;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(string $filePath)
+    public function __construct(string $contentId)
     {
-        $this->filePath = $filePath;
+        $this->contentId = $contentId;
     }
 
     /**
@@ -30,7 +32,14 @@ class ClearUnconfirmedContentJob implements ShouldQueue
      */
     public function handle()
     {
-        if(file_exists($this->filePath))     unlink($this->filePath);
+        $originalContent = Content::where('id', $this->contentId)->where('confirm', 0)->first();
+        if(!$originalContent || !$originalContent->id ) return ;
+        $contentService = new ContentService();
+        $fileOriginalFullPath = $contentService->getOriginalDisk()->path($originalContent->file);
+        if( file_exists($fileOriginalFullPath) ) {
+            unlink($fileOriginalFullPath);
+        }
+        $originalContent->delete();
         //todo if folder is empty, remove folder
 
     }
