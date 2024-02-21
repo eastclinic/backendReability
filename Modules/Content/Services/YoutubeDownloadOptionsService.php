@@ -15,7 +15,7 @@ class YoutubeDownloadOptionsService extends DownloadOptions
         $quality = ['hd1080'=>'hd1080','tiny' => 'tiny', 'small' => 'small'];
         $formats = parent::getAllFormats();
         foreach ($formats as $item) {
-            if ($item->quality == $quality['small'] && $item->bitrate > $bitrate) {
+            if ($item->quality == $quality['hd1080'] && $item->bitrate > $bitrate) {
                 $url = $item->url;
                 $bitrate = $item->bitrate;
             }
