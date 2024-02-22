@@ -19,6 +19,7 @@ use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
 use ProtoneMedia\LaravelFFMpeg\Filters\WatermarkFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 use Illuminate\Support\Facades\File;
+use Modules\Content\Services\ContentConverters\CustomCodec\HEVC_AMF;
 
 class VideoContentConverter extends ContentConverterAbstract
 {

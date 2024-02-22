@@ -153,14 +153,14 @@ class DoctorResourceController extends Controller
             ->withSize(1980, 1080)) ;
 
 
-//        $contentService->addContentConverter( (new VideoContentConverter())
-//            ->withKey('300x300')
-//            ->withExtension('mp4')
-//            ->withSize(300, 300)
-//            ->withPreview((new ImageContentConverter())
-//                ->withKey('300x300')
-//                ->withExtension('webp')
-//                ->withSize(300, 300)));
+        $contentService->addContentConverter( (new VideoContentConverter())
+            ->withKey('1920x1080')
+            ->withExtension('mp4')
+            ->withSize(1920, 1080)
+            ->withPreview((new ImageContentConverter())
+                ->withKey('300x300')
+                ->withExtension('webp')
+                ->withSize(300, 300)));
 
         $contentService->addContentConverter( (new YoutubeContentConverter())
             ->withKey('1080p')
