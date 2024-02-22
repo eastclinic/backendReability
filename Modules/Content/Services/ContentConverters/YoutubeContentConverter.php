@@ -40,7 +40,7 @@ class YoutubeContentConverter extends ContentConverterAbstract
 
         $disk = (new ContentService())->getStorageDisk();
 
-       $fileFolderMD5 = $filePath =  md5(date('Y-m-d'));
+       $fileFolderMD5 =  md5(date('Y-m-d'));
 
         if (!$disk->exists($fileFolderMD5)) {
             // If the folder in disk doesn't exist, create it
@@ -48,12 +48,12 @@ class YoutubeContentConverter extends ContentConverterAbstract
         }
         $replicaFilename = uniqid().'.'.$extension;
         $replicaFilePath = $fileFolderMD5.DIRECTORY_SEPARATOR.$replicaFilename;
-
         try {
             // Send GET-request for file download
+
             $response = (new GuzzleClient([
                 'verify' => false // Disable ssl
-            ]))->get($link, ['sink' => $disk->path($replicaFilePath)]);
+            ]))->get($link['video'], ['sink' => $disk->path($replicaFilePath)]);
 
             // check status code response from youtube
             if ($response->getStatusCode() !== 200) {
@@ -61,6 +61,7 @@ class YoutubeContentConverter extends ContentConverterAbstract
                 Log::error("Произошла ошибка при скачивании файла");
                 return false;
             }
+
             //check content data through data structure
             $replicaFileInfo = new CreateReplicaContentStructure(
                 [
@@ -91,6 +92,8 @@ class YoutubeContentConverter extends ContentConverterAbstract
             Log::error("Guzzle error during download file from youtube: " . $e->getMessage() );
             return false;
         }
+
+
 
     }
 
