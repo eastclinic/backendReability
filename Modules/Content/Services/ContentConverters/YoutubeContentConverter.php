@@ -23,7 +23,8 @@ class YoutubeContentConverter extends ContentConverterAbstract
             return false;
         }
         $downloadLink = 'https://www.youtube.com/watch?v=' . $originalContent->original_file_name;
-        $link = '';
+        $link = [];
+        $info = null;
         //todo possible extension from youtube can be not equal mp4
         $extension = 'mp4';
         $youtubeService = new YouTubeDownloaderService();
@@ -32,7 +33,9 @@ class YoutubeContentConverter extends ContentConverterAbstract
             $downloadOptions = $youtubeService->getDownloadLinks($downloadLink);
             if ($downloadOptions->getAllFormats()) {
                 $link = $downloadOptions->getFullHdDownloadLink();
-//                $info = $downloadOptions->getInfo();
+                $info = $downloadOptions->getInfo();
+            } else {
+                throw new YouTubeException('No download links');
             }
         } catch (YouTubeException $e) {
             echo 'Something went wrong: ' . $e->getMessage();
@@ -53,7 +56,7 @@ class YoutubeContentConverter extends ContentConverterAbstract
 
             $response = (new GuzzleClient([
                 'verify' => false // Disable ssl
-            ]))->get($link['video'], ['sink' => $disk->path($replicaFilePath)]);
+            ]))->get($link['video'] ?? '', ['sink' => $disk->path($replicaFilePath)]);
 
             // check status code response from youtube
             if ($response->getStatusCode() !== 200) {
@@ -76,7 +79,7 @@ class YoutubeContentConverter extends ContentConverterAbstract
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => 'video/mp4',
-
+                    'alt' => $originalContent->alt,
                 ]
             );
             $content = Content::create($replicaFileInfo->toArray());
