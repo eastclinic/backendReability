@@ -16,4 +16,5 @@ class CreateReplicaContentStructure extends \App\DataStructures\AbstractDataStru
     public ?string $parent_id = null;
     public string $is_preview_for = '';
     public ?string $mime = null;
+    public ?string $alt = null;
 }
