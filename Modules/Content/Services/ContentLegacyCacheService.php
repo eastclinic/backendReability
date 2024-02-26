@@ -22,6 +22,7 @@ class ContentLegacyCacheService
                 "id" => $content->id,
                 "type" => $content->type,
                 "typeFile" => $content->typeFile,
+                "alt" => $content->alt,
                 "url" => $content->url,
             ];
             if($content->preview){ //add preview
