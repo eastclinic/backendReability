@@ -79,7 +79,7 @@ class YoutubeContentConverter extends ContentConverterAbstract
                     'contentable_id' => $originalContent->contentable_id,
                     'parent_id' => $originalContent->id,
                     'mime' => 'video/mp4',
-                    'alt' => $originalContent->alt,
+                    'alt' => $info->title,
                 ]
             );
             $content = Content::create($replicaFileInfo->toArray());
