@@ -73,7 +73,11 @@ class Doctor extends Model
     public function contentCacheUpdate():self    {
         $contentCache = [];
         //always load content relation with order by updated time
-        $this->load([ 'content', 'diploms', ]);
+        $this->load([ 'content' => function ($query) {
+            $query->orderBy('updated_at');
+        }, 'diploms' => function ($query) {
+            $query->orderBy('updated_at');
+        }]);
 
         $this->content_cache = json_encode((new ContentLegacyCacheService())->forContent($this->content)->getLegacyContentData());
         $diploms = [];
